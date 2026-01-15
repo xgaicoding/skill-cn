@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SkillCN · MVP Mockup（首页）</title>
+    <meta name="description" content="SkillCN MVP 首页视觉稿（静态 HTML + CSS）" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="./mockup.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- Floating header -->
+      <header class="app-header" role="banner">
+        <div class="app-header__inner">
+          <a class="logo" href="./index.html" aria-label="SkillCN 首页">
+            <span class="logo-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" aria-label="Logo">
+                <path
+                  d="M12 2.8c2.4 0 4.6 1.2 5.9 3.1.6.9.9 2 1 3.1.1 1.7-.3 3.1-1.2 4.3-.4.6-1.2 1.4-2 2.1-1.7 1.4-2.5 2.6-2.8 4.5H13c.1-1.6.8-3 2.3-4.3.7-.6 1.4-1.2 1.8-1.7.6-.8.8-1.7.7-2.8-.2-1.8-1.8-3.6-4-3.9-2.6-.4-4.9 1.3-5.3 3.6-.2 1.2 0 2.2.6 3.1.4.6 1.1 1.2 1.9 1.9 1.6 1.3 2.3 2.6 2.3 4.3H11c-.3-1.9-1.1-3.1-2.8-4.5-.9-.7-1.6-1.5-2-2.1-.9-1.2-1.3-2.6-1.2-4.3.1-1.1.4-2.2 1-3.1C7.4 4 9.6 2.8 12 2.8Z"
+                  fill="rgba(255,255,255,0.95)"
+                />
+                <path
+                  d="M9.3 13.4c.4.6 1.1 1.2 1.9 1.9 1.6 1.3 2.3 2.6 2.3 4.3H11c-.3-1.9-1.1-3.1-2.8-4.5-.9-.7-1.6-1.5-2-2.1-.6-.8-.9-1.7-.9-2.7 0-.1 0-.2 0-.3.3.8.7 1.5 1.3 2.1Z"
+                  fill="rgba(255,255,255,0.75)"
+                />
+              </svg>
+            </span>
+            <span class="logo-text">SkillCN</span>
+          </a>
+
+          <div class="search" role="search" aria-label="全局搜索">
+            <span class="search__icon" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path d="M21 21l-4.35-4.35" />
+                <circle cx="11" cy="11" r="6.5" />
+              </svg>
+            </span>
+            <input type="search" placeholder="搜索 Skill 名称、描述、标签" aria-label="搜索关键词" />
+            <button type="button">搜索</button>
+          </div>
+
+          <nav class="nav-actions" aria-label="顶部操作">
+            <a class="btn btn--ghost btn--sm" href="#">提交 Skill</a>
+            <div class="user-chip" aria-label="已登录用户">
+              <span class="avatar" aria-hidden="true"></span>
+              <span class="user-name">bytedance</span>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      <!-- Banner / Hero -->
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero__bg" aria-hidden="true">
+          <span class="glow glow--pink"></span>
+          <span class="glow glow--orange"></span>
+          <span class="glow glow--yellow"></span>
+          <span class="spark spark--one"></span>
+          <span class="spark spark--two"></span>
+          <span class="spark spark--three"></span>
+        </div>
+
+	        <div class="hero__inner">
+	          <div class="hero-copy hero-copy--minimal">
+	            <h1 id="hero-title" class="hero-copy__title hero-copy__title--minimal">
+	              <span class="hero-copy__brand">SkillCN</span>
+	              <span class="hero-copy__rule" aria-hidden="true"></span>
+	              <span class="hero-copy__slogan">
+	                一站式 Agent Skill 市场：用“可复现实践”帮你快速判断一个 Skill 值不值得装。
+	              </span>
+	            </h1>
+	          </div>
+
+	          <div class="hero-showcase" aria-label="精选实践（卡牌轮播）">
+	            <div class="swiper practice-swiper" aria-label="精选实践轮播（Swiper Cards）">
+	              <div class="swiper-wrapper">
+	                <div class="swiper-slide">
+	                  <article class="featured-card" style="--accent:rgba(255,107,0,0.98)">
+	                    <div class="featured-card__top">
+	                      <span class="featured-card__channel">知乎</span>
+	                      <span class="featured-card__skill">sequential-thinking</span>
+	                    </div>
+	                    <h3 class="featured-card__title">把复杂需求拆成可执行任务</h3>
+	                    <p class="featured-card__desc">用“目标 → 约束 → 验收”三段式拆分，给每一步加上可验证产物。</p>
+	                    <div class="featured-card__meta">
+	                      <span>2026-01-09</span>
+	                      <span>点击 128</span>
+	                    </div>
+	                  </article>
+	                </div>
+	                <div class="swiper-slide">
+	                  <article class="featured-card" style="--accent:rgba(255,204,0,0.95)">
+	                    <div class="featured-card__top">
+	                      <span class="featured-card__channel">公众号</span>
+	                      <span class="featured-card__skill">doc-coauthoring</span>
+	                    </div>
+	                    <h3 class="featured-card__title">从 PRD 到视觉稿：45 分钟设计交付流程</h3>
+	                    <p class="featured-card__desc">复用模板 + 验收清单，让“好看且可落地”的页面更快到位。</p>
+	                    <div class="featured-card__meta">
+	                      <span>2026-01-06</span>
+	                      <span>点击 204</span>
+	                    </div>
+	                  </article>
+	                </div>
+	                <div class="swiper-slide">
+	                  <article class="featured-card" style="--accent:rgba(255,168,0,0.92)">
+	                    <div class="featured-card__top">
+	                      <span class="featured-card__channel">知乎</span>
+	                      <span class="featured-card__skill">mcp-builder</span>
+	                    </div>
+	                    <h3 class="featured-card__title">30 分钟接入外部 API</h3>
+	                    <p class="featured-card__desc">快速封装调用链，留下清晰可复用的工具接口。</p>
+	                    <div class="featured-card__meta">
+	                      <span>2026-01-03</span>
+	                      <span>点击 96</span>
+	                    </div>
+	                  </article>
+	                </div>
+	                <div class="swiper-slide">
+	                  <article class="featured-card" style="--accent:rgba(255,107,0,0.82)">
+	                    <div class="featured-card__top">
+	                      <span class="featured-card__channel">飞书文档</span>
+	                      <span class="featured-card__skill">xlsx</span>
+	                    </div>
+	                    <h3 class="featured-card__title">做一份可复用的数据报告模板</h3>
+	                    <p class="featured-card__desc">公式 + 格式 + 可视化一键生成：把“报表体力活”交给工具。</p>
+	                    <div class="featured-card__meta">
+	                      <span>2026-01-08</span>
+	                      <span>点击 88</span>
+	                    </div>
+	                  </article>
+	                </div>
+	                <div class="swiper-slide">
+	                  <article class="featured-card" style="--accent:rgba(255,204,0,0.82)">
+	                    <div class="featured-card__top">
+	                      <span class="featured-card__channel">小红书</span>
+	                      <span class="featured-card__skill">algorithmic-art</span>
+	                    </div>
+	                    <h3 class="featured-card__title">做一张可复用的节日海报</h3>
+	                    <p class="featured-card__desc">用 seeded randomness 保证复现性：一套参数，多张海报。</p>
+	                    <div class="featured-card__meta">
+	                      <span>2026-01-04</span>
+	                      <span>点击 140</span>
+	                    </div>
+	                  </article>
+	                </div>
+	                <div class="swiper-slide">
+	                  <article class="featured-card" style="--accent:rgba(255,155,0,0.86)">
+	                    <div class="featured-card__top">
+	                      <span class="featured-card__channel">其他</span>
+	                      <span class="featured-card__skill">docx</span>
+	                    </div>
+	                    <h3 class="featured-card__title">用 docx 做专业文档批注</h3>
+	                    <p class="featured-card__desc">评论、修订、格式一把梭：沉淀可复用的文档协作模板。</p>
+	                    <div class="featured-card__meta">
+	                      <span>2026-01-05</span>
+	                      <span>点击 72</span>
+	                    </div>
+	                  </article>
+	                </div>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+      </section>
+
+      <main class="page">
+        <!-- Filter / Sort -->
+        <section class="toolbar" id="skill-list" aria-label="筛选与排序">
+          <nav class="segmented" aria-label="标签筛选（单选）">
+            <a class="segmented__item is-active" href="#">全部</a>
+            <a class="segmented__item" href="#">研究</a>
+            <a class="segmented__item" href="#">编程</a>
+            <a class="segmented__item" href="#">写作</a>
+            <a class="segmented__item" href="#">数据分析</a>
+            <a class="segmented__item" href="#">设计</a>
+            <a class="segmented__item" href="#">生产力</a>
+          </nav>
+
+          <div class="sort-switch" role="group" aria-label="排序（静态切换示例）">
+            <span class="sort-switch__label">排序</span>
+            <div class="sort-switch__seg" data-active="heat">
+              <button class="sort-switch__btn is-active" type="button" aria-pressed="true">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" />
+                </svg>
+                热度最高
+              </button>
+              <button class="sort-switch__btn" type="button" aria-pressed="false">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 6v6l4 2" />
+                  <path d="M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z" />
+                </svg>
+                最近更新
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Skill list -->
+        <section class="skill-grid" aria-label="Skill 列表（示例数据）">
+          <article class="skill-card">
+            <a class="skill-card__overlay" href="./detail.html" aria-label="查看 skill-creator 详情"></a>
+            <div class="skill-card__header">
+              <span class="tag">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M20 12l-8 8-8-8 8-8 8 8Z" />
+                </svg>
+                编程
+              </span>
+              <div class="skill-card__header-right">
+                <span class="stat stat--heat" aria-label="热度 3.8">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" />
+                  </svg>
+                  3.8
+                </span>
+                <span class="stat" aria-label="Stars 1.2k">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 17.3l-5.4 3 1.3-6.1L3 9.7l6.2-.7L12 3.4l2.8 5.6 6.2.7-4.9 4.5 1.3 6.1-5.4-3Z" />
+                  </svg>
+                  1.2k
+                </span>
+              </div>
+            </div>
+            <div class="skill-card__title">skill-creator</div>
+            <div class="skill-card__desc">创建或更新 Codex Skill：包含结构规范、最佳实践与可复用模板，适合扩展能力集。</div>
+            <div class="skill-card__meta">
+              <span class="meta">
+                <span class="avatar avatar--sm" aria-hidden="true"></span>
+                openai-labs
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 2v4M16 2v4" />
+                  <path d="M3 8h18" />
+                  <path d="M5 6h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+                </svg>
+                2026-01-09
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 19V5a2 2 0 0 1 2-2h10l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+                  <path d="M14 3v4h4" />
+                </svg>
+                实践 3
+              </span>
+            </div>
+          </article>
+
+          <article class="skill-card">
+            <a class="skill-card__overlay" href="./detail.html" aria-label="查看 frontend-design 详情"></a>
+            <div class="skill-card__header">
+              <span class="tag">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 20h16" />
+                  <path d="M6 16l3-3 3 3 6-6" />
+                </svg>
+                设计
+              </span>
+              <div class="skill-card__header-right">
+                <span class="stat stat--heat" aria-label="热度 3.3">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" />
+                  </svg>
+                  3.3
+                </span>
+                <span class="stat" aria-label="Stars 980">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 17.3l-5.4 3 1.3-6.1L3 9.7l6.2-.7L12 3.4l2.8 5.6 6.2.7-4.9 4.5 1.3 6.1-5.4-3Z" />
+                  </svg>
+                  980
+                </span>
+              </div>
+            </div>
+            <div class="skill-card__title">frontend-design</div>
+            <div class="skill-card__desc">
+              为页面/组件生成高品质 UI 方案：布局、组件拆分、交互细节、可用性与可访问性建议一并给到。
+            </div>
+            <div class="skill-card__meta">
+              <span class="meta">
+                <span class="avatar avatar--sm" aria-hidden="true"></span>
+                edenx
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 2v4M16 2v4" />
+                  <path d="M3 8h18" />
+                  <path d="M5 6h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+                </svg>
+                2026-01-08
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 19V5a2 2 0 0 1 2-2h10l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+                  <path d="M14 3v4h4" />
+                </svg>
+                实践 2
+              </span>
+            </div>
+          </article>
+
+          <article class="skill-card">
+            <a class="skill-card__overlay" href="./detail.html" aria-label="查看 sequential-thinking 详情"></a>
+            <div class="skill-card__header">
+              <span class="tag">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 6v6l4 2" />
+                  <path d="M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z" />
+                </svg>
+                生产力
+              </span>
+              <div class="skill-card__header-right">
+                <span class="stat stat--heat" aria-label="热度 4.1">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" />
+                  </svg>
+                  4.1
+                </span>
+                <span class="stat" aria-label="Stars 2.4k">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 17.3l-5.4 3 1.3-6.1L3 9.7l6.2-.7L12 3.4l2.8 5.6 6.2.7-4.9 4.5 1.3 6.1-5.4-3Z" />
+                  </svg>
+                  2.4k
+                </span>
+              </div>
+            </div>
+            <div class="skill-card__title">sequential-thinking</div>
+            <div class="skill-card__desc">
+              用结构化步骤推进复杂问题：把想法拆分成清晰的子任务，并在每一步给出可验证的产出与下一步动作。
+            </div>
+            <div class="skill-card__meta">
+              <span class="meta">
+                <span class="avatar avatar--sm" aria-hidden="true"></span>
+                community
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 2v4M16 2v4" />
+                  <path d="M3 8h18" />
+                  <path d="M5 6h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+                </svg>
+                2026-01-09
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 19V5a2 2 0 0 1 2-2h10l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+                  <path d="M14 3v4h4" />
+                </svg>
+                实践 6
+              </span>
+            </div>
+          </article>
+
+          <article class="skill-card">
+            <a class="skill-card__overlay" href="./detail.html" aria-label="查看 xlsx 详情"></a>
+            <div class="skill-card__header">
+              <span class="tag">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 4h16v16H4z" />
+                  <path d="M8 8h8M8 12h8M8 16h8" />
+                </svg>
+                数据分析
+              </span>
+              <div class="skill-card__header-right">
+                <span class="stat stat--empty" aria-label="热度 -">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" />
+                  </svg>
+                  -
+                </span>
+                <span class="stat stat--empty" aria-label="Stars -">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 17.3l-5.4 3 1.3-6.1L3 9.7l6.2-.7L12 3.4l2.8 5.6 6.2.7-4.9 4.5 1.3 6.1-5.4-3Z" />
+                  </svg>
+                  -
+                </span>
+              </div>
+            </div>
+            <div class="skill-card__title">xlsx</div>
+            <div class="skill-card__desc">
+              对 Excel/CSV 进行读写、公式、格式与可视化处理：适合数据清洗、分析与报告自动化（示例：未拉取到 GitHub 信息）。
+            </div>
+            <div class="skill-card__meta">
+              <span class="meta">
+                <span class="avatar avatar--sm" aria-hidden="true"></span>
+                -
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 2v4M16 2v4" />
+                  <path d="M3 8h18" />
+                  <path d="M5 6h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+                </svg>
+                -
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 19V5a2 2 0 0 1 2-2h10l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+                  <path d="M14 3v4h4" />
+                </svg>
+                实践 0
+              </span>
+            </div>
+          </article>
+
+          <article class="skill-card">
+            <a class="skill-card__overlay" href="./detail.html" aria-label="查看 doc-coauthoring 详情"></a>
+            <div class="skill-card__header">
+              <span class="tag">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 4h16v16H4z" />
+                  <path d="M7 8h10M7 12h10M7 16h6" />
+                </svg>
+                写作
+              </span>
+              <div class="skill-card__header-right">
+                <span class="stat stat--heat" aria-label="热度 2.2">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" />
+                  </svg>
+                  2.2
+                </span>
+                <span class="stat" aria-label="Stars 530">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 17.3l-5.4 3 1.3-6.1L3 9.7l6.2-.7L12 3.4l2.8 5.6 6.2.7-4.9 4.5 1.3 6.1-5.4-3Z" />
+                  </svg>
+                  530
+                </span>
+              </div>
+            </div>
+            <div class="skill-card__title">doc-coauthoring</div>
+            <div class="skill-card__desc">
+              结构化共创文档：用“上下文 → 目标 → 结构 → 迭代校对”的流程，让 PRD/方案/周报更快落地。
+            </div>
+            <div class="skill-card__meta">
+              <span class="meta">
+                <span class="avatar avatar--sm" aria-hidden="true"></span>
+                internal
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 2v4M16 2v4" />
+                  <path d="M3 8h18" />
+                  <path d="M5 6h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+                </svg>
+                2026-01-07
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 19V5a2 2 0 0 1 2-2h10l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+                  <path d="M14 3v4h4" />
+                </svg>
+                实践 1
+              </span>
+            </div>
+          </article>
+
+          <article class="skill-card">
+            <a class="skill-card__overlay" href="./detail.html" aria-label="查看 algorithmic-art 详情"></a>
+            <div class="skill-card__header">
+              <span class="tag">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 3l2.6 6.2L21 12l-6.4 2.8L12 21l-2.6-6.2L3 12l6.4-2.8L12 3Z" />
+                </svg>
+                设计
+              </span>
+              <div class="skill-card__header-right">
+                <span class="stat stat--heat" aria-label="热度 1.7">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" />
+                  </svg>
+                  1.7
+                </span>
+                <span class="stat" aria-label="Stars 210">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 17.3l-5.4 3 1.3-6.1L3 9.7l6.2-.7L12 3.4l2.8 5.6 6.2.7-4.9 4.5 1.3 6.1-5.4-3Z" />
+                  </svg>
+                  210
+                </span>
+              </div>
+            </div>
+            <div class="skill-card__title">algorithmic-art</div>
+            <div class="skill-card__desc">用 p5.js 做可控随机的算法艺术：支持参数探索、构图约束、动效与导出建议。</div>
+            <div class="skill-card__meta">
+              <span class="meta">
+                <span class="avatar avatar--sm" aria-hidden="true"></span>
+                community
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 2v4M16 2v4" />
+                  <path d="M3 8h18" />
+                  <path d="M5 6h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+                </svg>
+                2026-01-05
+              </span>
+              <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 19V5a2 2 0 0 1 2-2h10l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+                  <path d="M14 3v4h4" />
+                </svg>
+                实践 0
+              </span>
+            </div>
+          </article>
+        </section>
+
+        <!-- Pagination -->
+        <nav class="pagination" aria-label="分页（示例）">
+          <button class="page-btn" type="button" aria-label="上一页">‹</button>
+          <button class="page-btn is-active" type="button">1</button>
+          <button class="page-btn" type="button">2</button>
+          <button class="page-btn" type="button">3</button>
+          <button class="page-btn" type="button" aria-label="下一页">›</button>
+        </nav>
+      </main>
+
+      <footer class="footer" role="contentinfo">
+        <div>
+          免责声明：SkillCN 仅提供信息聚合与展示。Skill 的代码与效果由其作者/来源仓库负责；使用前请自行评估风险。
+        </div>
+      </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
+    <script>
+      new Swiper(".practice-swiper", {
+        effect: "cards",
+        grabCursor: true,
+        rewind: true,
+        speed: 720,
+        preventInteractionOnTransition: true,
+        autoplay: {
+          delay: 3400,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        },
+        cardsEffect: {
+          slideShadows: false,
+          rotate: true,
+          perSlideOffset: 12,
+          perSlideRotate: 4,
+        },
+      });
+    </script>
+  </body>
+</html>

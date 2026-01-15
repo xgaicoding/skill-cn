@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SkillCN · MVP Mockup（详情页）</title>
+    <meta name="description" content="SkillCN MVP 详情页视觉稿（静态 HTML + CSS）" />
+    <link rel="stylesheet" href="./mockup.css" />
+  </head>
+  <body class="is-detail">
+    <div class="app-shell">
+      <!-- Floating header -->
+      <header class="app-header" role="banner">
+        <div class="app-header__inner">
+          <a class="logo" href="./index.html" aria-label="返回 SkillCN 首页">
+            <span class="logo-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" aria-label="Logo">
+                <path
+                  d="M12 2.8c2.4 0 4.6 1.2 5.9 3.1.6.9.9 2 1 3.1.1 1.7-.3 3.1-1.2 4.3-.4.6-1.2 1.4-2 2.1-1.7 1.4-2.5 2.6-2.8 4.5H13c.1-1.6.8-3 2.3-4.3.7-.6 1.4-1.2 1.8-1.7.6-.8.8-1.7.7-2.8-.2-1.8-1.8-3.6-4-3.9-2.6-.4-4.9 1.3-5.3 3.6-.2 1.2 0 2.2.6 3.1.4.6 1.1 1.2 1.9 1.9 1.6 1.3 2.3 2.6 2.3 4.3H11c-.3-1.9-1.1-3.1-2.8-4.5-.9-.7-1.6-1.5-2-2.1-.9-1.2-1.3-2.6-1.2-4.3.1-1.1.4-2.2 1-3.1C7.4 4 9.6 2.8 12 2.8Z"
+                  fill="rgba(255,255,255,0.95)"
+                />
+                <path
+                  d="M9.3 13.4c.4.6 1.1 1.2 1.9 1.9 1.6 1.3 2.3 2.6 2.3 4.3H11c-.3-1.9-1.1-3.1-2.8-4.5-.9-.7-1.6-1.5-2-2.1-.6-.8-.9-1.7-.9-2.7 0-.1 0-.2 0-.3.3.8.7 1.5 1.3 2.1Z"
+                  fill="rgba(255,255,255,0.75)"
+                />
+              </svg>
+            </span>
+            <span class="logo-text">SkillCN</span>
+          </a>
+
+          <div class="search" role="search" aria-label="全局搜索">
+            <span class="search__icon" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path d="M21 21l-4.35-4.35" />
+                <circle cx="11" cy="11" r="6.5" />
+              </svg>
+            </span>
+            <input type="search" placeholder="搜索 Skill 名称、描述、标签" aria-label="搜索关键词" />
+            <button type="button">搜索</button>
+          </div>
+
+          <nav class="nav-actions" aria-label="顶部操作">
+            <a class="btn btn--ghost btn--sm" href="#">提交 Skill</a>
+            <div class="user-chip" aria-label="已登录用户">
+              <span class="avatar" aria-hidden="true"></span>
+              <span class="user-name">bytedance</span>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      <!-- Detail hero -->
+      <section class="hero hero--detail" aria-labelledby="detail-title">
+        <div class="hero__bg" aria-hidden="true">
+          <span class="glow glow--pink"></span>
+          <span class="glow glow--orange"></span>
+          <span class="glow glow--yellow"></span>
+          <span class="spark spark--one"></span>
+          <span class="spark spark--two"></span>
+          <span class="spark spark--three"></span>
+        </div>
+
+        <div class="hero__inner hero__inner--detail">
+          <div class="hero-copy hero-copy--detail">
+            <div class="detail-crumbs" aria-label="返回与标签">
+              <a class="crumb-back" href="./index.html" aria-label="返回目录">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+                返回目录
+              </a>
+              <span class="tag">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 20h16" />
+                  <path d="M6 16l3-3 3 3 6-6" />
+                </svg>
+                设计
+              </span>
+              <span class="stat stat--heat" aria-label="热度 3.3">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" />
+                </svg>
+                3.3
+              </span>
+              <span class="stat" aria-label="Stars 980">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 17.3l-5.4 3 1.3-6.1L3 9.7l6.2-.7L12 3.4l2.8 5.6 6.2.7-4.9 4.5 1.3 6.1-5.4-3Z" />
+                </svg>
+                980
+              </span>
+            </div>
+
+            <h1 id="detail-title" class="detail-hero__title">
+              <span class="hero-copy__brand hero-copy__brand--skill">frontend-design</span>
+            </h1>
+            <p class="detail-hero__subtitle">
+              创建具有高品质 UI 的页面/组件方案：包含信息架构、布局与视觉、交互细节、可访问性与响应式建议。
+            </p>
+
+            <div class="detail-hero__facts" aria-label="仓库信息">
+              <span class="hero-fact">
+                <span class="hero-fact__dot" aria-hidden="true"></span>
+                作者 edenx
+              </span>
+              <span class="hero-fact">
+                <span class="hero-fact__dot" aria-hidden="true"></span>
+                更新时间 2026-01-08
+              </span>
+              <span class="hero-fact">
+                <span class="hero-fact__dot" aria-hidden="true"></span>
+                实践 3
+              </span>
+              <a class="hero-fact hero-fact--link" href="#" aria-label="前往 Source">
+                <span class="hero-fact__dot" aria-hidden="true"></span>
+                Source
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M14 3h7v7" />
+                  <path d="M10 14L21 3" />
+                  <path d="M5 7v14h14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <aside class="detail-panel" aria-label="操作区">
+            <div class="detail-panel__header">
+              <div class="detail-panel__title">获取与运行</div>
+              <div class="detail-panel__hint">MVP：下载可用，Run 敬请期待</div>
+            </div>
+
+            <div class="detail-panel__actions">
+              <a class="btn btn--primary" href="#">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 3v10" />
+                  <path d="M7 11l5 5 5-5" />
+                  <path d="M5 21h14" />
+                </svg>
+                下载 ZIP
+              </a>
+              <button class="btn btn--ghost" type="button" disabled>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 5v14l11-7-11-7Z" />
+                </svg>
+                Run
+                <span class="btn-badge">敬请期待</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <main class="page page--detail">
+        <section class="detail-switch" aria-label="内容切换（静态 Tab 示例）">
+          <input class="detail-switch__radio" type="radio" name="detail-view" id="view-practices" checked />
+          <input class="detail-switch__radio" type="radio" name="detail-view" id="view-skillmd" />
+
+          <div class="detail-switch__tabs" aria-label="查看内容">
+            <label class="detail-switch__tab" for="view-practices">
+              实践文章
+              <span class="detail-switch__count">3</span>
+            </label>
+            <label class="detail-switch__tab" for="view-skillmd">SKILL.md</label>
+            <span class="detail-switch__indicator" aria-hidden="true"></span>
+          </div>
+
+          <div class="detail-switch__panels">
+
+        <!-- Practices -->
+        <section class="detail-tabpanel detail-tabpanel--practices practice-section" aria-label="实践列表">
+          <header class="section-header">
+            <h2>实践（Practice）</h2>
+            <a class="btn btn--primary btn--sm" href="#">提交实践</a>
+          </header>
+
+          <div class="practice-grid">
+            <a class="practice-card" style="--accent: rgba(255,107,0,0.98)" href="#" aria-label="打开实践：如何用组件库把信息密度做得更轻盈（新窗口）">
+              <div class="practice-card__top">
+                <span class="practice-card__channel">飞书文档</span>
+                <span class="stat stat--empty">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 2v4M16 2v4" />
+                    <path d="M3 8h18" />
+                    <path d="M5 6h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+                  </svg>
+                  2026-01-08
+                </span>
+              </div>
+              <h3>如何用组件库把信息密度做得更轻盈</h3>
+              <p>用“卡片层级 + 标签语义 + 元信息压缩”的方式，让列表页在 3 秒内可扫读完。</p>
+              <div class="practice-card__bottom">
+                <span class="meta">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  点击 128
+                </span>
+                <span class="meta">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0 0-7.07 5 5 0 0 0-7.07 0L10 5" />
+                    <path d="M14 11a5 5 0 0 0-7.07 0L5.52 12.41a5 5 0 0 0 0 7.07 5 5 0 0 0 7.07 0L14 19" />
+                  </svg>
+                  源链接
+                </span>
+              </div>
+            </a>
+
+            <a class="practice-card" style="--accent: rgba(255,204,0,0.95)" href="#" aria-label="打开实践：从 PRD 到视觉稿的 45 分钟工作流（新窗口）">
+              <div class="practice-card__top">
+                <span class="practice-card__channel">公众号</span>
+                <span class="stat stat--empty">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 2v4M16 2v4" />
+                    <path d="M3 8h18" />
+                    <path d="M5 6h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+                  </svg>
+                  2026-01-06
+                </span>
+              </div>
+              <h3>从 PRD 到视觉稿的 45 分钟工作流</h3>
+              <p>把“信息架构 → 组件库 → 页面模板 → 细节规范”做成可复用清单，适合多人协作。</p>
+              <div class="practice-card__bottom">
+                <span class="meta">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  点击 86
+                </span>
+                <span class="meta">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0 0-7.07 5 5 0 0 0-7.07 0L10 5" />
+                    <path d="M14 11a5 5 0 0 0-7.07 0L5.52 12.41a5 5 0 0 0 0 7.07 5 5 0 0 0 7.07 0L14 19" />
+                  </svg>
+                  源链接
+                </span>
+              </div>
+            </a>
+
+            <a class="practice-card" style="--accent: rgba(255,168,0,0.9)" href="#" aria-label="打开实践：设计细节如何服务于可用性与可访问性（新窗口）">
+              <div class="practice-card__top">
+                <span class="practice-card__channel">其他</span>
+                <span class="stat stat--empty">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 2v4M16 2v4" />
+                    <path d="M3 8h18" />
+                    <path d="M5 6h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+                  </svg>
+                  2026-01-02
+                </span>
+              </div>
+              <h3>设计细节如何服务于可用性与可访问性</h3>
+              <p>对比“炫酷但不可读”的玻璃态方案：用焦点态、对比度与层级把页面做得更稳。</p>
+              <div class="practice-card__bottom">
+                <span class="meta">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  点击 43
+                </span>
+                <span class="meta">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0 0-7.07 5 5 0 0 0-7.07 0L10 5" />
+                    <path d="M14 11a5 5 0 0 0-7.07 0L5.52 12.41a5 5 0 0 0 0 7.07 5 5 0 0 0 7.07 0L14 19" />
+                  </svg>
+                  源链接
+                </span>
+              </div>
+            </a>
+          </div>
+
+          <!-- Pagination -->
+          <nav class="pagination" aria-label="实践分页（示例）">
+            <button class="page-btn" type="button" aria-label="上一页">‹</button>
+            <button class="page-btn is-active" type="button">1</button>
+            <button class="page-btn" type="button">2</button>
+            <button class="page-btn" type="button">3</button>
+            <button class="page-btn" type="button" aria-label="下一页">›</button>
+          </nav>
+
+          <p class="practice-hint">
+            点击实践卡片即计入点击量，并以新窗口跳转到实践源链接；建议实践摘要写清“场景 + 关键结论/效果”。
+          </p>
+        </section>
+
+        <!-- SKILL.md -->
+        <section class="detail-card detail-tabpanel detail-tabpanel--skillmd" aria-label="SKILL.md 内容区">
+          <header class="section-header">
+            <h2>SKILL.md</h2>
+            <a class="btn btn--ghost btn--sm" href="#">前往 Source</a>
+          </header>
+
+          <article class="markdown">
+            <h2>这个 Skill 能做什么？</h2>
+            <p>
+              <strong>frontend-design</strong> 用于把 PRD/线稿快速变成可交付的 UI 方案：包含布局、组件拆分、视觉风格、交互细节与验收检查清单。
+            </p>
+
+            <blockquote>
+              如果检测到 Markdown 里包含相对路径图片/链接（如 <code>./</code> / <code>../</code>），MVP 会降级为“纯文本展示”，并提供 “前往 Source”。
+            </blockquote>
+
+            <h2>快速开始</h2>
+            <p>在终端中执行：</p>
+            <pre><span class="code-chip">bash</span><code>codex --skill frontend-design
+
+# 输入：你的 PRD / 页面目标 / 竞品参考
+# 输出：页面结构 + 视觉规范 + 可访问性清单</code></pre>
+
+            <h2>建议的输出结构（示例）</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>模块</th>
+                  <th>建议内容</th>
+                  <th>验收点</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Header</td>
+                  <td>Logo + 搜索 + 登录态 + 提交 CTA（区分主次）</td>
+                  <td>悬浮不遮挡内容；键盘可聚焦</td>
+                </tr>
+                <tr>
+                  <td>Banner</td>
+                  <td>左品牌区；右精选实践轮播（箭头 + 圆点）</td>
+                  <td>与筛选/搜索无关；3–6 条才展示</td>
+                </tr>
+                <tr>
+                  <td>详情页</td>
+                  <td>标题/标签/简介 + 仓库信息 + 操作区 + 实践区 + SKILL.md</td>
+                  <td>Run 置灰且提示；skill_id 可复制</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h2>注意事项</h2>
+            <p>
+              建议为卡片、按钮、输入框提供明显的 <code>hover</code> 与 <code>focus-visible</code> 状态；动画遵循 <code>prefers-reduced-motion</code>。
+            </p>
+          </article>
+        </section>
+
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer" role="contentinfo">
+        <div>
+          免责声明：SkillCN 仅提供信息聚合与展示。Skill 的代码与效果由其作者/来源仓库负责；使用前请自行评估风险。
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
