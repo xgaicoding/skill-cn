@@ -1,5 +1,5 @@
 ---
-name: 🌟 推荐优质 skill 实践
+name: 🌟 推荐优质实践
 about: 能落地、能真实解决痛点的skill，才是好skill
 title: '[推荐实践] skill名称'
 labels: ['service-recommendation']

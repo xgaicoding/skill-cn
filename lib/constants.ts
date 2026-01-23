@@ -4,8 +4,6 @@ export const SORT_OPTIONS = [
   { value: "recent", label: "最新" },
 ] as const;
 
-export const CHANNEL_OPTIONS = ["飞书文档", "公众号", "知乎", "小红书", "其他"] as const;
-
 export const PAGE_SIZE = 12;
 
 export const ISSUE_REPO_URL =
