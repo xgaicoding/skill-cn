@@ -7,7 +7,7 @@
 **助力国内 Skill 使用者快速找到能用、好用、可复用的实践方案**
 
 [![GitHub stars](https://img.shields.io/github/stars/xgaicoding/skill-cn?style=social)](https://github.com/xgaicoding/skill-cn)
-[![GitHub license](https://img.shields.io/github/license/xgaicoding/skill-cn)](https://github.com/xgaicoding/skill-cn/blob/main/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/xgaicoding/skill-cn)](https://github.com/xgaicoding/skill-cn/blob/master/LICENSE)
 
 [🌐 在线体验](https://skill-cn.com) | [📖 官方文档](https://my.feishu.cn/wiki/XKnEwisJbi8TLEkdW6wckqkQnoe?fromScene=spaceOverview) | [💬 问题反馈](https://github.com/xgaicoding/skill-cn/issues)
 

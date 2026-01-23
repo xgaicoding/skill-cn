@@ -51,7 +51,7 @@
 
 ## 6. 隐私保护
 
-我们严格按照《隐私政策》处理用户信息，请查看我们的[隐私政策](https://github.com/mengjian-github/skill-cn/blob/main/PRIVACY.md)了解详情。
+我们严格按照《隐私政策》处理用户信息，请查看我们的[隐私政策](https://github.com/mengjian-github/skill-cn/blob/master/PRIVACY.md)了解详情。
 
 ## 7. 服务变更
 
