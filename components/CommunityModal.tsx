@@ -1,0 +1,110 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Users, X } from "lucide-react";
+import type { RefObject } from "react";
+import { createPortal } from "react-dom";
+
+type CommunityModalProps = {
+  // 控制弹窗显示状态，打开时展示二维码与说明。
+  open: boolean;
+  // 关闭弹窗的回调（点击外部 / 按下 ESC / 点击关闭按钮）。
+  onClose: () => void;
+  // 交流群二维码图片地址。
+  qrCodeUrl: string;
+  // 触发按钮引用：用于“点击外部关闭”的判断。
+  triggerRef?: RefObject<HTMLElement>;
+};
+
+export default function CommunityModal({ open, onClose, qrCodeUrl, triggerRef }: CommunityModalProps) {
+  // 面板引用：用于打开时聚焦，提升可访问性与键盘可控性。
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  // 客户端挂载标记：用于安全地使用 portal 渲染到 body。
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    // 监听 ESC 关闭弹窗，符合用户习惯。
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    // 弹窗出现时主动聚焦面板，便于读屏与键盘导航。
+    panelRef.current?.focus();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    // 点击外部区域自动关闭：避免覆盖式遮罩时造成操作阻断。
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (panelRef.current?.contains(target)) return;
+      if (triggerRef?.current?.contains(target)) return;
+      onClose();
+    };
+    window.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [open, onClose, triggerRef]);
+
+  if (!open || !mounted) return null;
+
+  return createPortal(
+    <div
+      className="community-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="community-modal-title"
+      aria-describedby="community-modal-desc"
+    >
+      <div className="community-modal__panel" ref={panelRef} tabIndex={-1} role="document">
+        {/* 关闭按钮：右上角固定位置 */}
+        <button className="community-modal__close" type="button" onClick={onClose} aria-label="关闭">
+          <X className="icon" aria-hidden="true" />
+        </button>
+
+        <div className="community-modal__header">
+          <span className="community-modal__badge">
+            <Users className="icon" aria-hidden="true" />
+            交流群
+          </span>
+          <h2 id="community-modal-title">加入 Skill Hub 交流群</h2>
+          <p className="community-modal__desc" id="community-modal-desc">
+            扫描二维码加入交流，获取最新 Skill 精选与实践分享。
+          </p>
+        </div>
+
+        <div className="community-modal__qr">
+          <div className="community-modal__qr-frame">
+            <img src={qrCodeUrl} alt="Skill Hub 交流群二维码" loading="lazy" />
+          </div>
+          <span className="community-modal__qr-tip">使用微信扫一扫</span>
+        </div>
+
+        <div className="community-modal__topics" aria-label="群内交流话题">
+          <span className="community-modal__topic">精选 Skill 速递</span>
+          <span className="community-modal__topic">实战落地经验</span>
+          <span className="community-modal__topic">新工具速览</span>
+        </div>
+
+        {/* 交互收敛：二维码扫码为主，不再提供“无法扫码”按钮。 */}
+      </div>
+    </div>,
+    document.body
+  );
+}

@@ -1,0 +1,76 @@
+<svg width="560" height="520" viewBox="0 0 560 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Warm isometric illustration">
+  <defs>
+    <linearGradient id="g-top" x1="140" y1="80" x2="420" y2="210" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE7B8"/>
+      <stop offset="0.45" stop-color="#FFB55F"/>
+      <stop offset="1" stop-color="#FF4D6A"/>
+    </linearGradient>
+    <linearGradient id="g-left" x1="120" y1="150" x2="280" y2="380" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD7A8"/>
+      <stop offset="1" stop-color="#FF6B00"/>
+    </linearGradient>
+    <linearGradient id="g-right" x1="440" y1="140" x2="280" y2="390" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFB7C8"/>
+      <stop offset="1" stop-color="#FF7A2B"/>
+    </linearGradient>
+    <linearGradient id="g-glass" x1="160" y1="160" x2="400" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.05"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="34" stdDeviation="24" flood-color="#3A1400" flood-opacity="0.22"/>
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#FF6B00" flood-opacity="0.18"/>
+    </filter>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="
+        1 0 0 0 0
+        0 1 0 0 0
+        0 0 1 0 0
+        0 0 0 0.85 0" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Ambient blobs -->
+  <g opacity="0.85" filter="url(#softGlow)">
+    <circle cx="420" cy="128" r="64" fill="#FFCC00" opacity="0.22"/>
+    <circle cx="458" cy="180" r="78" fill="#FF6B00" opacity="0.18"/>
+    <circle cx="160" cy="172" r="92" fill="#FF3366" opacity="0.14"/>
+  </g>
+
+  <!-- Main isometric block -->
+  <g filter="url(#shadow)">
+    <!-- top -->
+    <path d="M280 92L426 166L280 240L134 166L280 92Z" fill="url(#g-top)" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+    <!-- left -->
+    <path d="M134 166L280 240L280 404L134 330L134 166Z" fill="url(#g-left)" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="2"/>
+    <!-- right -->
+    <path d="M426 166L280 240L280 404L426 330L426 166Z" fill="url(#g-right)" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="2"/>
+
+    <!-- glossy glass layer -->
+    <path d="M280 120L402 182L280 244L158 182L280 120Z" fill="url(#g-glass)" opacity="0.85"/>
+    <path d="M158 182L280 244L280 352L158 292L158 182Z" fill="url(#g-glass)" opacity="0.55"/>
+    <path d="M402 182L280 244L280 352L402 292L402 182Z" fill="url(#g-glass)" opacity="0.55"/>
+
+    <!-- top badge -->
+    <g transform="translate(0,2)">
+      <path d="M280 126L342 158L280 190L218 158L280 126Z" fill="#FFFFFF" fill-opacity="0.78" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="1.5"/>
+      <path d="M238 158L280 180L322 158" fill="none" stroke="#FF6B00" stroke-opacity="0.55" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="280" cy="152" r="8" fill="#FF6B00" opacity="0.92"/>
+      <circle cx="280" cy="152" r="4" fill="#FFFFFF" opacity="0.9"/>
+    </g>
+
+    <!-- subtle circuit lines -->
+    <g opacity="0.6" stroke="#FFFFFF" stroke-opacity="0.65" stroke-width="2" stroke-linecap="round">
+      <path d="M176 292L212 272L246 290" fill="none"/>
+      <path d="M384 290L352 272L318 292" fill="none"/>
+      <path d="M210 336L246 316L280 334" fill="none"/>
+      <path d="M350 334L318 316L284 336" fill="none"/>
+    </g>
+  </g>
+</svg>

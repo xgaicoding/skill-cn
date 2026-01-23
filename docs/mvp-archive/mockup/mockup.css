@@ -2015,7 +2015,19 @@ button:disabled {
   pointer-events: none;
   opacity: 0;
   transition: opacity 520ms cubic-bezier(0.16, 1, 0.3, 1);
-  background: linear-gradient(135deg, rgba(255, 107, 0, 0.03), rgba(255, 204, 0, 0.03));
+  /*
+    Hover 高光层（skill/practice 通用）
+    ------------------------------------------------------------
+    用户期望 hover 时卡片“整体提亮”（背景/边框/质感）。
+    静态视觉稿同样对齐线上样式：
+    - 白色高光：提升亮度
+    - 暖色反光：保持 orange/yellow 的温暖调性
+    - 仅 opacity 过渡，避免复杂动画影响性能
+  */
+  background:
+    radial-gradient(120% 85% at 18% 8%, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0) 62%),
+    radial-gradient(90% 70% at 88% 0%, rgba(255, 204, 0, 0.18) 0%, rgba(255, 204, 0, 0) 66%),
+    linear-gradient(135deg, rgba(255, 107, 0, 0.04), rgba(255, 204, 0, 0.035));
 }
 
 .skill-card__overlay {
@@ -2112,15 +2124,28 @@ button:disabled {
   border-radius: 50%;
 }
 
+/*
+  卡片 Hover 交互统一（SkillCard / PracticeCard）
+  ------------------------------------------------------------
+  静态视觉稿与线上一致：
+  - hover 时整体提亮（背景/边框/阴影）
+  - 仅在支持 hover 的设备启用，避免移动端 tap sticky hover
+*/
 @media (hover: hover) and (pointer: fine) {
-  .skill-card:hover {
+  .skill-card:hover,
+  .practice-card:hover {
     transform: translateY(-6px) scale(1.01);
+    /* 背景提亮：提高白底不透明度，让 hover 的“提亮”更直观 */
     background: rgba(255, 255, 255, 0.94);
-    box-shadow: 0 30px 70px -28px rgba(50, 20, 0, 0.2),
-      0 0 0 1px rgba(255, 107, 0, 0.12) inset;
-    border-color: rgba(255, 107, 0, 0.18);
+    border-color: rgba(255, 255, 255, 0.92);
+    box-shadow:
+      0 34px 80px -40px rgba(50, 20, 0, 0.18),
+      0 16px 34px -28px rgba(255, 107, 0, 0.28),
+      0 0 0 1px rgba(255, 255, 255, 0.62) inset;
   }
-  .skill-card:hover::after {
+
+  .skill-card:hover::after,
+  .practice-card:hover::after {
     opacity: 1;
   }
 }
@@ -2713,13 +2738,11 @@ body.is-detail::after {
   cursor: pointer;
 }
 
-.practice-card:hover {
-  transform: translateY(-6px) scale(1.01);
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 30px 70px -28px rgba(50, 20, 0, 0.2),
-    0 0 0 1px color-mix(in srgb, var(--card-accent) 10%, rgba(255, 255, 255, 0.42)) inset;
-  border-color: color-mix(in srgb, var(--card-accent) 14%, rgba(255, 255, 255, 0.86));
-}
+/*
+  注意：
+  - PracticeCard 的 hover 交互在上方「卡片 Hover 交互统一」中集中处理，
+    这里不再单独写 :hover，避免两套 hover 表现不一致。
+*/
 
 .practice-card::before {
   content: "";
@@ -2745,19 +2768,15 @@ body.is-detail::after {
   pointer-events: none;
   opacity: 0;
   transition: opacity 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  /*
+    hover 高光层（与 SkillCard 保持一致）
+    ------------------------------------------------------------
+    让 PracticeCard hover 同样呈现“提亮”的玻璃反光效果。
+  */
   background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--card-accent) 8%, rgba(255, 255, 255, 0)) 0%,
-      rgba(255, 255, 255, 0) 60%
-    ),
-    linear-gradient(135deg, rgba(255, 107, 0, 0.03), rgba(255, 204, 0, 0.035));
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .practice-card:hover::after {
-    opacity: 1;
-  }
+    radial-gradient(120% 85% at 18% 8%, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0) 62%),
+    radial-gradient(90% 70% at 88% 0%, rgba(255, 204, 0, 0.18) 0%, rgba(255, 204, 0, 0) 66%),
+    linear-gradient(135deg, rgba(255, 107, 0, 0.04), rgba(255, 204, 0, 0.035));
 }
 
 .practice-card > * {

@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SkillCN · MVP Mockup（详情页）</title>
-    <meta name="description" content="SkillCN MVP 详情页视觉稿（静态 HTML + CSS）" />
+    <title>Skill Hub · MVP Mockup（详情页）</title>
+    <meta name="description" content="Skill Hub MVP 详情页视觉稿（静态 HTML + CSS）" />
     <link rel="stylesheet" href="./mockup.css" />
   </head>
   <body class="is-detail">
@@ -12,7 +12,7 @@
       <!-- Floating header -->
       <header class="app-header" role="banner">
         <div class="app-header__inner">
-          <a class="logo" href="./index.html" aria-label="返回 SkillCN 首页">
+          <a class="logo" href="./index.html" aria-label="返回 Skill Hub 首页">
             <span class="logo-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" role="img" aria-label="Logo">
                 <path
@@ -25,7 +25,7 @@
                 />
               </svg>
             </span>
-            <span class="logo-text">SkillCN</span>
+            <span class="logo-text">Skill Hub</span>
           </a>
 
           <div class="search" role="search" aria-label="全局搜索">
@@ -172,7 +172,11 @@
         <section class="detail-tabpanel detail-tabpanel--practices practice-section" aria-label="实践列表">
           <header class="section-header">
             <h2>实践（Practice）</h2>
-            <a class="btn btn--primary btn--sm" href="#">提交实践</a>
+            <!-- 视觉对齐首页 Header 的 “+ Skill”：无框玻璃态、克制但易发现 -->
+            <a class="ghost" href="#">
+              <span aria-hidden="true">+</span>
+              提交实践
+            </a>
           </header>
 
           <div class="practice-grid">
@@ -352,7 +356,7 @@
 
       <footer class="footer" role="contentinfo">
         <div>
-          免责声明：SkillCN 仅提供信息聚合与展示。Skill 的代码与效果由其作者/来源仓库负责；使用前请自行评估风险。
+          免责声明：Skill Hub 仅提供信息聚合与展示。Skill 的代码与效果由其作者/来源仓库负责；使用前请自行评估风险。
         </div>
       </footer>
     </div>

@@ -1,4 +1,4 @@
-# SkillCN（MVP）技术方案设计（Codex）
+# Skill Hub（MVP）技术方案设计（Codex）
 
 版本：v0.1  
 日期：2026-01-13  
@@ -12,7 +12,7 @@
 
 ## 1. 目标与范围
 ### 1.1 目标
-- 支撑 SkillCN MVP “发现 → 详情 → 提交 → 收录 → 实践 → 热度排序”闭环。
+- 支撑 Skill Hub MVP “发现 → 详情 → 提交 → 收录 → 实践 → 热度排序”闭环。
 - 提供稳定的 GitHub 信息拉取、目录 ZIP 下载、实践点击统计能力。
 
 ### 1.2 范围
@@ -96,14 +96,14 @@ Browser
 - `source_url` TEXT NOT NULL
 - `author_name` TEXT
 - `is_listed` BOOLEAN NOT NULL DEFAULT true
-- `featured_rank` INT NULL CHECK (featured_rank BETWEEN 1 AND 6)
+- `is_featured` BOOLEAN NOT NULL DEFAULT false
 - `click_count` BIGINT NOT NULL DEFAULT 0
 - `created_at` TIMESTAMP NOT NULL DEFAULT now()
 - `updated_at_sys` TIMESTAMP NOT NULL DEFAULT now()
 
 索引建议：
 - `(skill_id, is_listed, updated_at DESC)`
-- `(featured_rank ASC, is_listed, updated_at DESC)`
+- `(is_featured, is_listed, updated_at DESC)`
 
 ## 6. GitHub 集成
 ### 6.1 URL 解析
@@ -161,7 +161,8 @@ Browser
 
 ### 8.2 Banner 与实践
 - `GET /api/practices/featured`
-  - `featured_rank` 有值且 `is_listed = true`
+  - `is_featured = true` 且 `is_listed = true`
+  - 按 `updated_at` 倒序，最多 6 条
   - 不足 3 条仍返回全部
 
 - `POST /api/practices/[id]/click`

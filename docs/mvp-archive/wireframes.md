@@ -1,4 +1,4 @@
-# SkillCN（MVP）交互线稿（Wireframes）
+# Skill Hub（MVP）交互线稿（Wireframes）
 
 基于 `docs/requirements.md` 的页面与交互口径，采用 **SVG 线稿**表达（Desktop 优先，含关键状态与核心流程）。
 
@@ -94,7 +94,7 @@
 
   <!-- Left: Brand -->
   <rect class="box" x="40" y="175" width="520" height="135"/>
-  <text class="txt" x="55" y="205">SkillCN</text>
+  <text class="txt" x="55" y="205">Skill Hub</text>
   <text class="txt muted" x="55" y="230">Slogan：一站式 Agent Skill 市场</text>
   <text class="txt muted" x="55" y="255">说明文案：帮助你快速找到可用 Skill</text>
 
@@ -370,7 +370,7 @@
   <text class="txt title" x="30" y="45">Header</text>
 
   <rect class="box" x="320" y="140" width="560" height="300"/>
-  <text class="txt title" x="340" y="175">登录 SkillCN</text>
+  <text class="txt title" x="340" y="175">登录 Skill Hub</text>
   <text class="txt muted" x="340" y="205">用于提交 Skill / 实践（浏览不需要登录）</text>
   <rect class="box" x="340" y="250" width="520" height="44"/>
   <text class="txt" x="355" y="278">使用 GitHub 登录（OAuth）</text>

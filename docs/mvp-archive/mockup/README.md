@@ -1,4 +1,4 @@
-# SkillCN 视觉稿（静态 Mockup）
+# Skill Hub 视觉稿（静态 Mockup）
 
 打开以下文件即可预览（无需启动服务）：
 

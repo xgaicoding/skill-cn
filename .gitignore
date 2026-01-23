@@ -15,8 +15,11 @@ build/
 *.jar
 app.log.*
 .eslintcache
+*.tsbuildinfo
 app.access.log.*
 app.error.log.*
 app.*.log.*
 output/
 output_resource/
+.next/
+manage/
