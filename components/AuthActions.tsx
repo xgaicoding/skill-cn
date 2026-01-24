@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LogIn, LogOut, Plus } from "lucide-react";
+import { ChevronDown, Github, LogOut, Plus } from "lucide-react";
 import { SKILL_ISSUE_URL } from "@/lib/constants";
 import { signInWithGitHub, useAuthUser } from "@/lib/auth";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -156,7 +156,8 @@ export default function AuthActions() {
           data-loading={pendingAction === "login"}
           aria-busy={pendingAction === "login"}
         >
-          <LogIn className="icon" aria-hidden="true" />
+          {/* 登录入口与 GitHub OAuth 对齐，使用 GitHub 图标提升识别度。 */}
+          <Github className="icon" aria-hidden="true" />
           <span className="btn__label">登录</span>
           <span className="btn__loading" aria-hidden="true">
             <Loading variant="dots" sizePx={14} />

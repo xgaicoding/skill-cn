@@ -127,7 +127,7 @@ npm run lint             # 代码检查
 ## 📞 联系我们
 
 <div align="center">
-  <img src="./public/images/wx.png" alt="微信二维码" width="200">
+  <img src="./public/images/xg-qr.png" alt="微信二维码" width="200">
   <p><strong>扫码加入交流群</strong></p>
   <p>技术交流 | 实践分享 | 开源协作</p>
 </div>

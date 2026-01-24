@@ -22,5 +22,13 @@ export const COMMUNITY_LINK =
   process.env.COMMUNITY_LINK ||
   "https://applink.larkoffice.com/client/chat/chatter/add_by_link?link_token=9ecr1835-e5f1-4072-a21e-9acd2dff5d87";
 
+// 交流群二维码（主）：使用本地静态资源，保证展示稳定且与设计稿一致。
+export const COMMUNITY_QR_URL =
+  "/images/community.png";
+// 交流群二维码（备用）：用于备用入口或分流展示。
+export const COMMUNITY_QR_BACKUP_URL =
+  "/images/xg-qr.png";
+
+// 官方文档入口：固定链接，避免环境变量缺失导致按钮不可用。
 export const OFFICIAL_DOCS_LINK =
-  process.env.NEXT_PUBLIC_OFFICIAL_DOCS_LINK || process.env.OFFICIAL_DOCS_LINK || "";
+  "https://my.feishu.cn/wiki/XKnEwisJbi8TLEkdW6wckqkQnoe?fromScene=spaceOverview";

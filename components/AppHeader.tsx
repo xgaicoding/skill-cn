@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { BookOpen, Search, Users } from "lucide-react";
 import AuthActions from "@/components/AuthActions";
-import { OFFICIAL_DOCS_LINK } from "@/lib/constants";
+import { COMMUNITY_QR_BACKUP_URL, COMMUNITY_QR_URL, OFFICIAL_DOCS_LINK } from "@/lib/constants";
 import CommunityModal from "@/components/CommunityModal";
 
 export default function AppHeader() {
@@ -14,8 +14,9 @@ export default function AppHeader() {
   // 触发按钮引用：用于定位与外部点击判断。
   const communityButtonRef = useRef<HTMLButtonElement | null>(null);
   // 统一管理二维码地址，便于后续替换或切换环境。
-  const communityQrUrl =
-    "https://lf3-static.bytednsdoc.com/obj/eden-cn/917eh7vhpeps/3e5af6db-2542-4aa8-96d0-7f5399704116.png";
+  const communityQrUrl = COMMUNITY_QR_URL;
+  // 备用二维码地址：用于弹窗右侧展示。
+  const communityQrBackupUrl = COMMUNITY_QR_BACKUP_URL;
 
 
   return (
@@ -93,7 +94,8 @@ export default function AppHeader() {
       <CommunityModal
         open={communityOpen}
         onClose={() => setCommunityOpen(false)}
-        qrCodeUrl={communityQrUrl}
+        primaryQrUrl={communityQrUrl}
+        backupQrUrl={communityQrBackupUrl}
         triggerRef={communityButtonRef}
       />
     </header>

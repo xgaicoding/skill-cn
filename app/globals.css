@@ -1232,28 +1232,60 @@ button[data-loading="true"] .btn__loading {
 .community-modal__qr {
   display: grid;
   justify-items: center;
-  gap: 10px;
+  gap: 12px;
   margin: 18px 0 16px;
 }
 
+/* 双二维码布局：桌面双列并排，移动端自动堆叠。 */
+.community-modal__qr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  justify-items: center;
+}
+
+.community-modal__qr-card {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
 .community-modal__qr-frame {
-  padding: 10px;
-  border-radius: 18px;
+  padding: 8px;
+  border-radius: 16px;
   background: #fff7f0;
   border: 1px solid rgba(255, 214, 175, 0.55);
   box-shadow: 0 12px 22px -18px rgba(255, 107, 0, 0.25);
 }
 
 .community-modal__qr-frame img {
-  width: 200px;
-  height: 200px;
-  border-radius: 12px;
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
   display: block;
+}
+
+.community-modal__qr-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(124, 94, 77, 0.9);
 }
 
 .community-modal__qr-tip {
   font-size: 12px;
   color: rgba(124, 94, 77, 0.9);
+}
+
+@media (max-width: 420px) {
+  .community-modal__qr-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .community-modal__qr-frame img {
+    width: 160px;
+    height: 160px;
+  }
 }
 
 .community-modal__topics {
@@ -5033,6 +5065,12 @@ body.is-detail::after {
   color: var(--muted);
   font-size: 13px;
   text-decoration: none;
+  /* 兼容 button/anchor 两种元素：统一去掉默认样式，保持轻量链接风格。 */
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
   transition: color 0.2s ease, opacity 0.2s ease;
 }
 

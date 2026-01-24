@@ -10,13 +10,21 @@ type CommunityModalProps = {
   open: boolean;
   // 关闭弹窗的回调（点击外部 / 按下 ESC / 点击关闭按钮）。
   onClose: () => void;
-  // 交流群二维码图片地址。
-  qrCodeUrl: string;
+  // 交流群二维码图片地址（主二维码）。
+  primaryQrUrl: string;
+  // 备用二维码图片地址（用于备用入口或分流展示）。
+  backupQrUrl: string;
   // 触发按钮引用：用于“点击外部关闭”的判断。
   triggerRef?: RefObject<HTMLElement>;
 };
 
-export default function CommunityModal({ open, onClose, qrCodeUrl, triggerRef }: CommunityModalProps) {
+export default function CommunityModal({
+  open,
+  onClose,
+  primaryQrUrl,
+  backupQrUrl,
+  triggerRef,
+}: CommunityModalProps) {
   // 面板引用：用于打开时聚焦，提升可访问性与键盘可控性。
   const panelRef = useRef<HTMLDivElement | null>(null);
   // 客户端挂载标记：用于安全地使用 portal 渲染到 body。
@@ -85,13 +93,26 @@ export default function CommunityModal({ open, onClose, qrCodeUrl, triggerRef }:
           </span>
           <h2 id="community-modal-title">加入 Skill Hub 交流群</h2>
           <p className="community-modal__desc" id="community-modal-desc">
-            扫描二维码加入交流，获取最新 Skill 精选与实践分享。
+            扫描二维码加入交流，获取最新 Skill 精选与实践分享！
           </p>
         </div>
 
         <div className="community-modal__qr">
-          <div className="community-modal__qr-frame">
-            <img src={qrCodeUrl} alt="Skill Hub 交流群二维码" loading="lazy" />
+          <div className="community-modal__qr-grid" aria-label="交流群二维码">
+            {/* 主二维码：放在左侧，作为默认入口。 */}
+            <div className="community-modal__qr-card">
+              <div className="community-modal__qr-frame">
+                <img src={primaryQrUrl} alt="Skill Hub 交流群二维码（主）" loading="lazy" />
+              </div>
+              <span className="community-modal__qr-label">主群</span>
+            </div>
+            {/* 备用二维码：放在右侧，避免单一二维码失效。 */}
+            <div className="community-modal__qr-card">
+              <div className="community-modal__qr-frame community-modal__qr-frame--backup">
+                <img src={backupQrUrl} alt="Skill Hub 交流群二维码（备用）" loading="lazy" />
+              </div>
+              <span className="community-modal__qr-label">备用</span>
+            </div>
           </div>
           <span className="community-modal__qr-tip">使用微信扫一扫</span>
         </div>
