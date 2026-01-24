@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogIn, LogOut, Plus } from "lucide-react";
-import { ISSUE_REPO_URL } from "@/lib/constants";
+import { SKILL_ISSUE_URL } from "@/lib/constants";
 import { signInWithGitHub, useAuthUser } from "@/lib/auth";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { usePathname } from "next/navigation";
@@ -20,14 +20,15 @@ export default function AuthActions() {
   const [pendingAction, setPendingAction] = useState<"submit" | "login" | "logout" | null>(null);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
   const handleSubmit = async () => {
+    // “+ Skill”入口统一指向创建 Skill 的 Issue 模板，保证与首页/页脚保持一致。
     if (user) {
-      window.open(ISSUE_REPO_URL, "_blank", "noreferrer");
+      window.open(SKILL_ISSUE_URL, "_blank", "noreferrer");
       return;
     }
     // 未登录时走 OAuth，需要给按钮一个明确的过渡态。
     setPendingAction("submit");
     try {
-      await signInWithGitHub(ISSUE_REPO_URL);
+      await signInWithGitHub(SKILL_ISSUE_URL);
     } finally {
       setPendingAction(null);
     }

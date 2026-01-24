@@ -6,10 +6,16 @@ export const SORT_OPTIONS = [
 
 export const PAGE_SIZE = 12;
 
-export const ISSUE_REPO_URL =
-  process.env.NEXT_PUBLIC_ISSUE_REPO_URL ||
-  process.env.ISSUE_REPO_URL ||
-  "https://github.com/your-org/your-repo/issues/new/choose";
+// GitHub Issue 入口链接：固定常量，避免依赖 .env 导致线上入口缺失。
+// 提交 Skill（create-skill 模板 + 新增技能标签）。
+export const SKILL_ISSUE_URL =
+  "https://github.com/xgaicoding/skill-cn/issues/new?template=create-skill.md&labels=%E6%96%B0%E5%A2%9E%E6%8A%80%E8%83%BD";
+// 提交实践（create-practice 模板 + 提交实践标签）。
+export const PRACTICE_ISSUE_URL =
+  "https://github.com/xgaicoding/skill-cn/issues/new?template=create-practice.md&labels=%E6%8F%90%E4%BA%A4%E5%AE%9E%E8%B7%B5";
+// 问题反馈（feature 模板 + 平台建议标签）。
+export const FEEDBACK_ISSUE_URL =
+  "https://github.com/xgaicoding/skill-cn/issues/new?template=feature.md&labels=%E5%B9%B3%E5%8F%B0%E5%BB%BA%E8%AE%AE";
 
 export const COMMUNITY_LINK =
   process.env.NEXT_PUBLIC_COMMUNITY_LINK ||

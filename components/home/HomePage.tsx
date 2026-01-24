@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ISSUE_REPO_URL, TAG_OPTIONS, SORT_OPTIONS, PAGE_SIZE } from "@/lib/constants";
+import { SKILL_ISSUE_URL, TAG_OPTIONS, SORT_OPTIONS, PAGE_SIZE } from "@/lib/constants";
 import type { Paginated, Practice, Skill } from "@/lib/types";
 import SkillCard from "@/components/home/SkillCard";
 import { SkillCardSkeleton } from "@/components/SkillCardSkeleton";
@@ -201,7 +201,8 @@ export default function HomePage({ initial }: { initial: HomeInitialState }) {
                    */
                   <a
                     className="btn btn--primary btn--sm"
-                    href={ISSUE_REPO_URL}
+                    // 指向创建 Skill 的 Issue 表单，与右上角“+ Skill”入口保持一致。
+                    href={SKILL_ISSUE_URL}
                     target="_blank"
                     rel="noreferrer noopener"
                     aria-label="去提交 Skill（新窗口）"

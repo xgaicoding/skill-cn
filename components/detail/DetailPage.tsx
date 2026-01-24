@@ -23,7 +23,7 @@ import BodyClass from "@/components/BodyClass";
 import { SkillDetailSkeleton } from "@/components/SkillDetailSkeleton";
 import { Skeleton } from "@/components/Skeleton";
 import { Loading } from "@/components/Loading";
-import { ISSUE_REPO_URL, PAGE_SIZE } from "@/lib/constants";
+import { PRACTICE_ISSUE_URL, PAGE_SIZE } from "@/lib/constants";
 import { signInWithGitHub, useAuthUser } from "@/lib/auth";
 import type { Paginated, Practice, Skill } from "@/lib/types";
 import { formatCompactNumber, formatDate, formatHeat } from "@/lib/format";
@@ -291,13 +291,14 @@ export default function DetailPage({ id }: { id: string }) {
   };
 
   const handleSubmitPractice = async () => {
+    // 实践投稿入口固定为 create-practice Issue 模板，避免依赖环境变量导致链接缺失。
     if (user) {
-      window.open(ISSUE_REPO_URL, "_blank", "noreferrer");
+      window.open(PRACTICE_ISSUE_URL, "_blank", "noreferrer");
       return;
     }
     setSubmitPracticePending(true);
     try {
-      await signInWithGitHub(ISSUE_REPO_URL);
+      await signInWithGitHub(PRACTICE_ISSUE_URL);
     } finally {
       setSubmitPracticePending(false);
     }

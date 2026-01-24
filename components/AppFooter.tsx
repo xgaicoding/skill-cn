@@ -9,7 +9,7 @@ import {
   Users,
   Heart,
 } from "lucide-react";
-import { COMMUNITY_LINK, ISSUE_REPO_URL, OFFICIAL_DOCS_LINK } from "@/lib/constants";
+import { COMMUNITY_LINK, FEEDBACK_ISSUE_URL, OFFICIAL_DOCS_LINK, SKILL_ISSUE_URL } from "@/lib/constants";
 
 export default function AppFooter() {
   // 官方文档链接可能未配置，需要在展示时做“禁用”处理，避免误点。
@@ -66,7 +66,8 @@ export default function AppFooter() {
               </a>
               <a
                 className="footer__link"
-                href={ISSUE_REPO_URL}
+                // Skill 提交入口：固定指向 create-skill 模板。
+                href={SKILL_ISSUE_URL}
                 target="_blank"
                 rel="noreferrer noopener"
               >
@@ -102,7 +103,8 @@ export default function AppFooter() {
               </a>
               <a
                 className="footer__link"
-                href={ISSUE_REPO_URL}
+                // 问题反馈入口：固定指向 feature 模板。
+                href={FEEDBACK_ISSUE_URL}
                 target="_blank"
                 rel="noreferrer noopener"
               >
