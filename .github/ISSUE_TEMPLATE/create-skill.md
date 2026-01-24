@@ -2,7 +2,7 @@
 name: 🌟 推荐优质 skill
 about: 能落地、能真实解决痛点的skill，才是好skill
 title: '[推荐skill] skill名称'
-labels: ['service-recommendation']
+labels: ['新增技能+实践']
 assignees: ''
 ---
 
@@ -19,15 +19,6 @@ assignees: ''
 **作者/组织**（选填，默认为仓库作者/组织，如有对外展示需求可填）: 
 
 ## ✨ skill配套实践
-**skill-cn最大的特色，就是每一个skill，都有配套实践**
-**实践主旨：** 讲清该skill，如何解决当前场景问题
-
-> ❌ 只推荐，无场景（如：推荐几个好用skill库）
-> ❌ 无落地成果展示（如：skill-creator可以创建skill，完）
-> ❌ 场景发散（如：我用10个skill，解决了10个场景的问题）
-
-> ✅ 面向具体场景提供解决方案（如：如何用pptx + front-design skill 打造炫酷ppt；我用skill-creator，做了一个解决xx问题的skill；我如何利用这几个skill，解决我日常的自媒体写作问题）
-
 
 **实践标题**（必填）: 
 
@@ -50,6 +41,15 @@ assignees: ''
 其他需要说明的信息（选填）：
 
 ---
+
+**skill-cn最大的特色，就是每一个skill，都有配套实践**
+**实践主旨：** 讲清该skill，如何解决当前场景问题
+
+> ❌ 只推荐，无场景（如：推荐几个好用skill库）
+> ❌ 无落地成果展示（如：skill-creator可以创建skill，完）
+> ❌ 场景发散（如：我用10个skill，解决了10个场景的问题）
+
+> ✅ 面向具体场景提供解决方案（如：如何用pptx + front-design skill 打造炫酷ppt；我用skill-creator，做了一个解决xx问题的skill；我如何利用这几个skill，解决我日常的自媒体写作问题）
 
 **注意事项**：
 - 我们只收录经过精心筛选的高质量 skill 服务
