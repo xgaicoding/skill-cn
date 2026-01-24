@@ -2,7 +2,7 @@
 name: 🌟 推荐优质 skill
 about: 能落地、能真实解决痛点的skill，才是好skill
 title: '[推荐skill] skill名称'
-labels: ['新增技能+实践']
+labels: ['新增技能']
 assignees: ''
 ---
 
