@@ -15,20 +15,20 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
   }
 
   const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.from("skills").select("download_count").eq("id", id).single();
-  if (error || !data) {
+
+  // 使用原子操作函数替换非原子的读取→增加→写回模式
+  const { data, error } = await supabase.rpc('increment_skill_download', {
+    skill_id: id
+  });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // 如果返回 null，说明没有找到对应的 skill
+  if (data === null) {
     return NextResponse.json({ error: "Skill not found" }, { status: 404 });
   }
 
-  const nextCount = (data.download_count || 0) + 1;
-  const { error: updateError } = await supabase
-    .from("skills")
-    .update({ download_count: nextCount })
-    .eq("id", id);
-
-  if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ download_count: nextCount });
+  return NextResponse.json({ download_count: data });
 }

@@ -14,6 +14,8 @@ export type Skill = {
   updated_at: string | null;
   markdown: string | null;
   markdown_render_mode: "markdown" | "plain";
+  // 是否支持直接下载 ZIP（默认 true；为 false 时引导用户去官方渠道下载）。
+  supports_download_zip: boolean;
 };
 
 export type Practice = {

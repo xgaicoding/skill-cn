@@ -7,16 +7,17 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import {
   CalendarDays,
+  CircleHelp,
   Download,
   Eye,
   Flame,
+  Github,
   Link2,
   Plus,
   Sparkles,
   Clock,
   Star,
   Tag,
-  ExternalLink,
 } from "lucide-react";
 
 import BodyClass from "@/components/BodyClass";
@@ -184,7 +185,30 @@ export default function DetailPage({ id }: { id: string }) {
     return trimmed || "-";
   };
 
+  // 解析仓库主页地址：仅保留前两级路径（owner/repo），用于跳转仓库首页。
+  const getRepoHomeUrl = (url?: string | null) => {
+    if (!url) return "#";
+    try {
+      const parsed = new URL(url);
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      if (parts.length >= 2) {
+        parsed.pathname = `/${parts[0]}/${parts[1]}`;
+        parsed.search = "";
+        parsed.hash = "";
+      }
+      return parsed.toString();
+    } catch {
+      // 兜底：非标准 URL 时直接返回原字符串，避免跳转失效
+      return url;
+    }
+  };
+
   const repoShort = useMemo(() => getRepoShort(skill?.source_url), [skill?.source_url]);
+  const repoHomeUrl = useMemo(() => getRepoHomeUrl(skill?.source_url), [skill?.source_url]);
+  // 默认支持下载 ZIP；若字段缺失，则按支持处理，避免影响历史数据。
+  const supportsDownloadZip = skill?.supports_download_zip ?? true;
+  // 下载提示气泡的 id，用于 aria-describedby 与无障碍说明。
+  const downloadHelpId = `download-help-${skillId}`;
 
   const practicesQuery = useMemo(() => {
     const search = new URLSearchParams();
@@ -262,6 +286,14 @@ export default function DetailPage({ id }: { id: string }) {
 
   const handleDownload = async () => {
     if (!skill || downloadPending) return;
+    // 兜底：如果该 Skill 不支持下载 ZIP，则直接引导到官方地址。
+    if (!supportsDownloadZip) {
+      // 不支持下载时，兜底跳转仓库主页，避免落到具体目录。
+      if (repoHomeUrl && repoHomeUrl !== "#") {
+        window.open(repoHomeUrl, "_blank", "noreferrer");
+      }
+      return;
+    }
     setDownloadPending(true);
     try {
       await fetch(`/api/skills/${skill.id}/download-count`, { method: "POST" });
@@ -364,10 +396,10 @@ export default function DetailPage({ id }: { id: string }) {
           <aside className="detail-panel" aria-label="操作区">
             <a
               className="detail-panel__repo detail-panel__repo--link"
-              href={skill?.source_url || "#"}
+              href={repoHomeUrl}
               target="_blank"
               rel="noreferrer"
-              aria-label="打开仓库"
+              aria-label="打开仓库主页"
             >
               {skill?.repo_owner_avatar_url ? (
                 <img
@@ -389,20 +421,44 @@ export default function DetailPage({ id }: { id: string }) {
 
             <div className="detail-panel__actions">
               {/* 下载按钮增加扫光轮播特效与独立 hover 逻辑，保持视觉强调但不再上浮 */}
-              <button
-                className="btn btn--primary btn--download"
-                type="button"
-                onClick={handleDownload}
-                disabled={downloadPending}
-                data-loading={downloadPending}
-                aria-busy={downloadPending}
-              >
-                <Download className="icon" />
-                <span className="btn__label">下载 SKILL 包</span>
-                <span className="btn__loading" aria-hidden="true">
-                  <Loading variant="dots" sizePx={14} />
-                </span>
-              </button>
+              <div className="detail-panel__download" data-unsupported={!supportsDownloadZip}>
+                {/* 不支持 ZIP 下载时，按钮改为白色外链，并把问号图标放进按钮内 */}
+                {supportsDownloadZip ? (
+                  <button
+                    className="btn btn--primary btn--download detail-panel__download-btn"
+                    type="button"
+                    onClick={handleDownload}
+                    disabled={downloadPending}
+                    data-loading={downloadPending}
+                    aria-busy={downloadPending}
+                  >
+                    <Download className="icon" />
+                    <span className="btn__label">下载 SKILL 包</span>
+                    <span className="btn__loading" aria-hidden="true">
+                      <Loading variant="dots" sizePx={14} />
+                    </span>
+                  </button>
+                ) : (
+                  <a
+                    className="btn btn--download btn--download-alt detail-panel__download-btn detail-panel__download-btn--with-help"
+                    href={repoHomeUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-describedby={downloadHelpId}
+                  >
+                    <span className="detail-panel__download-main">
+                      <Github className="icon" />
+                      <span className="btn__label">前往官网下载</span>
+                    </span>
+                    <span className="detail-panel__download-help-inline" aria-hidden="true">
+                      <CircleHelp className="icon" />
+                      <span className="detail-panel__download-tooltip" id={downloadHelpId} role="tooltip">
+                        该skill暂不支持直接下载skill包，请参考官方文档进行下载
+                      </span>
+                    </span>
+                  </a>
+                )}
+              </div>
             </div>
           </aside>
         </div>

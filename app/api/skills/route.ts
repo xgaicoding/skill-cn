@@ -13,7 +13,14 @@ export async function GET(request: Request) {
 
     const supabase = getSupabaseServerClient();
 
-    let query = supabase.from("skills").select("*", { count: "exact" }).eq("is_listed", true);
+    let query = supabase
+      .from("skills")
+      .select(
+        // supports_download_zip 用于前端判断是否展示“直接下载”入口
+        "id, name, description, tag, source_url, supports_download_zip, download_count, heat_score, repo_stars, repo_owner_name, repo_owner_avatar_url, updated_at",
+        { count: "exact" }
+      )
+      .eq("is_listed", true);
 
     if (tag && tag !== "全部") {
       query = query.eq("tag", tag);
@@ -50,21 +57,19 @@ export async function GET(request: Request) {
     const totalPages = Math.max(Math.ceil(total / size), 1);
 
     // practice_count 需要以 practices 表为准（只统计 is_listed=true）。
-    // 由于当前未在 DB 侧做触发器维护，这里按页补齐，确保列表展示准确。
+    // 使用批量查询函数在数据库层完成聚合，避免传输大量行数据
     let skills = data || [];
     if (skills.length > 0) {
       const skillIds = skills.map((skill) => skill.id);
-      const { data: practiceRows, error: practiceError } = await supabase
-        .from("practices")
-        .select("skill_id")
-        .in("skill_id", skillIds)
-        .eq("is_listed", true);
+      const { data: practiceCountsData, error: practiceCountsError } = await supabase.rpc(
+        'get_practice_counts_for_skills',
+        { skill_ids: skillIds }
+      );
 
-      if (!practiceError && practiceRows) {
+      if (!practiceCountsError && practiceCountsData) {
         const countMap = new Map<number, number>();
-        for (const row of practiceRows) {
-          const current = countMap.get(row.skill_id) || 0;
-          countMap.set(row.skill_id, current + 1);
+        for (const row of practiceCountsData) {
+          countMap.set(row.skill_id, row.practice_count);
         }
 
         skills = skills.map((skill) => ({

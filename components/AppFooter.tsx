@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { BookOpen, Github, Mail, MessageCircle, PlusCircle, Sparkles, Users, Heart } from "lucide-react";
+import { BookOpen, Github, MessageCircle, PlusCircle, Sparkles, Users } from "lucide-react";
 import {
   COMMUNITY_QR_BACKUP_URL,
   COMMUNITY_QR_URL,
@@ -21,7 +21,7 @@ export default function AppFooter() {
   const [communityOpen, setCommunityOpen] = useState(false);
   // 触发按钮引用：用于弹窗外部点击判断。
   const communityButtonRef = useRef<HTMLButtonElement | null>(null);
-  // 统一管理二维码地址，与 Header 弹窗保持一致。
+  // 统一管理二维码地址，与 Header 弹窗保持一致（微信联系使用个人二维码）。
   const communityQrUrl = COMMUNITY_QR_URL;
   // 备用二维码地址：用于弹窗右侧展示。
   const communityQrBackupUrl = COMMUNITY_QR_BACKUP_URL;
@@ -134,22 +134,34 @@ export default function AppFooter() {
             </div>
           </div>
 
-          {/* 联系支持：用简洁文案承接合作与交流诉求 */}
+          {/* 联系支持：样式与“快速入口/社区共创”对齐，保持轻量链接风格。 */}
           <div className="footer__col">
             <h3 className="footer__title">联系支持</h3>
-            <div className="footer__meta">
-              <div className="footer__meta-item">
-                <Mail className="footer__meta-icon" aria-hidden="true" />
-                <span>商务合作：欢迎通过社区渠道联系</span>
+            {/* 微信联系入口：主标题使用链接样式，下方用一行说明承接诉求。 */}
+            <div className="footer__links">
+              {/* 主入口：与其它栏目链接视觉一致，支持悬停展示二维码气泡。 */}
+              <div className="footer__wechat">
+                {/* 触发按钮：保持链接外观，支持 hover 与键盘 focus。 */}
+                <button
+                  type="button"
+                  className="footer__link footer__wechat-trigger"
+                  aria-label="微信联系二维码"
+                  aria-describedby="footer-wechat-qr"
+                >
+                  <MessageCircle className="footer__link-icon" aria-hidden="true" />
+                  微信联系
+                </button>
+                {/* 二维码气泡：仅在 hover/focus 时展示，提升联系效率。 */}
+                <div className="footer__wechat-bubble" id="footer-wechat-qr" role="tooltip">
+                  <div className="footer__wechat-title">微信扫码联系</div>
+                  <div className="footer__wechat-qr">
+                    <img src={communityQrBackupUrl} alt="微信联系二维码" loading="lazy" />
+                  </div>
+                  <div className="footer__wechat-tip">扫码后可添加联系</div>
+                </div>
               </div>
-              <div className="footer__meta-item">
-                <MessageCircle className="footer__meta-icon" aria-hidden="true" />
-                <span>技术交流：分享最佳实践与落地经验</span>
-              </div>
-              <div className="footer__meta-item">
-                <Heart className="footer__meta-icon" aria-hidden="true" />
-                <span>共建生态：一起完善 Skill 供给与模板库</span>
-              </div>
+              {/* 诉求说明：弱化权重，避免抢占主视觉。 */}
+              <p className="footer__support-detail">商务合作 · 技术交流 · 共建生态</p>
             </div>
           </div>
         </div>

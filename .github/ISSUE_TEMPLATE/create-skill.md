@@ -46,7 +46,7 @@ assignees: ''
 **实践主旨：** 讲清该skill，如何解决当前场景问题
 
 > ❌ 只推荐，无场景（如：推荐几个好用skill库）
-> ❌ 无落地成果展示（如：skill-creator可以创建skill，完）
+> ❌ 无落地成果展示（如：skill-creator可以创建skill，完，无实践）
 > ❌ 场景发散（如：我用10个skill，解决了10个场景的问题）
 
 > ✅ 面向具体场景提供解决方案（如：如何用pptx + front-design skill 打造炫酷ppt；我用skill-creator，做了一个解决xx问题的skill；我如何利用这几个skill，解决我日常的自媒体写作问题）

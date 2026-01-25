@@ -15,12 +15,18 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   const supabase = getSupabaseServerClient();
   const { data: skill, error } = await supabase
     .from("skills")
-    .select("id, source_url")
+    // 读取 supports_download_zip 以便阻止不支持的直接下载
+    .select("id, source_url, supports_download_zip")
     .eq("id", id)
     .single();
 
   if (error || !skill) {
     return NextResponse.json({ error: "Skill not found" }, { status: 404 });
+  }
+
+  // 若该 Skill 标记为不支持 ZIP 下载，则直接返回提示信息。
+  if (skill.supports_download_zip === false) {
+    return NextResponse.json({ error: "Skill download not supported" }, { status: 400 });
   }
 
   try {
