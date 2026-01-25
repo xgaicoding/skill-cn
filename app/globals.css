@@ -2146,6 +2146,15 @@ button[data-loading="true"] .btn__loading {
   width: 100%;
   height: 100%;
   border-radius: 26px;
+  /*
+    关键交互光标提示
+    ------------------------------------------------------------
+    Swiper 开启 grabCursor 后，容器区域会呈现 “grab” 光标（暗示可拖拽）。
+    但本项目的每张卡片本身也是可点击链接（打开实践来源）。
+    为了让用户在 hover 到卡片上时能明确感知“可点击”，
+    这里给链接本身显式设置 cursor: pointer，覆盖从父级继承的光标。
+  */
+  cursor: pointer;
 }
 
 .featured-card-link:focus-visible .featured-card {
