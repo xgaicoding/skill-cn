@@ -1,7 +1,8 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { memo, useMemo, type CSSProperties } from "react";
 import { Practice } from "@/lib/types";
+import { FEATURED_PRACTICE_LIMIT } from "@/lib/constants";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectCards } from "swiper/modules";
 
@@ -15,7 +16,7 @@ const ACCENTS = [
   "rgba(255,155,0,0.86)",
 ];
 
-export default function FeaturedCarousel({
+function FeaturedCarousel({
   practices,
   loading = false,
 }: {
@@ -25,6 +26,30 @@ export default function FeaturedCarousel({
 }) {
   // Hero 卡片加载完成标记：用于触发骨架淡出与内容入场。
   const isLoaded = !loading;
+  /**
+   * 性能保护：Swiper 的 cards 效果会为每张卡片计算 3D transform/叠牌阴影，
+   * 当推荐卡片数量过多时容易造成主线程卡顿。
+   * 这里在前端再次做“渲染上限”，确保 Hero 区始终保持顺滑。
+   */
+  const visiblePractices = useMemo(() => {
+    // 数量在阈值内时直接复用原数组引用，避免额外的 slice 分配。
+    if (practices.length <= FEATURED_PRACTICE_LIMIT) {
+      return practices;
+    }
+    return practices.slice(0, FEATURED_PRACTICE_LIMIT);
+  }, [practices]);
+  /**
+   * 自动轮播只有在多张卡片时才有意义，数量不足时关闭自动轮播，
+   * 避免无意义的定时器与多余的重绘。
+   */
+  const autoplayConfig =
+    visiblePractices.length > 1
+      ? {
+          delay: 3400,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        }
+      : false;
   /**
    * 记录推荐卡片点击（与详情页实践卡片一致的统计方式）：
    * - 不 await，避免阻塞新窗口打开
@@ -82,7 +107,7 @@ export default function FeaturedCarousel({
             </div>
           </div>
 
-          {practices.length > 0 && (
+          {visiblePractices.length > 0 && (
             <div className="hero-showcase__content">
               {/* Swiper 卡片轮播：参数与 mockup/index.html 保持一致 */}
               <Swiper
@@ -92,11 +117,7 @@ export default function FeaturedCarousel({
                 grabCursor
                 rewind
                 speed={720}
-                autoplay={{
-                  delay: 3400,
-                  disableOnInteraction: false,
-                  pauseOnMouseEnter: true,
-                }}
+                autoplay={autoplayConfig}
                 cardsEffect={{
                   slideShadows: false,
                   rotate: true,
@@ -104,9 +125,10 @@ export default function FeaturedCarousel({
                   perSlideOffset: 12,
                   perSlideRotate: 16,
                 }}
-                modules={[Autoplay, EffectCards]}
+                // autoplay 关闭时无需挂载 Autoplay 模块，减少额外的运行时开销。
+                modules={autoplayConfig ? [Autoplay, EffectCards] : [EffectCards]}
               >
-                {practices.map((practice, index) => (
+                {visiblePractices.map((practice, index) => (
                   <SwiperSlide key={practice.id}>
                     {/* 推荐卡片：顶部展示关联 Skill 名称，底部强调来源与作者 */}
                     <a
@@ -162,3 +184,6 @@ export default function FeaturedCarousel({
     </section>
   );
 }
+
+// 避免父级筛选/分页等状态变化时反复重建 Swiper，降低首屏卡顿感。
+export default memo(FeaturedCarousel);

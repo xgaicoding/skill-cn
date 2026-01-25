@@ -6,7 +6,14 @@ import { formatHeat } from "@/lib/format";
 export default function SkillCard({ skill }: { skill: Skill }) {
   // 将整卡片作为可点击链接，避免空 Link 无子元素导致无法触发跳转。
   return (
-    <Link className="skill-card" href={`/skill/${skill.id}`} aria-label={`查看 ${skill.name} 详情`}>
+    <Link
+      className="skill-card"
+      href={`/skill/${skill.id}`}
+      aria-label={`查看 ${skill.name} 详情`}
+      // 首页卡片统一“新开页面”体验，避免打断当前浏览列表。
+      target="_blank"
+      rel="noreferrer"
+    >
       {/* 顶部区域：分类标签 + 热度 */}
       <div className="skill-card__header">
         <span className="tag">

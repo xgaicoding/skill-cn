@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { getSupabaseServerClientNoStore } from "@/lib/supabase/server";
+import { FEATURED_PRACTICE_LIMIT } from "@/lib/constants";
 
 /**
  * 关键：让 /api/practices/featured “实时动态”返回最新数据。
@@ -30,7 +31,9 @@ export async function GET() {
     .is("is_listed", true)
     .is("is_featured", true)
     .order("updated_at", { ascending: false })
-    .limit(6);
+    // 性能保护：Hero 卡片使用 3D 叠牌效果，数量过多会造成合成层压力与掉帧。
+    // 服务端直接限制返回数量，避免前端拿到超量数据再丢弃。
+    .limit(FEATURED_PRACTICE_LIMIT);
 
   if (error) {
     // 明确禁止任何中间层缓存错误响应，避免“短暂故障被缓存”导致长时间不可用。

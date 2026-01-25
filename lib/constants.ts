@@ -5,6 +5,11 @@ export const SORT_OPTIONS = [
 ] as const;
 
 export const PAGE_SIZE = 12;
+// Hero 推荐实践数量上限：
+// - Swiper 的 cards 效果会给每个 slide 计算 3D transform/叠牌阴影
+// - 卡片数量过多时会显著增加合成与绘制负担，导致首屏卡顿
+// - 这里做统一上限，服务端/前端均使用同一数值保证体验一致
+export const FEATURED_PRACTICE_LIMIT = 8;
 
 // GitHub Issue 入口链接：固定常量，避免依赖 .env 导致线上入口缺失。
 // 提交 Skill（create-skill 模板 + 新增技能标签）。
