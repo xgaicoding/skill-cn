@@ -61,7 +61,6 @@ skill-cn/
 npm run dev              # 启动开发服务器
 npm run build            # 构建
 npm run start            # 启动生产服务
-npm run lint             # 代码检查
 ```
 
 ## 🤝 参与贡献
