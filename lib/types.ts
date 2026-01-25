@@ -20,9 +20,12 @@ export type Skill = {
 
 export type Practice = {
   id: number;
-  skill_id: number;
   // 首页 Hero 推荐卡片使用的关联 Skill 名称（由 API 补充注入）。
   skill_name?: string | null;
+  // 多对多关系下可能关联多个 Skill（当前接口不返回，预留扩展）。
+  skill_ids?: number[];
+  // 如果存在“主 Skill”，可通过该字段标记（当前接口不返回，预留扩展）。
+  primary_skill_id?: number | null;
   title: string;
   summary: string;
   channel: string;

@@ -34,11 +34,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 
   // practice_count 以 practices 表为准（仅统计上架实践），确保详情页与列表一致。
+  // 注意：practice 与 skill 已改为多对多关系，需要通过 join 表统计。
   const { count: practiceCount } = await supabase
-    .from("practices")
-    .select("id", { count: "exact", head: true })
+    .from("practice_skills")
+    // 通过 inner join 过滤 practices.is_listed，避免把下架实践计入数量。
+    .select("practice_id, practices!inner(id)", { count: "exact", head: true })
     .eq("skill_id", id)
-    .eq("is_listed", true);
+    .eq("practices.is_listed", true);
 
   const skillWithPractice = {
     ...skill,

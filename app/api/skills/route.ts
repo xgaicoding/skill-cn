@@ -57,13 +57,13 @@ export async function GET(request: Request) {
     const totalPages = Math.max(Math.ceil(total / size), 1);
 
     // practice_count 需要以 practices 表为准（只统计 is_listed=true）。
-    // 使用批量查询函数在数据库层完成聚合，避免传输大量行数据
+    // 优先使用 RPC 在数据库层完成聚合，失败时降级为 join 查询，避免首页显示空值。
     let skills = data || [];
     if (skills.length > 0) {
       const skillIds = skills.map((skill) => skill.id);
       const { data: practiceCountsData, error: practiceCountsError } = await supabase.rpc(
-        'get_practice_counts_for_skills',
-        { skill_ids: skillIds }
+        "get_practice_counts_for_skills",
+        { skill_ids: skillIds },
       );
 
       if (!practiceCountsError && practiceCountsData) {
@@ -76,6 +76,34 @@ export async function GET(request: Request) {
           ...skill,
           practice_count: countMap.get(skill.id) ?? 0,
         }));
+      } else {
+        // 降级方案：直接基于 join 表统计实践数量（仅统计已上架实践）。
+        const { data: linkRows, error: linkError } = await supabase
+          .from("practice_skills")
+          .select("skill_id, practice_id, practices!inner(id)")
+          .in("skill_id", skillIds)
+          .eq("practices.is_listed", true);
+
+        if (!linkError && linkRows) {
+          const countMap = new Map<number, number>();
+          for (const row of linkRows) {
+            if (!row?.skill_id || !row?.practice_id) {
+              continue;
+            }
+            countMap.set(row.skill_id, (countMap.get(row.skill_id) ?? 0) + 1);
+          }
+
+          skills = skills.map((skill) => ({
+            ...skill,
+            practice_count: countMap.get(skill.id) ?? 0,
+          }));
+        } else {
+          // 再兜底：确保前端始终拿到 practice_count 字段，避免空显示。
+          skills = skills.map((skill) => ({
+            ...skill,
+            practice_count: 0,
+          }));
+        }
       }
     }
 

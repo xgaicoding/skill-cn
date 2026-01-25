@@ -53,26 +53,36 @@ export async function GET() {
   }
 
   let practices = data || [];
-  // 补充 Skill 名称：避免依赖 DB 外键关系配置，直接按 skill_id 二次查询。
+  // 补充 Skill 名称：practice 与 skill 已为多对多，需要通过 join 表查询。
   if (practices.length > 0) {
-    const skillIds = Array.from(new Set(practices.map((practice) => practice.skill_id)));
-    const { data: skillRows, error: skillError } = await supabase
-      .from("skills")
-      .select("id, name")
-      .in("id", skillIds);
+    const practiceIds = Array.from(new Set(practices.map((practice) => practice.id)));
+    const { data: linkRows, error: linkError } = await supabase
+      .from("practice_skills")
+      // 读取关联的 Skill 名称，按 is_primary 倒序保证“主 Skill”优先命中。
+      .select("practice_id, is_primary, skills(name)")
+      .in("practice_id", practiceIds)
+      .order("is_primary", { ascending: false });
 
-    if (!skillError && skillRows) {
+    if (!linkError && linkRows) {
       const nameMap = new Map<number, string>();
-      for (const skill of skillRows) {
-        nameMap.set(skill.id, skill.name);
+      for (const row of linkRows) {
+        const practiceId = row.practice_id;
+        const skillName = row.skills?.name;
+        if (!practiceId || !skillName) {
+          continue;
+        }
+        // 仅在首次写入时赋值：由排序保证优先保留主 Skill 的名称。
+        if (!nameMap.has(practiceId)) {
+          nameMap.set(practiceId, skillName);
+        }
       }
 
       practices = practices.map((practice) => ({
         ...practice,
-        skill_name: nameMap.get(practice.skill_id) ?? null,
+        skill_name: nameMap.get(practice.id) ?? null,
       }));
     } else {
-      // skill 查询失败时也保证返回字段，避免前端渲染报错。
+      // 关联查询失败时也保证返回字段，避免前端渲染报错。
       practices = practices.map((practice) => ({
         ...practice,
         skill_name: null,
