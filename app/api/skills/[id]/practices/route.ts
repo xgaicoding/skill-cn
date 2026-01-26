@@ -47,9 +47,16 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 
   // 将 join 查询返回的结构拍平成 practices 数组，避免前端改动。
-  const practices = (data || [])
-    .map((row: { practices?: Record<string, unknown> | null }) => row.practices)
-    .filter(Boolean);
+  // 注意：Supabase 在缺少显式关系类型时，可能把 practices 推断成数组。
+  // 这里统一做兼容处理，确保类型与运行时都稳定。
+  const practices = (data || []).flatMap((row) => {
+    const payload =
+      (row as { practices?: Record<string, unknown> | Record<string, unknown>[] | null }).practices || null;
+    if (!payload) {
+      return [];
+    }
+    return Array.isArray(payload) ? payload : [payload];
+  });
 
   const total = count || 0;
   const totalPages = Math.max(Math.ceil(total / size), 1);
