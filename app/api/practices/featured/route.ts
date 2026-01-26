@@ -67,7 +67,15 @@ export async function GET() {
       const nameMap = new Map<number, string>();
       for (const row of linkRows) {
         const practiceId = row.practice_id;
-        const skillName = row.skills?.name;
+        /**
+         * Supabase 返回的关联字段在类型层面可能是对象或数组：
+         * - 多数情况下 skills 为单对象（practice_skills -> skills 是多对一）
+         * - 但类型推断可能认为是数组（例如缺少显式关系定义时）
+         * 这里统一做兼容，避免 TypeScript 报错与线上空值。
+         */
+        const skillsField =
+          row.skills as unknown as { name?: string | null } | { name?: string | null }[] | null;
+        const skillName = Array.isArray(skillsField) ? skillsField[0]?.name : skillsField?.name;
         if (!practiceId || !skillName) {
           continue;
         }
