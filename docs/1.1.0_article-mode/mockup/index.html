@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skill Hub · 实践模式首页（静态 Mockup）</title>
+
+    <!--
+      字体说明：
+      - 与线上站点一致，沿用 Fredoka（标题）+ Nunito（正文）+ Noto Sans SC（中文）。
+      - 确保 mockup 的视觉基因与现有页面保持一致。
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap"
+    />
+
+    <style>
+      /*
+        ============================
+        Design Tokens / 设计变量
+        ============================
+        说明：直接对齐当前站点的暖色系与圆润质感，确保视觉一致。
+      */
+      :root {
+        --font-heading: "Fredoka", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system,
+          "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB",
+          "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+        --font-body: "Nunito", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system,
+          "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB",
+          "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+
+        --bg: #fff1e6;
+        --surface: rgba(255, 255, 255, 0.78);
+        --surface-strong: rgba(255, 255, 255, 0.92);
+        --surface-solid: #ffffff;
+
+        --text: #1a1510;
+        --muted: #7c5e4d;
+        --muted-2: rgba(124, 94, 77, 0.7);
+
+        --primary: #ff6b00;
+        --primary-strong: #e65200;
+        --secondary: #ff3366;
+        --accent: #ffcc00;
+
+        --border: rgba(255, 107, 0, 0.16);
+        --border-strong: rgba(255, 107, 0, 0.22);
+
+        --shadow-soft: 0 30px 60px -15px rgba(255, 107, 0, 0.22),
+          0 10px 20px -8px rgba(255, 51, 102, 0.12);
+        --shadow-card: 0 22px 60px -30px rgba(50, 20, 0, 0.18),
+          0 0 0 1px rgba(255, 107, 0, 0.08) inset;
+
+        --radius-sm: 12px;
+        --radius-md: 18px;
+        --radius-lg: 28px;
+        --radius-xl: 44px;
+
+        --content-width: 1260px;
+        --page-gutter: 28px;
+      }
+
+      /*
+        基础样式重置：
+        - 统一盒模型；
+        - 提升字体渲染；
+        - 清理默认 margin。
+      */
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--font-body);
+        color: var(--text);
+        background-color: var(--bg);
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        position: relative;
+        isolation: isolate;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        border: 0;
+        background: none;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      :focus-visible {
+        outline: 3px solid rgba(255, 107, 0, 0.55);
+        outline-offset: 4px;
+      }
+
+      /*
+        ============================
+        背景氛围层：同步现有站点的暖色 Aurora
+        ============================
+      */
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        inset: -26vh -18vw 0;
+        pointer-events: none;
+        z-index: 0;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        contain: paint;
+        will-change: transform, opacity, filter, background-position;
+      }
+
+      body::before {
+        opacity: 0.72;
+        mix-blend-mode: screen;
+        filter: blur(72px) saturate(140%);
+        background-image:
+          radial-gradient(60% 52% at 16% 0%, rgba(255, 204, 0, 0.2) 0%, transparent 62%),
+          radial-gradient(56% 46% at 62% -6%, rgba(255, 107, 0, 0.22) 0%, transparent 58%),
+          radial-gradient(48% 44% at 88% 10%, rgba(255, 51, 102, 0.2) 0%, transparent 60%),
+          radial-gradient(46% 40% at 44% 12%, rgba(255, 255, 255, 0.12) 0%, transparent 66%);
+        mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.9) 0%,
+          rgba(0, 0, 0, 0) 100%
+        );
+        animation: auroraHaze 26s ease-in-out infinite alternate;
+      }
+
+      body::after {
+        opacity: 0.4;
+        mix-blend-mode: screen;
+        filter: blur(26px) saturate(170%) contrast(108%);
+        background-image:
+          linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.18) 36%,
+            rgba(255, 255, 255, 0) 78%
+          ),
+          repeating-linear-gradient(
+            90deg,
+            rgba(255, 107, 0, 0) 0%,
+            rgba(255, 107, 0, 0) 8%,
+            rgba(255, 107, 0, 0.12) 10%,
+            rgba(255, 107, 0, 0) 14%,
+            rgba(255, 204, 0, 0.12) 16%,
+            rgba(255, 204, 0, 0) 22%
+          ),
+          repeating-linear-gradient(
+            120deg,
+            rgba(255, 51, 102, 0) 0%,
+            rgba(255, 51, 102, 0) 16%,
+            rgba(255, 51, 102, 0.12) 20%,
+            rgba(255, 51, 102, 0) 28%,
+            rgba(255, 107, 0, 0.1) 32%,
+            rgba(255, 107, 0, 0) 42%
+          );
+        background-size: 200% 200%, 280% 180%, 240% 160%;
+        background-position: 30% 0%, 0% 0%, 12% 0%;
+        mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0) 100%);
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.78) 0%,
+          rgba(0, 0, 0, 0) 100%
+        );
+        animation: auroraCurtain 18s ease-in-out infinite;
+      }
+
+      @keyframes auroraHaze {
+        0% {
+          transform: translate3d(-3%, -2%, 0) rotate(-2deg) scale(1.05);
+          opacity: 0.62;
+        }
+        55% {
+          transform: translate3d(2%, 1%, 0) rotate(1.1deg) scale(1.09);
+          opacity: 0.78;
+        }
+        100% {
+          transform: translate3d(-1%, 3%, 0) rotate(2.2deg) scale(1.06);
+          opacity: 0.68;
+        }
+      }
+
+      @keyframes auroraCurtain {
+        0% {
+          transform: translate3d(0, 0, 0) skewX(-10deg) rotate(-0.8deg) scale(1.06);
+          background-position: 20% 0%, 0% 0%, 10% 0%;
+        }
+        50% {
+          transform: translate3d(-2%, 1%, 0) skewX(-6deg) rotate(0.6deg) scale(1.09);
+          background-position: 38% 10%, 82% 26%, 24% 20%;
+        }
+        100% {
+          transform: translate3d(2%, -1%, 0) skewX(-12deg) rotate(1.1deg) scale(1.06);
+          background-position: 12% 0%, 12% 30%, 72% 18%;
+        }
+      }
+
+      /*
+        减少动画偏好：
+        - 尊重系统设置，关闭背景动效。
+      */
+      @media (prefers-reduced-motion: reduce) {
+        body::before,
+        body::after {
+          animation: none;
+        }
+      }
+
+      /*
+        ============================
+        Header / 顶部导航
+        ============================
+      */
+      .app-header {
+        position: fixed;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(90%, 1200px);
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: var(--radius-xl);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+      }
+
+      .app-header__inner {
+        width: 100%;
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+
+      .logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 22px;
+        color: var(--text);
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .logo-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #ff7a2b, #ff4d6a);
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 14px 26px -12px rgba(255, 94, 98, 0.5),
+          0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+      }
+
+      .logo-icon svg {
+        width: 30px;
+        height: 30px;
+      }
+
+      .search {
+        flex: 1 1 520px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 999px;
+        padding: 6px 6px 6px 14px;
+        border: 1px solid rgba(255, 107, 0, 0.2);
+        transition: all 0.2s ease;
+      }
+
+      .search:focus-within {
+        background: #ffffff;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.1);
+      }
+
+      .search input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        padding: 8px 0;
+        outline: none;
+      }
+
+      .search input::placeholder {
+        color: var(--muted);
+        opacity: 0.7;
+      }
+
+      .search__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        pointer-events: none;
+      }
+
+      .search button {
+        padding: 10px 24px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.96);
+        color: var(--primary-strong);
+        border: none;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        box-shadow: 0 10px 22px -18px rgba(255, 107, 0, 0.35),
+          0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+        transition: all 0.2s ease;
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+
+      /*
+        模式切换（右侧吸附 Dock）：
+        - 旧版“switch + 文案”容易显得像表单控件，且占位大、抢 Hero 视线；
+        - 这里改成更像「液晶滑动开关」的纵向二段切换：轨道是玻璃，滑块是“液态玻璃”；
+        - 默认仅展示图标（减少视觉噪音），hover/聚焦时通过 tooltip 解释含义；
+        - Active 态用站点主渐变，保证“当前模式”一眼可见；
+        - 动画只用 opacity/transform，避免重排，且可触发 GPU 合成层以提升性能。
+      */
+      .mode-dock {
+        --thumb-y: 0px; /* 0：实践模式；52px：刷 Skill（44px 按钮 + 8px 间距） */
+        position: fixed;
+        top: 50%;
+        right: 14px;
+        transform: translate3d(0, -50%, 0);
+        z-index: 120;
+        width: 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.74);
+        border: 1px solid rgba(255, 107, 0, 0.18);
+        backdrop-filter: blur(16px) saturate(160%);
+        box-shadow: 0 18px 36px -26px rgba(50, 20, 0, 0.28),
+          0 0 0 1px rgba(255, 255, 255, 0.55) inset;
+        isolation: isolate;
+      }
+
+      /* 静态稿：通过 data-mode 控制滑块位置（真实实现可由状态驱动） */
+      .mode-dock[data-mode="skills"] {
+        --thumb-y: 52px;
+      }
+
+      /*
+        液晶滑块（Thumb）：
+        - 玻璃底 + 内部“液态渐变”；
+        - 只做 transform 位移动画，模拟“滑动开关”的核心感受；
+        - 不做持续循环动画，避免干扰与性能开销。
+      */
+      .mode-dock__thumb {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        width: 44px;
+        height: 44px;
+        border-radius: 999px;
+        pointer-events: none;
+        z-index: 1;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.38);
+        backdrop-filter: blur(18px) saturate(190%);
+        box-shadow: 0 18px 30px -22px rgba(255, 107, 0, 0.55),
+          0 0 0 1px rgba(255, 255, 255, 0.28) inset;
+        transform: translate3d(0, var(--thumb-y), 0);
+        transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform;
+      }
+
+      .mode-dock__thumb::before {
+        /* 高光反射：让滑块更像“玻璃”而不是纯色按钮 */
+        content: "";
+        position: absolute;
+        inset: -20%;
+        background:
+          radial-gradient(70% 60% at 22% 18%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 58%),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0));
+        opacity: 0.82;
+        transform: translate3d(0, 0, 0);
+      }
+
+      .mode-dock__thumb::after {
+        /* 液态色彩：用多层 radial 渐变模拟“液晶”流体感（无滤镜动画） */
+        content: "";
+        position: absolute;
+        inset: -28%;
+        background:
+          radial-gradient(70% 90% at 22% 20%, rgba(255, 107, 0, 0.88) 0%, rgba(255, 107, 0, 0) 62%),
+          radial-gradient(70% 90% at 78% 86%, rgba(255, 51, 102, 0.78) 0%, rgba(255, 51, 102, 0) 64%),
+          radial-gradient(60% 80% at 62% 18%, rgba(255, 204, 0, 0.62) 0%, rgba(255, 204, 0, 0) 58%);
+        opacity: 0.92;
+        transform: translate3d(0, 0, 0) scale(1.04);
+        transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      /* 切换到「刷 Skill」时，液态色彩轻微换位，暗示“滑动”而非瞬切 */
+      .mode-dock[data-mode="skills"] .mode-dock__thumb::after {
+        transform: translate3d(8px, -4px, 0) scale(1.04);
+      }
+
+      .mode-dock__item {
+        position: relative;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: rgba(124, 94, 77, 0.92);
+        z-index: 2; /* 永远在滑块之上，保证图标清晰 */
+        transition: transform 180ms ease, background 180ms ease, border-color 180ms ease,
+          box-shadow 180ms ease, color 180ms ease;
+        will-change: transform;
+      }
+
+      .mode-dock__icon {
+        width: 20px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+      }
+
+      /*
+        Tooltip：
+        - 使用 data-label 作为内容来源，避免额外 DOM；
+        - 不做 width/left/top 的动画，全部用 opacity/transform（性能更稳）。
+      */
+      .mode-dock__item::after {
+        content: attr(data-label);
+        position: absolute;
+        right: calc(100% + 14px);
+        top: 50%;
+        transform: translate3d(6px, -50%, 0);
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid rgba(255, 107, 0, 0.16);
+        color: rgba(26, 21, 16, 0.92);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.1px;
+        line-height: 1;
+        white-space: nowrap;
+        backdrop-filter: blur(14px) saturate(160%);
+        box-shadow: 0 18px 40px -32px rgba(50, 20, 0, 0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 160ms ease, transform 160ms ease;
+      }
+
+      .mode-dock__item::before {
+        content: "";
+        position: absolute;
+        right: calc(100% + 9px);
+        top: 50%;
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid rgba(255, 107, 0, 0.16);
+        transform: translate3d(6px, -50%, 0) rotate(45deg);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 160ms ease, transform 160ms ease;
+      }
+
+      .mode-dock__item.is-active {
+        color: #ffffff;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .mode-dock__item:not(.is-active):hover {
+          transform: translate3d(0, -1px, 0);
+          background: rgba(255, 255, 255, 0.22);
+          border-color: rgba(255, 107, 0, 0.12);
+        }
+
+        .mode-dock__item:hover::after,
+        .mode-dock__item:hover::before {
+          opacity: 1;
+          transform: translate3d(0, -50%, 0);
+        }
+
+        .mode-dock__item:hover::before {
+          transform: translate3d(0, -50%, 0) rotate(45deg);
+        }
+
+        .mode-dock__item.is-active:hover { transform: none; }
+      }
+
+      .mode-dock__item:focus-visible::after,
+      .mode-dock__item:focus-visible::before {
+        opacity: 1;
+        transform: translate3d(0, -50%, 0);
+      }
+
+      .mode-dock__item:focus-visible::before {
+        transform: translate3d(0, -50%, 0) rotate(45deg);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .mode-dock__thumb,
+        .mode-dock__thumb::after {
+          transition: none;
+        }
+      }
+
+      .action-chip {
+        height: 40px;
+        padding: 0 14px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(255, 107, 0, 0.18);
+        color: var(--text);
+        font-weight: 800;
+        letter-spacing: 0.1px;
+        box-shadow: 0 10px 26px -20px rgba(50, 20, 0, 0.18);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 18px;
+        border-radius: 999px;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+        transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+      }
+
+      .btn--primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #fff;
+        box-shadow: 0 14px 26px -16px rgba(255, 107, 0, 0.85);
+      }
+
+      /*
+        ============================
+        Hero / 顶部引导
+        ============================
+      */
+      .hero {
+        width: 100vw;
+        margin: 0 18px 0 0;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+      }
+
+      .hero__bg {
+        position: absolute;
+        inset: -170px -18vw 0;
+        pointer-events: none;
+        z-index: 0;
+        isolation: isolate;
+        contain: paint;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: transform;
+        mask-image: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.95) 0%,
+          rgba(0, 0, 0, 0.85) 55%,
+          rgba(0, 0, 0, 0.35) 85%,
+          rgba(0, 0, 0, 0) 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.95) 0%,
+          rgba(0, 0, 0, 0.85) 55%,
+          rgba(0, 0, 0, 0.35) 85%,
+          rgba(0, 0, 0, 0) 100%
+        );
+      }
+
+      .glow {
+        position: absolute;
+        width: 520px;
+        height: 520px;
+        border-radius: 50%;
+        filter: blur(70px);
+        opacity: 0.55;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        animation: glowDrift 22s ease-in-out infinite alternate;
+        will-change: transform, opacity;
+      }
+
+      .glow--pink {
+        left: 4%;
+        top: 0;
+        background: radial-gradient(circle, rgba(255, 51, 102, 0.55), rgba(255, 51, 102, 0));
+      }
+
+      .glow--orange {
+        right: 4%;
+        top: -30px;
+        background: radial-gradient(circle, rgba(255, 107, 0, 0.56), rgba(255, 107, 0, 0));
+        animation-delay: -6s;
+      }
+
+      .glow--yellow {
+        right: 22%;
+        bottom: -40px;
+        background: radial-gradient(circle, rgba(255, 204, 0, 0.46), rgba(255, 204, 0, 0));
+        animation-delay: -10s;
+      }
+
+      .spark {
+        position: absolute;
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 0 14px rgba(255, 255, 255, 0.55);
+        opacity: 0.55;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: transform, opacity;
+        animation: sparkFloat 10s ease-in-out infinite;
+      }
+
+      .spark--one {
+        left: 16%;
+        top: 36%;
+      }
+
+      .spark--two {
+        right: 22%;
+        top: 16%;
+        animation-delay: -4s;
+      }
+
+      .spark--three {
+        right: 10%;
+        bottom: 30%;
+        animation-delay: -7s;
+      }
+
+      @keyframes glowDrift {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1);
+          opacity: 0.48;
+        }
+        45% {
+          transform: translate3d(-18px, 12px, 0) scale(1.04);
+          opacity: 0.65;
+        }
+        100% {
+          transform: translate3d(16px, -10px, 0) scale(0.98);
+          opacity: 0.54;
+        }
+      }
+
+      @keyframes sparkFloat {
+        0% {
+          transform: translate3d(0, 0, 0) scale(0.9);
+          opacity: 0.2;
+        }
+        50% {
+          transform: translate3d(10px, -16px, 0) scale(1.2);
+          opacity: 0.85;
+        }
+        100% {
+          transform: translate3d(-6px, 6px, 0) scale(0.95);
+          opacity: 0.35;
+        }
+      }
+
+      .hero__inner {
+        position: relative;
+        z-index: 2;
+        width: min(100%, var(--content-width));
+        margin: 0 auto;
+        padding: 148px var(--page-gutter) 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 64px;
+        min-height: 420px;
+      }
+
+      .hero-copy {
+        position: relative;
+        max-width: 760px;
+      }
+
+      .hero-copy__title {
+        display: grid;
+        gap: 14px;
+        font-family: var(--font-heading);
+        line-height: 1.08;
+      }
+
+      .hero-copy__brand {
+        font-size: clamp(38px, 4vw, 56px);
+        font-weight: 900;
+        letter-spacing: -1px;
+        background-image: linear-gradient(
+          135deg,
+          var(--primary-strong) 0%,
+          var(--primary) 56%,
+          var(--accent) 120%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+      }
+
+      .hero-copy__slogan {
+        font-family: var(--font-body);
+        font-size: clamp(18px, 2.2vw, 26px);
+        font-weight: 850;
+        color: rgba(26, 21, 16, 0.96);
+        line-height: 1.45;
+        letter-spacing: -0.45px;
+        max-width: 34ch;
+      }
+
+      .hero__subtitle {
+        font-size: 16px;
+        color: var(--muted);
+        font-weight: 600;
+        margin-top: 14px;
+        line-height: 1.7;
+      }
+
+      .hero-copy__facts {
+        display: flex;
+        align-items: center;
+        gap: 10px 14px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: rgba(124, 94, 77, 0.84);
+        font-weight: 900;
+        font-size: 13px;
+      }
+
+      .hero-fact {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.62);
+        border: 1px solid rgba(255, 107, 0, 0.12);
+      }
+
+      .hero-fact__dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        box-shadow: 0 10px 18px -14px rgba(255, 107, 0, 0.9);
+      }
+
+      /*
+        ============================
+        页面主体 / 实践卡片网格
+        ============================
+      */
+      .page {
+        width: min(100%, var(--content-width));
+        margin: 0 auto;
+        padding: 0 var(--page-gutter) 90px;
+        position: relative;
+        z-index: 2;
+      }
+
+      /*
+        顶部筛选条（与线上首页保持一致）：
+        - 左侧：分类标签（全部/研究/编程/...）
+        - 右侧：最热/最新（仅切换排序，不改 UI 形态）
+        说明：用户明确要求“筛选不要改”，所以这里直接对齐线上样式。
+      */
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin: 14px 0 18px;
+      }
+
+      .segmented {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        scrollbar-width: none;
+      }
+
+      .segmented::-webkit-scrollbar {
+        height: 0;
+      }
+
+      .segmented__item {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 18px;
+        border-radius: 14px;
+        font-size: 13px;
+        font-weight: 900;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.44);
+        border: 1px solid rgba(255, 107, 0, 0.14);
+        backdrop-filter: blur(10px) saturate(160%);
+        box-shadow: 0 18px 44px -38px rgba(50, 20, 0, 0.22);
+        transition: background 180ms ease, box-shadow 180ms ease, border-color 180ms ease,
+          color 180ms ease;
+        white-space: nowrap;
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .segmented__item:hover {
+          /* Hover 仅提升视觉层级，不做位移，避免分类标签在悬停时产生跳动感 */
+          background: rgba(255, 255, 255, 0.76);
+          box-shadow: 0 26px 64px -52px rgba(255, 107, 0, 0.55),
+            0 18px 44px -40px rgba(50, 20, 0, 0.22);
+          border-color: rgba(255, 107, 0, 0.22);
+        }
+      }
+
+      .segmented__item.is-active {
+        /* 选中态：白底 + 橙色描边 + 橙色文字，更轻盈不压内容 */
+        background: rgba(255, 255, 255, 0.7);
+        color: var(--primary-strong);
+        border-color: rgba(255, 107, 0, 0.5);
+        box-shadow: 0 10px 24px -18px rgba(255, 107, 0, 0.35);
+      }
+
+      .sort-switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 2px 0;
+        border-radius: 999px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+      }
+
+      .sort-switch__seg {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px;
+        border-radius: 999px;
+        background: transparent;
+        border: none;
+      }
+
+      .sort-switch__btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 14px;
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 900;
+        background: rgba(255, 255, 255, 0.44);
+        border: 1px solid rgba(255, 107, 0, 0.14);
+        backdrop-filter: blur(10px) saturate(160%);
+        box-shadow: 0 18px 44px -38px rgba(50, 20, 0, 0.22);
+        transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease,
+          border-color 180ms ease;
+        white-space: nowrap;
+      }
+
+      .sort-switch__btn .icon {
+        width: 16px;
+        height: 16px;
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .sort-switch__btn:hover {
+          /* Hover 只做高亮与阴影变化，不上浮，保持“最热/最新”切换的稳定性 */
+          background: rgba(255, 255, 255, 0.76);
+          box-shadow: 0 26px 64px -52px rgba(255, 107, 0, 0.55),
+            0 18px 44px -40px rgba(50, 20, 0, 0.22);
+          border-color: rgba(255, 107, 0, 0.22);
+        }
+      }
+
+      .sort-switch__btn.is-active {
+        /* 选中态：橙色纯色底（与线上一致），更克制、更像“状态按钮” */
+        background: var(--primary);
+        color: #fff;
+        border-color: rgba(255, 107, 0, 0.4);
+        box-shadow: 0 16px 30px -18px rgba(255, 107, 0, 0.55);
+      }
+
+      .practice-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 18px;
+      }
+
+      .practice-card {
+        --card-accent: var(--accent);
+        /*
+          卡片背景色抽成变量，便于：
+          - hover 态保持与原站一致（提亮到纯白）；
+          - 摘要“第 5 行渐隐”使用相同底色做渐变遮罩，避免出现“色块感”。
+        */
+        --card-surface: rgba(255, 255, 255, 0.7);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        /*
+          卡片定高（用户反馈原高度偏高）：
+          - 目标：更紧凑，但仍能容纳「标题（最多 2 行）+ 摘要（固定 5 行）+ footer」；
+          - 配合下方对标题/摘要的“行数约束”，避免内容把卡片撑爆或布局抖动。
+        */
+        height: 300px;
+        padding: 22px;
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(255, 255, 255, 0.82);
+        background: var(--card-surface);
+        backdrop-filter: blur(12px) saturate(160%);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+        transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
+          box-shadow 520ms cubic-bezier(0.16, 1, 0.3, 1),
+          background 520ms cubic-bezier(0.16, 1, 0.3, 1),
+          border-color 520ms cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .practice-card::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        pointer-events: none;
+        background:
+          radial-gradient(
+            100% 70% at 16% 10%,
+            color-mix(in srgb, var(--card-accent) 24%, rgba(255, 240, 190, 0.68)) 0%,
+            rgba(255, 255, 255, 0) 68%
+          ),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0) 54%);
+        opacity: 0;
+        transition: opacity 520ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .practice-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 520ms cubic-bezier(0.16, 1, 0.3, 1);
+        background:
+          radial-gradient(120% 85% at 18% 8%, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0) 62%),
+          radial-gradient(90% 70% at 88% 0%, rgba(255, 230, 140, 0.38) 0%, rgba(255, 230, 140, 0) 66%),
+          linear-gradient(135deg, rgba(255, 210, 110, 0.12), rgba(255, 240, 180, 0.1));
+      }
+
+      .practice-card > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .practice-card__link {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+      }
+
+      .practice-card__content {
+        position: relative;
+        z-index: 2;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        /*
+          卡片内容间距（更紧凑）：
+          - 当前卡片是“标题最多 2 行 + 摘要固定 5 行 + footer” 的定高组合；
+          - gap 过大时会挤压标题第二行的可用高度，出现“第二行被裁切”的问题；
+          - 这里从 12px 收紧到 10px，在不改变整体风格的前提下，给文字多留 2px/段落的安全空间。
+        */
+        gap: 10px;
+        height: 100%;
+      }
+
+      .practice-card__top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .practice-card__source {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.2px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: rgba(124, 94, 77, 0.92);
+        white-space: nowrap;
+        min-width: 0;
+        max-width: 68%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .practice-card__source::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        box-shadow: 0 10px 18px -14px rgba(255, 107, 0, 0.9);
+        flex: 0 0 auto;
+      }
+
+      .practice-card__date {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .practice-card__date svg {
+        width: 16px;
+        height: 16px;
+        opacity: 0.78;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px 6px 12px;
+        border-radius: 999px;
+        background: rgba(255, 107, 0, 0.1);
+        border: 1px solid rgba(255, 107, 0, 0.16);
+        color: #d64700;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+        line-height: 1;
+        white-space: nowrap;
+        /*
+          单个 Tag 的“展示完整”诉求：
+          - 多 Tag 时需要限制每个 tag 的最大宽度，避免某一个超长名字挤占所有空间；
+          - 但当仅展示 1 个关联 skill 时，应尽量展示完整名字；
+          - 因此这里保留 max-width=140px 作为多 tag 的安全阈值，
+            并在下方用 :only-child 对“单 tag”场景放宽限制。
+        */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        /*
+          不允许被 flex 强行压缩：
+          - 之前为了一行放下更多标签，浏览器会把每个 tag 都缩窄，导致明明能放下的名字也被过早截断（如 UI/UX Pro Max -> UI/UX Pr）；
+          - 这里改为不 shrink：优先保证“已展示出来的 tag”可读；
+          - 若整体放不下，则由 skills 容器的渐隐裁切处理，并用 +N 提示还有更多。
+        */
+        flex: 0 0 auto;
+      }
+
+      /* 单 tag：允许占满可用宽度；若仍放不下，再自动省略号截断（符合你说的“展示不下就像现在这样处理”）。 */
+      .practice-card__skills-main .tag:only-child {
+        max-width: 100%;
+      }
+
+      .tag--more {
+        background: rgba(255, 255, 255, 0.68);
+        color: var(--muted);
+        flex: 0 0 auto;
+      }
+
+      .practice-card h3 {
+        font-family: var(--font-heading);
+        font-size: 18px;
+        font-weight: 900;
+        letter-spacing: -0.2px;
+        /*
+          标题行高略微放宽：
+          - 之前 1.25 在 “-webkit-line-clamp + overflow:hidden” 的组合下，
+            个别字形（尤其是粗体中文/英文字母的下沿）会出现 1~2px 的裁切；
+          - 调整到 1.3 后，第二行底部不会被吃掉，同时仍保持紧凑的卡片节奏。
+        */
+        line-height: 1.3;
+        margin: 0;
+        /*
+          标题限 2 行：
+          - 卡片采用定高布局，标题无限制会挤压摘要/底部信息；
+          - 2 行是内容流卡片的经典上限：保证信息密度，同时保持可读性。
+        */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /*
+        摘要（Summary）展示策略：
+        - 固定“5 行高度”，让卡片内部的节奏更稳定（不因摘要长短导致 footer 跳动）；
+        - 若内容超过 4 行：第 5 行尾部做“渐隐”，提示还有更多内容；
+        - 技术实现：用最后一行的渐变遮罩模拟（参考 Skill 标签超出时的渐隐逻辑）。
+      */
+      .practice-card__summary {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.7;
+        margin: 0;
+        position: relative;
+        /*
+          关键：footer 基线固定，但标题 1 行时 summary 不要“空出第二行标题”：
+          - summary 本身作为 flex:1 吸收富余高度（保证 footer 对齐）；
+          - 具体“最多 5 行 + 第 5 行渐隐”的约束交给内部的 .practice-card__summary-text（避免 line-clamp 自带的 ... 省略号）。
+        */
+        flex: 1 1 auto;
+        /* 允许内部文本块与渐隐伪元素定位 */
+        overflow: hidden;
+      }
+
+      /*
+        Summary 文本块（真正承载“5 行 + 渐隐”的区域）：
+        - 不使用 -webkit-line-clamp：避免截断时出现 "...“ 省略号（用户明确不需要）。
+        - 用固定高度 + overflow 裁切：永远展示最多 5 行内容。
+        - 用 mask 做“第 5 行纵向整体渐隐”：从第 5 行开始向下淡出。
+      */
+      .practice-card__summary-text {
+        display: block;
+        position: relative;
+        /* 固定 5 行高度：1.7 * 5 = 8.5em */
+        height: 8.5em;
+        overflow: hidden;
+        mask-image: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 1) 0,
+          rgba(0, 0, 0, 1) 6.8em,
+          rgba(0, 0, 0, 0.35) 7.6em,
+          rgba(0, 0, 0, 0) 8.5em
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 1) 0,
+          rgba(0, 0, 0, 1) 6.8em,
+          rgba(0, 0, 0, 0.35) 7.6em,
+          rgba(0, 0, 0, 0) 8.5em
+        );
+      }
+
+      /* 渐隐兜底：不支持 mask 时，用叠加蒙层模拟“第 5 行向下淡出”。 */
+      .practice-card__summary-text::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 6.8em;
+        bottom: 0;
+        pointer-events: none;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.18) 22%,
+          var(--card-surface) 100%
+        );
+      }
+
+      @supports ((mask-image: linear-gradient(#000, transparent)) or (-webkit-mask-image: linear-gradient(#000, transparent))) {
+        .practice-card__summary-text::after {
+          display: none;
+        }
+      }
+
+      .practice-card__bottom {
+        padding-top: 14px;
+        border-top: 1px solid color-mix(in srgb, var(--card-accent) 12%, rgba(255, 107, 0, 0.12));
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .practice-card__skills {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        min-width: 0;
+        max-width: 72%;
+      }
+
+      .practice-card__skills-main {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        flex: 1 1 auto;
+        /*
+          单行截断“更像设计”：
+          - 纯 overflow:hidden 会出现硬切边；
+          - 这里用 mask 做一个渐隐，让被截断的 Skill 更自然。
+        */
+        mask-image: linear-gradient(to right, #000 0%, #000 78%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, #000 0%, #000 78%, transparent 100%);
+      }
+
+      .practice-card__read {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .practice-card__read svg {
+        width: 16px;
+        height: 16px;
+        opacity: 0.78;
+      }
+
+      /*
+        卡片悬浮浮层（Footer 上浮蒙层）：
+        - 之前「整卡蒙层」会把标题/摘要完全盖住，hover 时“看不到文章”；
+        - 这里改成“底部上浮”的蒙层：不影响主体阅读，但依然提供明确的可操作反馈；
+        - 视觉：暖色玻璃 + 顶部渐隐（从底部更浓、向上更淡），更像高级产品的 action sheet；
+        - 性能：只用 opacity/transform，避免布局抖动；backdrop-filter 的范围仅限 footer 区域。
+      */
+      .practice-card__overlay {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 4;
+        display: flex;
+        /*
+          让按钮“落”在更浓的蒙层区域里：
+          - 如果垂直居中，按钮上沿会进入顶部渐隐区，看起来像“蒙层没包住按钮”；
+          - 改为贴近底部（flex-end），再用 padding-bottom 留出呼吸感。
+        */
+        align-items: flex-end;
+        justify-content: center;
+        gap: 12px;
+        padding: 18px 12px;
+        /* 蒙层向上“多包一点”，视觉更像从 footer 上浮出来 */
+        height: 112px;
+        /* 仅底部圆角与卡片保持一致，避免与主体内容产生“二次卡片”的割裂感 */
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        /* 默认隐藏：同时用 visibility 避免键盘 Tab 到“不可见按钮” */
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none; /* 允许点击穿透到底层整卡链接（按钮区域会单独开启） */
+        transform: translate3d(0, 14px, 0);
+        transition: opacity 220ms ease, transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
+          visibility 0s linear 220ms;
+        /*
+          顶部“渐变衔接”：
+          - 由于 backdrop-filter 会对整个元素区域生效，即使顶部很透明也会产生一条“雾化带”；
+          - 用 mask 在顶部做渐隐，让蒙层从“无”平滑过渡到“有”，消除突兀的硬分界。
+          - 注意：mask 同时影响背景 + blur 的输出，所以视觉上是更自然的融合。
+        */
+        mask-image: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 0.35) 22%,
+          rgba(0, 0, 0, 1) 34%,
+          rgba(0, 0, 0, 1) 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 0.35) 22%,
+          rgba(0, 0, 0, 1) 34%,
+          rgba(0, 0, 0, 1) 100%
+        );
+        /* 暖色玻璃蒙层：底部更浓、向上渐隐 + 橙/粉角落光晕 */
+        background:
+          radial-gradient(120% 90% at 14% 100%, rgba(255, 107, 0, 0.26) 0%, rgba(255, 107, 0, 0) 62%),
+          radial-gradient(120% 90% at 92% 100%, rgba(255, 51, 102, 0.22) 0%, rgba(255, 51, 102, 0) 60%),
+          linear-gradient(
+            180deg,
+            rgba(26, 21, 16, 0) 0%,
+            rgba(26, 21, 16, 0.28) 38%,
+            rgba(26, 21, 16, 0.52) 100%
+          );
+        /* 不加边框：避免出现“上沿一条线”的割裂感 */
+        border: none;
+        backdrop-filter: blur(12px) saturate(140%);
+        box-shadow: 0 24px 60px -44px rgba(0, 0, 0, 0.55);
+      }
+
+      .practice-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        background: rgba(255, 255, 255, 0.14);
+        color: #fffaf2;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.15px;
+        /* 扫光需要伪元素：用 relative + overflow:hidden 把光带裁切在按钮内部 */
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+        cursor: pointer;
+        transition: transform 180ms ease, background 180ms ease, border-color 180ms ease,
+          box-shadow 180ms ease;
+        will-change: transform;
+        /* 允许点击：蒙层本身 pointer-events:none，这里恢复按钮可点击 */
+        pointer-events: auto;
+      }
+
+      /*
+        Hover 扫光（Shine）：
+        - 通过一个倾斜的线性渐变“光带”从左到右扫过；
+        - 全程只动画 transform/opacity，避免触发重排/重绘（更性能友好）；
+        - 退出 hover 后自然结束，重新 hover 会再次触发。
+      */
+      .practice-action::after {
+        content: "";
+        position: absolute;
+        inset: -40% -70%;
+        pointer-events: none;
+        opacity: 0;
+        transform: translate3d(-70%, 0, 0) rotate(16deg);
+        background: linear-gradient(
+          110deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0) 42%,
+          rgba(255, 255, 255, 0.58) 50%,
+          rgba(255, 255, 255, 0) 58%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        will-change: transform, opacity;
+      }
+
+      .practice-action svg {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+      }
+
+      .practice-action--primary {
+        /*
+          CTA（跳转原文）改为纯色：
+          - 纯色更利落，也能避免渐变在暗色蒙层上显得“花”；
+          - 仍保留轻量阴影，保证按钮层级与可点击性。
+        */
+        background: var(--primary);
+        border-color: rgba(255, 255, 255, 0.16);
+        box-shadow: 0 18px 34px -24px rgba(255, 107, 0, 0.62);
+      }
+
+      /*
+        hover 行为：与当前站点的提亮策略保持一致
+      */
+      @media (hover: hover) and (pointer: fine) {
+        .practice-card:hover {
+          transform: none;
+          /* hover 提亮：同步更新背景变量，保证摘要渐隐与卡片底色一致 */
+          --card-surface: #fff;
+          border-color: rgba(255, 255, 255, 0.98);
+          box-shadow: none;
+        }
+
+        .practice-card:hover::after,
+        .practice-card:hover::before {
+          opacity: 0;
+        }
+
+        .practice-card:hover .practice-card__overlay,
+        .practice-card:focus-within .practice-card__overlay {
+          opacity: 1;
+          visibility: visible;
+          transform: translate3d(0, 0, 0);
+          transition: opacity 220ms ease, transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* 浮层出现时，隐藏 footer 的分割线（否则会在透明渐变区显得很突兀） */
+        .practice-card:hover .practice-card__bottom,
+        .practice-card:focus-within .practice-card__bottom {
+          border-top-color: transparent;
+        }
+
+        .practice-action:hover {
+          transform: translate3d(0, -1px, 0);
+          background: rgba(255, 255, 255, 0.18);
+          border-color: rgba(255, 255, 255, 0.34);
+          box-shadow: 0 16px 30px -26px rgba(0, 0, 0, 0.35);
+        }
+
+        .practice-action:hover::after {
+          opacity: 1;
+          /* 扫光节奏：用户反馈“有点快”，这里把时长拉长到 1100ms，更从容更高级 */
+          animation: practiceActionShine 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .practice-action--primary:hover {
+          /* Primary 态保持纯色：hover 时加深一点点即可 */
+          background: var(--primary-strong);
+          border-color: rgba(255, 255, 255, 0.22);
+          box-shadow: 0 20px 38px -28px rgba(255, 107, 0, 0.72);
+        }
+      }
+
+      @keyframes practiceActionShine {
+        0% {
+          opacity: 0;
+          transform: translate3d(-70%, 0, 0) rotate(16deg);
+        }
+        18% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: translate3d(70%, 0, 0) rotate(16deg);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        /* 尊重系统“减少动态效果”设置：关闭扫光动画 */
+        .practice-action::after {
+          display: none;
+        }
+      }
+
+      /*
+        分页：沿用现有分页视觉
+      */
+      .pagination {
+        margin-top: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .page-btn {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.74);
+        border: 1px solid rgba(255, 107, 0, 0.16);
+        box-shadow: none;
+        font-weight: 600;
+        color: rgba(124, 94, 77, 0.92);
+        transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+      }
+
+      .page-btn.is-active {
+        background: rgba(255, 255, 255, 0.7);
+        border-color: var(--primary);
+        color: var(--primary-strong);
+      }
+
+      /*
+        响应式：网格列数调整
+      */
+      @media (max-width: 1024px) {
+        .hero__inner {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .practice-grid {
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+      }
+
+      @media (max-width: 720px) {
+        .app-header {
+          width: min(94%, 1200px);
+        }
+
+        .app-header__inner {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .nav-actions {
+          flex-wrap: wrap;
+        }
+
+        .practice-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 顶部导航：保持与现有站点一致的浮层风格 -->
+    <header class="app-header" role="banner">
+      <div class="app-header__inner">
+        <a class="logo" href="#" aria-label="Skill Hub 首页">
+          <span class="logo-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+              <path
+                d="M12 2.8c2.4 0 4.6 1.2 5.9 3.1.6.9.9 2 1 3.1.1 1.7-.3 3.1-1.2 4.3-.4.6-1.2 1.4-2 2.1-1.7 1.4-2.5 2.6-2.8 4.5H13c.1-1.6.8-3 2.3-4.3.7-.6 1.4-1.2 1.8-1.7.6-.8.8-1.7.7-2.8-.2-1.8-1.8-3.6-4-3.9-2.6-.4-4.9 1.3-5.3 3.6-.2 1.2 0 2.2.6 3.1.4.6 1.1 1.2 1.9 1.9 1.6 1.3 2.3 2.6 2.3 4.3H11c-.3-1.9-1.1-3.1-2.8-4.5-.9-.7-1.6-1.5-2-2.1-.9-1.2-1.3-2.6-1.2-4.3.1-1.1.4-2.2 1-3.1C7.4 4 9.6 2.8 12 2.8Z"
+                fill="rgba(255,255,255,0.95)"
+              />
+              <path
+                d="M9.3 13.4c.4.6 1.1 1.2 1.9 1.9 1.6 1.3 2.3 2.6 2.3 4.3H11c-.3-1.9-1.1-3.1-2.8-4.5-.9-.7-1.6-1.5-2-2.1-.6-.8-.9-1.7-.9-2.7 0-.1 0-.2 0-.3.3.8.7 1.5 1.3 2.1Z"
+                fill="rgba(255,255,255,0.75)"
+              />
+            </svg>
+          </span>
+          <span class="logo-text">Skill Hub</span>
+        </a>
+
+        <form class="search" role="search" aria-label="实践搜索">
+          <span class="search__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+              <path
+                d="M21 21L16.65 16.65M10.5 18C6.36 18 3 14.64 3 10.5C3 6.36 6.36 3 10.5 3C14.64 3 18 6.36 18 10.5C18 14.64 14.64 18 10.5 18Z"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <input type="search" placeholder="搜索实践标题 / 描述" aria-label="实践搜索输入" />
+          <button type="submit">搜索</button>
+        </form>
+
+        <div class="nav-actions">
+          <button class="action-chip" type="button">提交实践</button>
+          <button class="btn btn--primary" type="button">提交 Skill</button>
+        </div>
+      </div>
+    </header>
+
+    <!--
+      右侧吸附模式切换（液晶滑动开关 / Mode Dock）：
+      - 用“玻璃轨道 + 液态玻璃滑块”替代传统 switch，让交互更高级；
+      - 默认仅显示图标，hover/聚焦用 tooltip 解释含义，避免干扰 Hero；
+      - 本静态稿只做“当前：实践模式”的视觉表达（data-mode=practices）。
+    -->
+    <div class="mode-dock" aria-label="模式切换（右侧吸附）" data-mode="practices">
+      <span class="mode-dock__thumb" aria-hidden="true"></span>
+      <button
+        class="mode-dock__item is-active"
+        type="button"
+        aria-pressed="true"
+        aria-label="实践模式"
+        data-label="实践模式"
+      >
+        <span class="mode-dock__icon" aria-hidden="true">
+          <!-- Book icon (SVG)，避免 emoji，保证风格统一 -->
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+            <path
+              d="M7 4.5h10c1.1 0 2 .9 2 2V19c0 .6-.4 1-1 1H8c-.6 0-1-.4-1-1V4.5Z"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+            <path d="M7 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M7 11h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </span>
+      </button>
+      <button
+        class="mode-dock__item"
+        type="button"
+        aria-pressed="false"
+        aria-label="Skill 模式"
+        data-label="Skill 模式"
+      >
+        <span class="mode-dock__icon" aria-hidden="true">
+          <!-- Code icon (SVG)：对应 Skill 浏览 -->
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+            <path
+              d="M8 9l-3 3 3 3M16 9l3 3-3 3"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M14 7l-4 10"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </span>
+      </button>
+    </div>
+
+    <!-- Hero：沿用现有站点的暖色氛围，突出“实践模式”定位 -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__bg" aria-hidden="true">
+        <span class="glow glow--pink"></span>
+        <span class="glow glow--orange"></span>
+        <span class="glow glow--yellow"></span>
+        <span class="spark spark--one"></span>
+        <span class="spark spark--two"></span>
+        <span class="spark spark--three"></span>
+      </div>
+
+      <div class="hero__inner">
+        <div class="hero-copy">
+          <h1 id="hero-title" class="hero-copy__title">
+            <span class="hero-copy__brand">实践模式</span>
+            <span class="hero-copy__slogan">像刷内容流一样发现真实案例</span>
+          </h1>
+          <p class="hero__subtitle">
+            卡片展示关联 Skill、标题、日期、描述与阅读量，点击卡片即可跳转原文。
+          </p>
+          <div class="hero-copy__facts">
+            <span class="hero-fact">
+              <span class="hero-fact__dot" aria-hidden="true"></span>
+              排序：最热 / 最新
+            </span>
+            <span class="hero-fact">
+              <span class="hero-fact__dot" aria-hidden="true"></span>
+              分页：每页 12 条
+            </span>
+            <span class="hero-fact">
+              <span class="hero-fact__dot" aria-hidden="true"></span>
+              搜索范围：标题 / 描述
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="page">
+      <!--
+        筛选与排序（与线上首页保持一致）：
+        - 分类：筛选“关联该分类 skill”的文章
+        - 最热/最新：仅切换排序（阅读量/发布日期）
+        说明：静态稿仅展示默认态（全部 + 最热）。
+      -->
+      <section class="toolbar" aria-label="筛选与排序">
+        <nav class="segmented" aria-label="分类筛选（单选）">
+          <button class="segmented__item is-active" type="button" aria-pressed="true">全部</button>
+          <button class="segmented__item" type="button" aria-pressed="false">研究</button>
+          <button class="segmented__item" type="button" aria-pressed="false">编程</button>
+          <button class="segmented__item" type="button" aria-pressed="false">写作</button>
+          <button class="segmented__item" type="button" aria-pressed="false">数据分析</button>
+          <button class="segmented__item" type="button" aria-pressed="false">设计</button>
+          <button class="segmented__item" type="button" aria-pressed="false">生产力</button>
+        </nav>
+
+        <div class="sort-switch" role="group" aria-label="排序">
+          <div class="sort-switch__seg" data-active="heat">
+            <button class="sort-switch__btn is-active" type="button" aria-pressed="true">
+              <!-- Flame icon：与站点现有 “最热” 视觉一致 -->
+              <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              最热
+            </button>
+            <button class="sort-switch__btn" type="button" aria-pressed="false">
+              <!-- Clock icon：与站点现有 “最新” 视觉一致 -->
+              <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                <polyline
+                  points="12 6 12 12 16 14"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              最新
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="practice-grid" aria-label="实践列表网格">
+        <!-- 实践卡片 1 -->
+        <article class="practice-card">
+          <a
+            class="practice-card__link"
+            href="https://mp.weixin.qq.com/s/Lme2VpxnAWtI_iCbKAHkJA"
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="小白如何使用 AI 编程，快速打造商用级 UI"
+          ></a>
+          <div class="practice-card__content">
+            <div class="practice-card__top">
+              <span class="practice-card__source">公众号·骁哥AI编程</span>
+              <span class="practice-card__date" aria-label="更新时间 2026-01-08">
+                <!-- 日历图标：与站点现有实践卡片一致，用图标替代“更新：”文案 -->
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="3" />
+                  <path d="M8 2v4" />
+                  <path d="M16 2v4" />
+                  <path d="M3 10h18" />
+                </svg>
+                2026-01-08
+              </span>
+            </div>
+            <h3>小白如何使用 AI 编程，快速打造商用级 UI</h3>
+            <p class="practice-card__summary">
+              <span class="practice-card__summary-text">
+                不懂前端、不懂设计，也能做出商用级精致页面？从需求、线稿、视觉稿到代码，
+                全程 AI 跑通，零基础也能直接复刻。
+              </span>
+            </p>
+            <div class="practice-card__bottom">
+              <div class="practice-card__skills">
+                <div class="practice-card__skills-main">
+                  <span class="tag">UI/UX Pro Max</span>
+                  <span class="tag">Design System</span>
+                  <span class="tag">Codex</span>
+                </div>
+                <span class="tag tag--more">+2</span>
+              </div>
+              <span class="practice-card__read" aria-label="阅读量 27">
+                <!-- 眼睛图标：与站点现有实践卡片一致，用图标替代“阅读量：”文案 -->
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                27
+              </span>
+            </div>
+          </div>
+          <!--
+            Hover/Focus 浮层（Footer 上浮蒙层）：
+            - 避免 hover 时把标题/摘要完全遮住；
+            - 点击浮层“空白区域”会穿透到整卡链接（直接跳原文）；
+            - 真实实现时，“筛选”按钮会触发站内筛选逻辑；这里仅做视觉表达。
+          -->
+          <div class="practice-card__overlay" role="group" aria-label="实践卡片操作">
+              <button class="practice-action" type="button" aria-label="筛选相关 Skill">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                筛选相关 Skill
+              </button>
+              <a
+                class="practice-action practice-action--primary"
+                href="https://mp.weixin.qq.com/s/Lme2VpxnAWtI_iCbKAHkJA"
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="跳转原文"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M14 5h5v5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M10 14L19 5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M19 14v5H5V5h5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                跳转原文
+              </a>
+          </div>
+        </article>
+
+        <!-- 实践卡片 2 -->
+        <article class="practice-card">
+          <a
+            class="practice-card__link"
+            href="https://mp.weixin.qq.com/s/Ry0oMYNYgYUGx12m3sJKvg"
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="0基础小白建站：Supabase 免费数据库手把手教学"
+          ></a>
+          <div class="practice-card__content">
+            <div class="practice-card__top">
+              <span class="practice-card__source">公众号·骁哥AI编程</span>
+              <span class="practice-card__date" aria-label="更新时间 2026-01-25">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="3" />
+                  <path d="M8 2v4" />
+                  <path d="M16 2v4" />
+                  <path d="M3 10h18" />
+                </svg>
+                2026-01-25
+              </span>
+            </div>
+            <h3>0基础小白建站：Supabase 免费数据库手把手教学</h3>
+            <p class="practice-card__summary">
+              <span class="practice-card__summary-text">
+                从接入 Supabase 到性能优化，面向新手的完整教学。包含连接配置、数据表设计与
+                基础安全规则。
+              </span>
+            </p>
+            <div class="practice-card__bottom">
+              <div class="practice-card__skills">
+                <div class="practice-card__skills-main">
+                  <span class="tag">Supabase</span>
+                  <span class="tag">Database</span>
+                  <span class="tag">Performance</span>
+                </div>
+              </div>
+              <span class="practice-card__read" aria-label="阅读量 104">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                104
+              </span>
+            </div>
+          </div>
+          <div class="practice-card__overlay" role="group" aria-label="实践卡片操作">
+              <button class="practice-action" type="button" aria-label="筛选相关 Skill">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                筛选相关 Skill
+              </button>
+              <a
+                class="practice-action practice-action--primary"
+                href="https://mp.weixin.qq.com/s/Ry0oMYNYgYUGx12m3sJKvg"
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="跳转原文"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M14 5h5v5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M10 14L19 5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M19 14v5H5V5h5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                跳转原文
+              </a>
+          </div>
+        </article>
+
+        <!-- 实践卡片 3 -->
+        <article class="practice-card">
+          <a
+            class="practice-card__link"
+            href="https://mp.weixin.qq.com/s/C6iesyL2Lwn2g8Nc2Vj-Lw"
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="Remotion Skills 让我扔掉了视频剪辑软件"
+          ></a>
+          <div class="practice-card__content">
+            <div class="practice-card__top">
+              <span class="practice-card__source">公众号·我姚学AI</span>
+              <span class="practice-card__date" aria-label="更新时间 2026-01-25">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="3" />
+                  <path d="M8 2v4" />
+                  <path d="M16 2v4" />
+                  <path d="M3 10h18" />
+                </svg>
+                2026-01-25
+              </span>
+            </div>
+            <h3>Remotion Skills 让我扔掉了视频剪辑软件</h3>
+            <p class="practice-card__summary">
+              <span class="practice-card__summary-text">
+                让 AI 写代码，再自动生成视频。通过 Remotion 实现模板化生产，视频制作效率翻倍。
+              </span>
+            </p>
+            <div class="practice-card__bottom">
+              <div class="practice-card__skills">
+                <div class="practice-card__skills-main">
+                  <span class="tag">Remotion</span>
+                  <span class="tag">Video</span>
+                  <span class="tag">Automation</span>
+                </div>
+                <span class="tag tag--more">+1</span>
+              </div>
+              <span class="practice-card__read" aria-label="阅读量 103">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                103
+              </span>
+            </div>
+          </div>
+          <div class="practice-card__overlay" role="group" aria-label="实践卡片操作">
+              <button class="practice-action" type="button" aria-label="筛选相关 Skill">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                筛选相关 Skill
+              </button>
+              <a
+                class="practice-action practice-action--primary"
+                href="https://mp.weixin.qq.com/s/C6iesyL2Lwn2g8Nc2Vj-Lw"
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="跳转原文"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M14 5h5v5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M10 14L19 5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M19 14v5H5V5h5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                跳转原文
+              </a>
+          </div>
+        </article>
+
+        <!-- 实践卡片 4 -->
+        <article class="practice-card">
+          <a
+            class="practice-card__link"
+            href="https://mp.weixin.qq.com/s/_1TeNQBOiPoRShNki7Aw-g"
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="如何在 Cursor、TRAE 中用 Skills 3 分钟制作精美 PPT"
+          ></a>
+          <div class="practice-card__content">
+            <div class="practice-card__top">
+              <span class="practice-card__source">公众号·骁哥AI编程</span>
+              <span class="practice-card__date" aria-label="更新时间 2026-01-25">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="3" />
+                  <path d="M8 2v4" />
+                  <path d="M16 2v4" />
+                  <path d="M3 10h18" />
+                </svg>
+                2026-01-25
+              </span>
+            </div>
+            <h3>如何在 Cursor、TRAE 中用 Skills 3 分钟制作精美 PPT</h3>
+            <p class="practice-card__summary">
+              <span class="practice-card__summary-text">
+                从提示词到内容结构、图表与排版，快速生成可直接交付的演示文稿。
+              </span>
+            </p>
+            <div class="practice-card__bottom">
+              <div class="practice-card__skills">
+                <div class="practice-card__skills-main">
+                  <span class="tag">Presentation</span>
+                  <span class="tag">Cursor</span>
+                  <span class="tag">TRAE</span>
+                </div>
+              </div>
+              <span class="practice-card__read" aria-label="阅读量 102">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                102
+              </span>
+            </div>
+          </div>
+          <div class="practice-card__overlay" role="group" aria-label="实践卡片操作">
+              <button class="practice-action" type="button" aria-label="筛选相关 Skill">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                筛选相关 Skill
+              </button>
+              <a
+                class="practice-action practice-action--primary"
+                href="https://mp.weixin.qq.com/s/_1TeNQBOiPoRShNki7Aw-g"
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="跳转原文"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M14 5h5v5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M10 14L19 5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M19 14v5H5V5h5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                跳转原文
+              </a>
+          </div>
+        </article>
+
+        <!-- 实践卡片 5 -->
+        <article class="practice-card">
+          <a
+            class="practice-card__link"
+            href="https://mp.weixin.qq.com/s/9gnn5g-QFty-O8gbcjBulA"
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="NotebookLM Skill 让你直接拥有满级知识库"
+          ></a>
+          <div class="practice-card__content">
+            <div class="practice-card__top">
+              <span class="practice-card__source">公众号·我姚学AI</span>
+              <span class="practice-card__date" aria-label="更新时间 2026-01-25">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="3" />
+                  <path d="M8 2v4" />
+                  <path d="M16 2v4" />
+                  <path d="M3 10h18" />
+                </svg>
+                2026-01-25
+              </span>
+            </div>
+            <h3>NotebookLM Skill 让你直接拥有满级「知识库」</h3>
+            <p class="practice-card__summary">
+              <span class="practice-card__summary-text">
+                通过 NotebookLM Skill 完成思维导图、PPT、播客制作，让知识沉淀和内容输出更轻松。
+              </span>
+            </p>
+            <div class="practice-card__bottom">
+              <div class="practice-card__skills">
+                <div class="practice-card__skills-main">
+                  <span class="tag">NotebookLM</span>
+                  <span class="tag">知识库</span>
+                  <span class="tag">效率提升</span>
+                </div>
+              </div>
+              <span class="practice-card__read" aria-label="阅读量 102">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                102
+              </span>
+            </div>
+          </div>
+          <div class="practice-card__overlay" role="group" aria-label="实践卡片操作">
+              <button class="practice-action" type="button" aria-label="筛选相关 Skill">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                筛选相关 Skill
+              </button>
+              <a
+                class="practice-action practice-action--primary"
+                href="https://mp.weixin.qq.com/s/9gnn5g-QFty-O8gbcjBulA"
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="跳转原文"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M14 5h5v5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M10 14L19 5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M19 14v5H5V5h5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                跳转原文
+              </a>
+          </div>
+        </article>
+
+        <!-- 实践卡片 6 -->
+        <article class="practice-card">
+          <a
+            class="practice-card__link"
+            href="https://mp.weixin.qq.com/s/pqXJd10SSec-jRvhISDzCA?scene=1"
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="小白也能看懂的 Skill-Creator 教程"
+          ></a>
+          <div class="practice-card__content">
+            <div class="practice-card__top">
+              <span class="practice-card__source">公众号·我姚学AI</span>
+              <span class="practice-card__date" aria-label="更新时间 2026-01-25">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="3" />
+                  <path d="M8 2v4" />
+                  <path d="M16 2v4" />
+                  <path d="M3 10h18" />
+                </svg>
+                2026-01-25
+              </span>
+            </div>
+            <h3>小白也能看懂的 Skill-Creator 教程</h3>
+            <p class="practice-card__summary">
+              <span class="practice-card__summary-text">
+                手把手创建自己的 Skill，涵盖结构、说明文档与验证流程，让创作者快速发布并复用。
+              </span>
+            </p>
+            <div class="practice-card__bottom">
+              <div class="practice-card__skills">
+                <div class="practice-card__skills-main">
+                  <span class="tag">Skill-Creator</span>
+                  <span class="tag">Prompt</span>
+                  <span class="tag">Workflow</span>
+                </div>
+              </div>
+              <span class="practice-card__read" aria-label="阅读量 102">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                102
+              </span>
+            </div>
+          </div>
+          <div class="practice-card__overlay" role="group" aria-label="实践卡片操作">
+              <button class="practice-action" type="button" aria-label="筛选相关 Skill">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                筛选相关 Skill
+              </button>
+              <a
+                class="practice-action practice-action--primary"
+                href="https://mp.weixin.qq.com/s/pqXJd10SSec-jRvhISDzCA?scene=1"
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="跳转原文"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M14 5h5v5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M10 14L19 5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M19 14v5H5V5h5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                跳转原文
+              </a>
+          </div>
+        </article>
+      </section>
+
+      <div class="pagination" aria-label="实践分页">
+        <button class="page-btn" type="button">上一页</button>
+        <button class="page-btn is-active" type="button">1</button>
+        <button class="page-btn" type="button">2</button>
+        <button class="page-btn" type="button">3</button>
+        <button class="page-btn" type="button">4</button>
+        <button class="page-btn" type="button">下一页</button>
+      </div>
+    </main>
+  </body>
+</html>

@@ -384,7 +384,7 @@ button:disabled {
 .page {
   width: min(100%, var(--content-width));
   margin: 0 auto;
-  padding: 132px var(--page-gutter) 90px;
+  /* padding: 132px var(--page-gutter) 90px; */
 }
 
 .hero + .page {
@@ -3115,6 +3115,79 @@ button[data-loading="true"] .btn__loading {
   margin: 14px 0 18px;
 }
 
+/*
+  Toolbar 左右布局容器
+  ------------------------------------------------------------
+  设计目标：
+  - 左侧：分类标签（segmented）+ 关联技能 Chip（可清除）
+  - 右侧：排序切换（sort-switch）
+  说明：
+  - 保持现有筛选条视觉风格不变，只新增一个“可见可清除”的 Chip，避免 ids 隐式筛选让用户迷惑
+*/
+.toolbar__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.toolbar__right {
+  display: flex;
+  align-items: center;
+}
+
+/*
+  关联技能筛选 Chip（ids=1,2,3...）
+  ------------------------------------------------------------
+  场景：
+  - 用户从实践卡片点击“筛选相关 Skill”进入 skills 模式时，会携带 ids 参数
+  - 该筛选会“锁定”在一个子集内，如果不提示用户，分类筛选会表现得像“失效”
+  交互（方案 2A）：
+  - Chip 显示当前锁定数量，并提供一键清除
+  - 用户点击任意分类标签时，会自动清除 ids 并执行分类筛选（逻辑在 HomePage.tsx）
+*/
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--primary-strong);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 107, 0, 0.18);
+  box-shadow: 0 18px 44px -40px rgba(50, 20, 0, 0.22);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, color 180ms ease;
+}
+
+.filter-chip .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.filter-chip__text {
+  line-height: 1;
+}
+
+.filter-chip__close {
+  opacity: 0.72;
+}
+
+.filter-chip:hover {
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(255, 107, 0, 0.28);
+  box-shadow: 0 26px 64px -52px rgba(255, 107, 0, 0.55), 0 18px 44px -40px rgba(50, 20, 0, 0.22);
+}
+
+.filter-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .segmented {
   display: flex;
   align-items: center;
@@ -3265,6 +3338,242 @@ button[data-loading="true"] .btn__loading {
   color: #fff;
   border-color: rgba(255, 107, 0, 0.4);
   box-shadow: 0 16px 30px -18px rgba(255, 107, 0, 0.55);
+}
+
+/*
+  首页模式切换（右侧吸附 Mode Dock）
+  ------------------------------------------------------------
+  PRD 要求：
+  - 纵向二选一（像工具栏，而非表单 switch）
+  - 默认仅展示图标；hover/聚焦时显示 tooltip 文案
+  - 动画只用 transform/opacity（更性能友好，可触发 GPU 合成）
+*/
+.mode-dock {
+  --thumb-y: 0px; /* 0：实践模式；50px：刷 Skill（44px 按钮 + 6px 间距） */
+  /* 默认“胶囊”圆角；展开态会改为更克制的圆角（避免外观过于“玩具感”） */
+  --dock-item-radius: 999px;
+  position: fixed;
+  /*
+    初始位置稍微下移一些：
+    - 视觉上更贴近内容区（比严格垂直居中更自然）
+    - 后续用户可拖拽自定义位置（JS 会覆盖 top/transform）
+  */
+  top: 58%;
+  right: 14px;
+  transform: translate3d(0, -50%, 0);
+  z-index: 120;
+  cursor: grab;
+  /* 允许 pointer 事件顺畅拖拽（移动端避免触发页面滚动手势） */
+  touch-action: none;
+  /*
+    Dock 的“展开”采用宽度过渡：
+    - Dock 为 fixed 且体积很小，宽度变化对整体布局影响极低
+    - 文案出现/位移仍使用 transform/opacity（GPU 合成友好）
+  */
+  width: 56px; /* 收起态：仅图标（更收敛，减少对 Hero 的干扰） */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 999px;
+  /*
+    外层容器（Dock 轨道）视觉目标：
+    - 比 header 更“弱”，避免像一个独立卡片抢视觉
+    - 仍保留玻璃拟态质感（与站点整体统一）
+    - 强表达交给「thumb 选中态」，容器只做承托
+  */
+  /*
+    用户确认：Mode Dock 改为「最简单的纯色」风格（参考排序按钮“最热”）。
+    ------------------------------------------------------------
+    设计策略：
+    - 收起态：保留轻量轨道做承托（白色纯色 + 轻描边 + 轻阴影）
+    - 活跃态：由 thumb（滑块）用纯色主色橙来表达
+    - Hover：用“扫光（shine）”增加精致感，不引入复杂渐变/液态玻璃折射
+  */
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 107, 0, 0.16);
+  backdrop-filter: none;
+  box-shadow: 0 22px 52px -42px rgba(50, 20, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+  isolation: isolate;
+  /* 降低 reflow 影响范围：Dock 内部自包含布局与绘制 */
+  contain: layout paint;
+  transition: width 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 通过 data-mode 控制滑块位置（由 React 状态驱动） */
+.mode-dock[data-mode="skills"] {
+  --thumb-y: 50px;
+}
+
+/* 拖拽中：用 grabbing 提示“正在拖动” */
+.mode-dock[data-dragging="true"] {
+  cursor: grabbing;
+}
+
+/* 展开态：展示文字（由 React 的 data-expanded 驱动） */
+.mode-dock[data-expanded="true"] {
+  width: 168px;
+  /* 展开态：把 999px 的“胶囊”圆角收敛为圆角矩形，更像“工具 Dock/控件”，更高级 */
+  --dock-item-radius: 18px;
+  /*
+    展开态的视觉策略：
+    - 外层轨道尽量“隐身”（不再显示大块圆角容器），避免像一个独立卡片抢戏
+    - 视觉承托交给每一行的按钮（以及选中的 thumb）
+    这样整体更「液态玻璃」，也更贴合站点轻盈的玻璃拟态风格。
+  */
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  border-radius: 0;
+}
+
+.mode-dock__thumb {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  /* 跟随 Dock 宽度变化：收起态=44px，展开态=容器可用宽度 */
+  width: calc(100% - 12px);
+  height: 44px;
+  border-radius: var(--dock-item-radius);
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  /*
+    活跃态（thumb）=「纯色主色」
+    ------------------------------------------------------------
+    参考“最热”按钮的视觉：纯色 + 轻描边 + 轻阴影。
+  */
+  background: var(--primary);
+  border: 1px solid rgba(255, 107, 0, 0.4);
+  backdrop-filter: none;
+  box-shadow: 0 16px 30px -18px rgba(255, 107, 0, 0.55);
+  transform: translate3d(0, var(--thumb-y), 0);
+  transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.mode-dock__thumb::before {
+  /* 纯色方案下不需要“体积光”叠加；扫光由按钮伪元素统一负责。 */
+  content: none;
+}
+
+.mode-dock__thumb::after {
+  /* 纯色方案下不需要“体积光”叠加；扫光由按钮伪元素统一负责。 */
+  content: none;
+}
+
+.mode-dock__item {
+  position: relative;
+  width: 100%;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 收起态：图标居中 */
+  gap: 0; /* 收起态：避免 label 影响图标居中 */
+  padding: 0; /* 收起态：保持视觉紧凑 */
+  border-radius: var(--dock-item-radius);
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(124, 94, 77, 0.92);
+  cursor: pointer;
+  z-index: 2;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, color 180ms ease;
+  will-change: transform;
+}
+
+.mode-dock[data-expanded="true"] .mode-dock__item {
+  /* 展开态：图标+文案水平排列 */
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 12px 0 10px;
+  /*
+    展开态每一行按钮独立承托（轻玻璃）：
+    - 外层容器被弱化后，需要给未选中项一个很轻的底，保证可读性
+    - 动画保持 transform/opacity，不使用 scale 避免“抖动”
+  */
+  /* 展开态的未选中项：纯色白底 + 轻描边（与“最热/最新”按钮同一设计语言） */
+  background: rgba(255, 255, 255, 0.76);
+  border-color: rgba(255, 107, 0, 0.14);
+  backdrop-filter: none;
+  box-shadow: 0 18px 44px -38px rgba(50, 20, 0, 0.22);
+}
+
+.mode-dock[data-expanded="true"] .mode-dock__item.is-active {
+  /*
+    选中态由 thumb 负责“强表达”：
+    - 这里把按钮自己的背景/描边收起来，避免与 thumb 的玻璃边框叠加显脏
+  */
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.mode-dock__icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.mode-dock__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* 展开态文案：在 Dock 内部显示，不再使用“外飘 tooltip 气泡” */
+.mode-dock__label {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 0; /* 收起态：不占宽度，避免影响图标居中 */
+  opacity: 0;
+  transform: translate3d(-6px, 0, 0);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.1px;
+  line-height: 1;
+  will-change: transform, opacity;
+  transition: max-width 320ms cubic-bezier(0.16, 1, 0.3, 1), opacity 160ms ease, transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mode-dock[data-expanded="true"] .mode-dock__label {
+  max-width: 120px;
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.mode-dock__item.is-active {
+  color: #ffffff;
+  text-shadow: none; /* 纯色方案更干净，不需要文字阴影 */
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mode-dock__item:not(.is-active):hover {
+    /* Hover：轻微提亮未选中项，不上浮太多，避免“漂” */
+    transform: none;
+    background: rgba(255, 255, 255, 0.88);
+    border-color: rgba(255, 107, 0, 0.22);
+    box-shadow: 0 26px 64px -52px rgba(255, 107, 0, 0.55), 0 18px 44px -40px rgba(50, 20, 0, 0.22);
+  }
+
+  .mode-dock__item.is-active:hover {
+    transform: none;
+  }
+}
+
+.mode-dock__item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.18);
+  border-color: rgba(255, 107, 0, 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mode-dock__thumb {
+    transition: none;
+  }
 }
 
 /* ---------- Skill cards ---------- */
@@ -3471,6 +3780,404 @@ button[data-loading="true"] .btn__loading {
   width: 22px;
   height: 22px;
   border-radius: 50%;
+}
+
+/* ---------- Home Practices (实践模式) ---------- */
+.practice-feed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+/*
+  首页实践卡片（practice-card--feed）
+  ------------------------------------------------------------
+  注意：详情页也有 .practice-card，但结构与样式不同；
+  这里用修饰类 practice-card--feed 做隔离，避免互相影响。
+*/
+.practice-card.practice-card--feed {
+  /*
+    背景色抽成变量，便于：
+    - hover 态同步变白（与站点卡片 hover 统一）
+    - 摘要“第 5 行渐隐”的兜底渐变使用同底色，避免出现“色块感”
+  */
+  --card-surface: rgba(255, 255, 255, 0.7);
+  background: var(--card-surface);
+  width: 100%;
+  height: 300px; /* 定高：对齐 mockup 与 PRD */
+  /* PRD：实践卡片本体不可点击（仅 hover 浮层按钮可点击），光标用默认态避免误导 */
+  cursor: default;
+}
+
+.practice-card--feed .practice-card__content {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.practice-card--feed .practice-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.practice-card--feed .practice-card__source {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(124, 94, 77, 0.92);
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 68%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.practice-card--feed .practice-card__source::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 10px 18px -14px rgba(255, 107, 0, 0.9);
+  flex: 0 0 auto;
+}
+
+.practice-card--feed .practice-card__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.practice-card--feed .practice-card__date svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.78;
+}
+
+.practice-card--feed .practice-card__title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.practice-card--feed .practice-card__summary {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.7;
+  margin: 0;
+  position: relative;
+  /*
+    footer 基线固定，但标题 1 行时 summary 不要“空出第二行标题”：
+    - summary 本身作为 flex:1 吸收富余高度（保证 footer 对齐）
+    - “最多 5 行 + 第 5 行渐隐”的约束交给内部 summary-text（避免 line-clamp 自带的 ...）
+  */
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.practice-card--feed .practice-card__summary-text {
+  display: block;
+  position: relative;
+  height: 8.5em; /* 5 行：1.7 * 5 = 8.5em */
+  overflow: hidden;
+  /* 第 5 行纵向整体渐隐：从第 5 行开始向下淡出 */
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 1) 0,
+    rgba(0, 0, 0, 1) 6.8em,
+    rgba(0, 0, 0, 0.35) 7.6em,
+    rgba(0, 0, 0, 0) 8.5em
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 1) 0,
+    rgba(0, 0, 0, 1) 6.8em,
+    rgba(0, 0, 0, 0.35) 7.6em,
+    rgba(0, 0, 0, 0) 8.5em
+  );
+}
+
+/* 渐隐兜底：不支持 mask 时，用叠加蒙层模拟“第 5 行向下淡出” */
+.practice-card--feed .practice-card__summary-text::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6.8em;
+  bottom: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.18) 22%, var(--card-surface) 100%);
+}
+
+@supports ((mask-image: linear-gradient(#000, transparent)) or (-webkit-mask-image: linear-gradient(#000, transparent))) {
+  .practice-card--feed .practice-card__summary-text::after {
+    display: none;
+  }
+}
+
+.practice-card--feed .practice-card__bottom {
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 107, 0, 0.12);
+  display: flex;
+  align-items: flex-end;
+  /*
+    这里不要用 space-between：
+    - space-between 会让「skills 组」按内容宽度收缩，导致右侧出现大块空白
+    - 进而让 skills 的渐隐 mask 提前命中（看起来像“没超出也在渐隐”）
+    改为 flex-start + 让右侧阅读量用 margin-left:auto 顶到最右，保证：
+    - skills 占满蓝框区域（尽可能展示完整）
+    - 只有真正靠近右侧（接近阅读量区域）时才开始渐隐
+  */
+  justify-content: flex-start;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.practice-card--feed .practice-card__skills {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  /*
+    关键：skills 组要“占满可用宽度”，否则 mask 会按“内容宽度”计算，
+    造成单个 skill 也出现不必要的渐隐。
+  */
+  flex: 1 1 auto;
+  max-width: none;
+}
+
+.practice-card--feed .practice-card__skills-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  flex: 1 1 auto;
+  /*
+    单行截断渐隐：避免硬切边
+    - 使用固定像素的“渐隐宽度”，让渐隐只发生在最右侧靠近阅读量区域的位置
+    - 满足设计预期：蓝框区域不渐隐，只有接近（溢出到）右侧区域时才渐隐
+  */
+  mask-image: linear-gradient(to right, #000 0%, #000 calc(100% - 24px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 calc(100% - 24px), transparent 100%);
+}
+
+.practice-card--feed .tag {
+  /*
+    多 tag 时需要限制最大宽度，避免一个超长名字挤占所有空间；
+    单 tag 时应尽量展示完整（若仍放不下再省略号）。
+  */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 0 auto;
+}
+
+.practice-card--feed .practice-card__skills-main .tag:only-child {
+  max-width: 100%;
+}
+
+.practice-card--feed .tag--more {
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.practice-card--feed .practice-card__read {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  /* 让阅读量稳定贴右：与 bottom 的 justify-content:flex-start 配合 */
+  margin-left: auto;
+}
+
+.practice-card--feed .practice-card__read svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.78;
+}
+
+/*
+  Footer 上浮蒙层（hover/focus）：
+  - 不遮盖标题/摘要
+  - 蒙层与背景做渐变衔接（mask）
+  - 按钮 hover 扫光：只动 transform/opacity，性能更稳
+*/
+.practice-card--feed .practice-card__overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 12px;
+  height: 112px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate3d(0, 14px, 0);
+  transition: opacity 220ms ease, transform 520ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 220ms;
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.35) 22%,
+    rgba(0, 0, 0, 1) 34%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.35) 22%,
+    rgba(0, 0, 0, 1) 34%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  background:
+    radial-gradient(120% 90% at 14% 100%, rgba(255, 107, 0, 0.26) 0%, rgba(255, 107, 0, 0) 62%),
+    radial-gradient(120% 90% at 92% 100%, rgba(255, 51, 102, 0.22) 0%, rgba(255, 51, 102, 0) 60%),
+    linear-gradient(180deg, rgba(26, 21, 16, 0) 0%, rgba(26, 21, 16, 0.28) 38%, rgba(26, 21, 16, 0.52) 100%);
+  border: none;
+  backdrop-filter: blur(12px) saturate(140%);
+  box-shadow: 0 24px 60px -44px rgba(0, 0, 0, 0.55);
+}
+
+.practice-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fffaf2;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.15px;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  cursor: pointer;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  will-change: transform;
+  pointer-events: auto;
+}
+
+.practice-action svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.practice-action::after {
+  content: "";
+  position: absolute;
+  inset: -40% -70%;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-70%, 0, 0) rotate(16deg);
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0) 42%,
+    rgba(255, 255, 255, 0.58) 50%,
+    rgba(255, 255, 255, 0) 58%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  will-change: transform, opacity;
+}
+
+.practice-action--primary {
+  background: var(--primary);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 18px 34px -24px rgba(255, 107, 0, 0.62);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .practice-card--feed:hover .practice-card__overlay {
+    opacity: 1;
+    visibility: visible;
+    transform: translate3d(0, 0, 0);
+    transition: opacity 220ms ease, transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* 浮层出现时隐藏 footer 分割线，避免在透明渐变区显得突兀 */
+  .practice-card--feed:hover .practice-card__bottom {
+    border-top-color: transparent;
+  }
+
+  .practice-card--feed:hover {
+    /* 与站点卡片 hover 统一：提亮到纯白，并同步变量用于渐隐兜底 */
+    --card-surface: #fff;
+  }
+
+  .practice-action:hover {
+    transform: translate3d(0, -1px, 0);
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.34);
+    box-shadow: 0 16px 30px -26px rgba(0, 0, 0, 0.35);
+  }
+
+  .practice-action:hover::after {
+    opacity: 1;
+    animation: practiceActionShine 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .practice-action--primary:hover {
+    background: var(--primary-strong);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 20px 38px -28px rgba(255, 107, 0, 0.72);
+  }
+}
+
+@keyframes practiceActionShine {
+  0% {
+    opacity: 0;
+    transform: translate3d(-70%, 0, 0) rotate(16deg);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(70%, 0, 0) rotate(16deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .practice-action::after {
+    display: none;
+  }
 }
 
 @keyframes cardGoldFlow {
@@ -5462,7 +6169,7 @@ body.is-detail::after {
     display: none;
   }
   .page {
-    padding-top: 112px;
+    /* padding-top: 112px; */
   }
   .skill-grid {
     grid-template-columns: 1fr;

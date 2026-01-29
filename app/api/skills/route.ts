@@ -9,9 +9,25 @@ export async function GET(request: Request) {
     const size = Math.max(Number(searchParams.get("size") || PAGE_SIZE), 1);
     const tag = searchParams.get("tag");
     const q = searchParams.get("q");
+    // ids=1,2,3：用于“只展示指定 Skill 集合”的场景（例如从实践卡片筛选相关 Skill 进入）。
+    const idsParam = searchParams.get("ids");
     const sort = searchParams.get("sort") || "heat";
 
     const supabase = getSupabaseServerClient();
+
+    /**
+     * 解析 ids 参数（逗号分隔）：
+     * - 过滤非法值（NaN/<=0）
+     * - 去重，避免 SQL IN 列表膨胀
+     * 说明：不在这里做“顺序保持”，列表顺序仍由 sort 控制（最热/最新）。
+     */
+    const ids = (idsParam || "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((item) => Number(item))
+      .filter((num) => Number.isFinite(num) && num > 0);
+    const uniqueIds = Array.from(new Set(ids));
 
     let query = supabase
       .from("skills")
@@ -21,6 +37,11 @@ export async function GET(request: Request) {
         { count: "exact" }
       )
       .eq("is_listed", true);
+
+    // 指定 id 过滤优先级最高：先收敛集合，再叠加 tag/q 等筛选条件。
+    if (uniqueIds.length > 0) {
+      query = query.in("id", uniqueIds);
+    }
 
     if (tag && tag !== "全部") {
       query = query.eq("tag", tag);

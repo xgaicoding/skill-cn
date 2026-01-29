@@ -1,13 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { BookOpen, Search, Users } from "lucide-react";
 import AuthActions from "@/components/AuthActions";
 import { COMMUNITY_QR_BACKUP_URL, COMMUNITY_QR_URL, OFFICIAL_DOCS_LINK } from "@/lib/constants";
 import CommunityModal from "@/components/CommunityModal";
 
 export default function AppHeader() {
+  const searchParams = useSearchParams();
+  // PRD：实践模式下，Header 搜索切换为“实践搜索”（仅匹配标题/描述）。
+  const isPracticesMode = searchParams?.get("mode") === "practices";
+  // skills 模式下可能携带 ids=1,2,3（从实践卡片“筛选相关 Skill”进入），搜索时需要保留该筛选。
+  const currentIds = searchParams?.get("ids") || "";
+  // 顶部筛选条（tag/sort）现在与 URL 同步：Header 搜索提交时也需要保留，避免用户“搜一下筛选就丢了”。
+  const currentTag = searchParams?.get("tag") || "";
+  const currentSort = searchParams?.get("sort") || "";
+  // 让输入框在刷新/分享链接后也能回显当前 q，提升“可控感”。
+  const currentQuery = searchParams?.get("q") || "";
+  // 搜索框引用：用于在 URL 变化时同步 input.value（避免 defaultValue 只在 mount 生效）。
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
   const hasOfficialDocsLink = Boolean(OFFICIAL_DOCS_LINK);
   // 控制“交流群”弹窗显示状态，避免使用链接跳转打断用户当前浏览。
   const [communityOpen, setCommunityOpen] = useState(false);
@@ -18,6 +32,13 @@ export default function AppHeader() {
   // 备用二维码地址：用于弹窗右侧展示。
   const communityQrBackupUrl = COMMUNITY_QR_BACKUP_URL;
 
+  useEffect(() => {
+    // Next.js App Router 下 Header 通常不会随 query 变更而 remount，
+    // 因此这里手动把 URL 的 q 同步回 input.value，保证回显稳定。
+    if (searchInputRef.current) {
+      searchInputRef.current.value = currentQuery;
+    }
+  }, [currentQuery]);
 
   return (
     <header className="app-header" role="banner">
@@ -39,13 +60,21 @@ export default function AppHeader() {
         </Link>
 
         <form className="search" role="search" aria-label="全局搜索" action="/" method="get">
+          {/* 保持 mode 可分享：实践模式下提交搜索时需要带上 mode=practices */}
+          {isPracticesMode ? <input type="hidden" name="mode" value="practices" /> : null}
+          {/* 保持 ids 筛选：skills 模式下如果带 ids，则搜索在当前筛选集合内进行 */}
+          {!isPracticesMode && currentIds ? <input type="hidden" name="ids" value={currentIds} /> : null}
+          {/* 保持 tag/sort：与筛选条一致，提交搜索时也要带上（否则筛选会“突然丢失”）。 */}
+          {currentTag && currentTag !== "全部" ? <input type="hidden" name="tag" value={currentTag} /> : null}
+          {currentSort ? <input type="hidden" name="sort" value={currentSort} /> : null}
           <span className="search__icon" aria-hidden="true">
             <Search className="icon" />
           </span>
           <input
             type="search"
             name="q"
-            placeholder="搜索 Skill 名称、描述、标签"
+            ref={searchInputRef}
+            placeholder={isPracticesMode ? "搜索文章标题、描述" : "搜索 Skill 名称、描述、标签"}
             aria-label="搜索关键词"
           />
           <button type="submit">搜索</button>

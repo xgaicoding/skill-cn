@@ -99,10 +99,17 @@ npm run start            # 启动生产服务
 </a>
 </td>
 <td align="center" width="120">
+<a href="https://github.com/NumbSilver">
+<img src="https://github.com/NumbSilver.png" width="80" height="80" style="border-radius: 50%;" alt="NumbSilver"><br>
+<sub><b>孙齐浓</b></sub><br>
+<sub>核心贡献者</sub>
+</a>
+</td>
+<td align="center" width="120">
 <a href="https://github.com/mengjian-github">
 <img src="https://github.com/mengjian-github.png" width="80" height="80" style="border-radius: 50%;" alt="mengjian-github"><br>
 <sub><b>孟健</b></sub><br>
-<sub>贡献者</sub>
+<sub>核心贡献者</sub>
 </a>
 </td>
 <td align="center" width="120">

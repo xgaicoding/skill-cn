@@ -18,6 +18,17 @@ export type Skill = {
   supports_download_zip: boolean;
 };
 
+/**
+ * SkillLite：
+ * - 用于“实践模式（practices mode）”卡片展示的轻量 Skill 信息
+ * - 只包含卡片渲染需要的字段，避免把详情页字段（markdown 等）也塞进列表接口
+ */
+export type SkillLite = {
+  id: number;
+  name: string;
+  tag: string | null;
+};
+
 export type Practice = {
   id: number;
   // 首页 Hero 推荐卡片使用的关联 Skill 名称（由 API 补充注入）。
@@ -35,6 +46,19 @@ export type Practice = {
   is_listed: boolean;
   is_featured: boolean;
   click_count: number;
+};
+
+/**
+ * PracticeWithSkills：
+ * - 首页「实践模式」需要展示“关联 Skills（最多 3 个 +N）”
+ * - 列表接口会返回：
+ *   - practices.skill_ids / primary_skill_id（用于排序与展示规则）
+ *   - skills[]（用于渲染名称/标签）
+ */
+export type PracticeWithSkills = Practice & {
+  skill_ids: number[];
+  primary_skill_id: number | null;
+  skills: SkillLite[];
 };
 
 export type Paginated<T> = {

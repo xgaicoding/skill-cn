@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
@@ -33,7 +34,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="zh-CN">
       <body>
         <div className="app-shell">
-          <AppHeader />
+          {/*
+            Next.js 要求：
+            - 在静态预渲染阶段（next build / export），使用 useSearchParams 的客户端组件需要被 Suspense 包裹
+            - 否则会出现：useSearchParams() should be wrapped in a suspense boundary 的构建报错
+            说明：
+            - Header 内部会根据 URL（mode/q）切换搜索占位与隐藏字段，因此使用了 useSearchParams
+            - 这里用一个“无侵入”的 Suspense 边界兜底；fallback 为空即可（Header 仍会很快渲染出来）
+          */}
+          <Suspense fallback={null}>
+            <AppHeader />
+          </Suspense>
           {children}
           <AppFooter />
         </div>
