@@ -1,0 +1,1396 @@
+/*
+  Skill Hub 中国 v1.2.0 - Mobile Mockup Styles
+  ------------------------------------------------------------
+  说明：
+  - 本目录仅用于“移动端视觉/交互方案”静态验证（不参与线上构建）。
+  - 风格延续现有站点（暖色背景 + 半透明卡片 + 轻量阴影）。
+  - 动效与过渡仅使用 transform/opacity（GPU 友好），并尊重 prefers-reduced-motion。
+*/
+
+:root {
+  /* 颜色体系尽量与线上 app/globals.css 对齐（减少视觉偏差） */
+  --bg: #fff1e6;
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-strong: rgba(255, 255, 255, 0.92);
+  --surface-solid: #ffffff;
+
+  --text: #1a1510;
+  --muted: #7c5e4d;
+  --muted-2: rgba(124, 94, 77, 0.7);
+
+  --primary: #ff6b00;
+  --primary-strong: #e65200;
+  --accent: #ffcc00;
+
+  --border: rgba(255, 107, 0, 0.16);
+  --border-strong: rgba(255, 107, 0, 0.22);
+
+  --shadow-card: 0 22px 60px -30px rgba(50, 20, 0, 0.18),
+    0 0 0 1px rgba(255, 107, 0, 0.08) inset;
+  --shadow-float: 0 40px 90px -30px rgba(50, 20, 0, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset;
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 34px;
+
+  /*
+    移动端卡片圆角（用户反馈：当前圆角过大）
+    - 不直接改动全局 radius-*：避免影响按钮/输入框等非卡片元素
+    - 只对“卡片容器”收敛圆角，保证更利落、更高级
+  */
+  --radius-card: 18px;
+  --radius-hero: 20px;
+
+  /*
+    移动端两列列表：卡片定高（用户反馈：希望统一高度）
+    - 数值按 320/360 宽下的可读性与信息密度估算
+    - 后续如果线上字体/密度调整，只需要改这里即可同步全局
+  */
+  --h-skill-card: 152px;
+  --h-practice-card: 206px;
+
+  /* mockup 画布宽度：让桌面浏览器也能“像手机”一样看效果 */
+  --mockup-max: 440px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  /* 无限滚动 + 回到顶部：平滑滚动能显著提升移动端体验 */
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+/* Bottom Sheet 打开时锁住背景滚动（避免“背景跟着滑”造成晕动感） */
+body.is-sheet-open {
+  overflow: hidden;
+}
+
+/*
+  Bottom Sheet 打开时隐藏浮层控件：
+  - 避免半透明遮罩下看到底部 mode bar / 回到顶部按钮产生“穿透脏感”
+  - 这属于“交互一致性”问题：当用户在操作面板里时，不应被其它浮层干扰
+*/
+body.is-sheet-open .m-mode-switch,
+body.is-sheet-open .m-to-top {
+  opacity: 0;
+  pointer-events: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+/* ---------- Mockup Frame ---------- */
+/*
+  为了在桌面端也能直观看到移动端布局，
+  将内容限制在一个居中的 “phone-width” 画布里。
+*/
+.mockup {
+  width: min(var(--mockup-max), 100vw);
+  margin: 0 auto;
+  min-height: 100dvh;
+  /* 轻微描边提示“这是手机画布”，不影响整体风格 */
+  outline: 1px solid rgba(255, 107, 0, 0.08);
+  outline-offset: 0;
+  background: transparent;
+}
+
+.mockup__safe {
+  /* 底部需要为固定的 mode 切换条预留空间，避免遮挡列表内容 */
+  padding-bottom: calc(104px + env(safe-area-inset-bottom));
+}
+
+/* 详情页没有 mode 切换条：减少多余留白，避免 footer “飘起来” */
+.mockup__safe--detail {
+  padding-bottom: calc(22px + env(safe-area-inset-bottom));
+}
+
+/* ---------- Header ---------- */
+.m-header {
+  padding: 14px 14px 10px;
+}
+
+.m-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.m-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+
+.m-logo__mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: linear-gradient(140deg, rgba(255, 204, 0, 0.95), rgba(255, 107, 0, 0.96));
+  box-shadow: 0 14px 28px -18px rgba(255, 107, 0, 0.65);
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.m-logo__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.m-logo__title {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.m-logo__sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.m-header__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  /*
+    顶部入口（交流群 / 文档）：按“文字链按钮”处理
+    - 去掉外层胶囊容器（无描边/无底色），更轻更高级
+    - 仍保留足够热区（>= 44px），避免难点
+  */
+  height: 44px;
+  padding: 0 8px;
+  border-radius: 12px; /* 仅用于 pressed 态的轻反馈，不作为“容器感” */
+  border: 0;
+  background: transparent;
+  /* 用户反馈：文字链按钮用橙色（与品牌一致），提升可点击可发现性 */
+  color: rgba(255, 107, 0, 0.96);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-btn__icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.icon-btn__label {
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap; /* 避免断行导致 header 行高抖动 */
+}
+
+.icon-btn:hover {
+  /* hover 用更深的橙色，形成轻反馈但不改变布局 */
+  color: rgba(230, 82, 0, 0.98);
+}
+
+.icon-btn:active {
+  /* 移动端轻反馈：只用 opacity/translate，避免 scale 抖动 */
+  background: rgba(255, 107, 0, 0.08);
+  transform: translate3d(0, 1px, 0);
+}
+
+.m-search {
+  margin-top: 10px;
+  position: relative;
+}
+
+.m-search__input {
+  width: 100%;
+  /* 触控热区：移动端建议 >= 44px */
+  height: 44px;
+  padding: 0 14px 0 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 107, 0, 0.18);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 34px -28px rgba(50, 20, 0, 0.35);
+  outline: none;
+}
+
+.m-search__icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: rgba(124, 94, 77, 0.92);
+  pointer-events: none;
+}
+
+/* ---------- Hero Carousel (Mobile) ---------- */
+.m-hero {
+  padding: 0 14px 12px;
+}
+
+.m-hero__track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  /*
+    允许卡片阴影在纵向“透出来”：
+    - 仅设置 overflow-x 时，部分浏览器会隐式裁剪 Y 轴，导致阴影被截断成“硬边”
+    - 这里显式打开 overflow-y，并留足 padding-bottom，避免出现“奇怪的阴影条”
+  */
+  overflow-y: visible;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 2px 26px;
+}
+
+.m-hero__track::-webkit-scrollbar {
+  display: none;
+}
+
+.m-hero__slide {
+  scroll-snap-align: start;
+  flex: 0 0 calc(100% - 34px);
+  /*
+    轮播卡片高度保持一致：
+    - 避免因标题/摘要行数不同导致每一张卡高度跳变
+    - 使用 clamp 兼顾 320/360/390 等不同宽度
+  */
+  height: clamp(172px, 52vw, 214px);
+}
+
+.hero-card {
+  height: 100%;
+  /* 用户反馈：卡片圆角过大 => 移动端 hero 卡统一收敛 */
+  border-radius: var(--radius-hero);
+  background: var(--surface);
+  border: 1px solid rgba(255, 107, 0, 0.12);
+  /*
+    用户反馈：推荐卡片底部阴影过重。
+    - 方案：去掉外部 drop shadow，仅保留轻微 inset 质感 + 边框
+    - 这样轮播区更“干净”，也避免在滚动容器里形成“阴影带”
+  */
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55) inset;
+  overflow: hidden;
+  position: relative;
+  padding: 16px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hero-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(60% 60% at 20% 10%, rgba(255, 204, 0, 0.22) 0%, transparent 60%),
+    radial-gradient(56% 56% at 90% 0%, rgba(255, 107, 0, 0.18) 0%, transparent 62%);
+  opacity: 0.9;
+}
+
+.hero-card__brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-card__badge {
+  /*
+    品牌字（Skill Hub 中国）：
+    - 复用 PC 端“渐变高光扫过”的文字质感（缩小版）
+    - 不使用胶囊容器（无 padding/无 border），避免“像标签”而不像品牌字
+    - 动效只移动第一层高光，减少重绘；prefers-reduced-motion 下关闭
+  */
+  --brand-aura-size: 190%;
+  --brand-aura-speed: 10s;
+  --brand-aura-1: rgba(255, 204, 0, 0.92);
+  --brand-aura-2: rgba(255, 107, 0, 0.86);
+  --brand-aura-3: rgba(255, 51, 102, 0.22);
+  --brand-aura-4: rgba(255, 255, 255, 0.4);
+
+  display: inline-block;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  font-weight: 950;
+  /*
+    用户反馈：品牌字需要更大气
+    - 用 clamp 兼容 320/360/390 等宽度
+    - 保持单行，避免在小屏断行显得“碎”
+  */
+  font-size: clamp(20px, 6vw, 26px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  background-image:
+    linear-gradient(115deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.46) 14%, rgba(255, 255, 255, 0) 30%),
+    radial-gradient(at 62% 9%, var(--brand-aura-1) 0px, transparent 44%),
+    radial-gradient(at 69% 60%, var(--brand-aura-2) 0px, transparent 48%),
+    radial-gradient(at 24% 89%, var(--brand-aura-3) 0px, transparent 52%),
+    radial-gradient(at 51% 77%, var(--brand-aura-4) 0px, transparent 58%),
+    radial-gradient(at 78% 92%, var(--brand-aura-1) 0px, transparent 50%),
+    linear-gradient(135deg, var(--primary-strong) 0%, var(--primary) 56%, var(--accent) 120%);
+  background-blend-mode: screen, screen, screen, screen, screen, screen, normal;
+  background-size: 240% 180%, var(--brand-aura-size) var(--brand-aura-size),
+    var(--brand-aura-size) var(--brand-aura-size), var(--brand-aura-size) var(--brand-aura-size),
+    var(--brand-aura-size) var(--brand-aura-size), var(--brand-aura-size) var(--brand-aura-size), 100% 100%;
+  background-position: -40% 30%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+  animation: brandAuraMobile var(--brand-aura-speed) linear infinite;
+  will-change: background-position, transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: 0 0 0.44ch rgba(255, 107, 0, 0.14), 0 0 1.18ch rgba(255, 204, 0, 0.1);
+  filter: saturate(1.18) contrast(1.06);
+}
+
+@keyframes brandAuraMobile {
+  0% {
+    background-position: -40% 30%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+  }
+  50% {
+    background-position: 140% 70%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+  }
+  100% {
+    background-position: -40% 30%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-card__badge {
+    animation: none;
+  }
+}
+
+.hero-card__title {
+  position: relative;
+  margin: 12px 0 0;
+  font-size: 20px;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hero-card__title em {
+  font-style: normal;
+  color: rgba(255, 107, 0, 0.98);
+}
+
+.hero-card__subtitle {
+  position: relative;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hero-practice {
+  position: relative;
+}
+
+.hero-practice__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 107, 0, 0.12);
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.hero-practice__h3 {
+  margin: 12px 0 0;
+  font-size: 18px;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hero-practice__desc {
+  margin: 10px 0 0;
+  color: rgba(124, 94, 77, 0.88);
+  font-size: 13px;
+  line-height: 1.55;
+  display: -webkit-box;
+  /* 轮播卡固定高度下，描述行数略收敛，保证底部 meta 不被挤压 */
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hero-practice__meta {
+  margin-top: 12px;
+  color: rgba(124, 94, 77, 0.8);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.m-hero__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 2px 0 0;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(124, 94, 77, 0.18);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dot[aria-current="true"] {
+  width: 18px;
+  background: rgba(255, 107, 0, 0.72);
+}
+
+/* ---------- Sticky Toolbar (Filters) ---------- */
+.m-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding: 10px 14px;
+  background: rgba(255, 241, 230, 0.78);
+  border-bottom: 1px solid rgba(255, 107, 0, 0.08);
+  /* blur 属于可选增强：浏览器不支持时自动降级 */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .m-toolbar {
+    background: rgba(255, 241, 230, 0.94);
+  }
+}
+
+.m-toolbar__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.m-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 2px;
+  flex: 1;
+  /* 横向滚动末端渐隐：用 mask-image，性能开销更低且不会引入额外 DOM */
+  mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 86%, rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 86%, rgba(0, 0, 0, 0) 100%);
+}
+
+.m-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex: 0 0 auto;
+  /*
+    分类 Tab（Chip）视觉更扁平：
+    - 用户反馈：过于“圆润/膨胀”
+    - 这里下调高度，让胶囊更接近 PC 的密度
+  */
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 107, 0, 0.14);
+  background: rgba(255, 255, 255, 0.86);
+  color: rgba(26, 21, 16, 0.92);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chip.is-active {
+  background: rgba(255, 107, 0, 0.12);
+  border-color: rgba(255, 107, 0, 0.28);
+  color: rgba(255, 107, 0, 0.98);
+}
+
+.m-sort {
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 107, 0, 0.14);
+  border-radius: 999px;
+  padding: 2px;
+  display: inline-flex;
+  gap: 4px;
+}
+
+.m-sort__btn {
+  /* 排序按钮同步变扁（与 Chip 密度一致） */
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: rgba(124, 94, 77, 0.92);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.m-sort__btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.m-sort__btn.is-active {
+  background: rgba(255, 107, 0, 0.12);
+  color: rgba(255, 107, 0, 0.98);
+}
+
+.m-toolbar__subrow {
+  margin-top: 8px;
+  display: none;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.m-toolbar[data-has-ids="true"] .m-toolbar__subrow {
+  display: flex;
+}
+
+.ids-chip {
+  flex: 1;
+  /* ids 提示 Chip 也保持扁平密度 */
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 107, 0, 0.18);
+  background: rgba(255, 255, 255, 0.92);
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ids-chip__muted {
+  color: rgba(124, 94, 77, 0.8);
+  font-weight: 700;
+}
+
+.ids-chip__x {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.12);
+  display: grid;
+  place-items: center;
+}
+
+.ids-chip__x svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---------- List & Cards ---------- */
+.m-list {
+  padding: 12px 14px 0;
+  display: grid;
+  gap: 12px;
+  /*
+    需求变更：移动端卡片区改为“两列网格（1 行 2 张）”
+    - 好处：信息密度更高，刷列表更爽
+    - 代价：单卡可用宽度下降，需要更严格的行数/截断策略（已通过 clamp/ellipsis 处理）
+  */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+/* 单列布局：用于“详情页信息卡”等需要占满一行的区域 */
+.m-list--single {
+  grid-template-columns: 1fr;
+}
+
+/* 详情页“关联实践”标题：只保留清晰标题，避免解释性文案造成困惑 */
+.m-detail-heading {
+  padding: 18px 14px 0;
+}
+
+.m-detail-heading__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Skeleton（首屏加载占位，避免“页面太空”） ---------- */
+/*
+  设计目标：
+  - 首屏加载时，用“卡片骨架”占位，避免用户只看到一个“加载中”胶囊而迷惑
+  - 动效只使用 opacity（合成层友好），并尊重 prefers-reduced-motion
+*/
+.skeleton-card {
+  padding: 14px 14px 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.skeleton-card--skill {
+  height: var(--h-skill-card);
+}
+
+.skeleton-card--practice {
+  height: var(--h-practice-card);
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.skeleton-block {
+  border-radius: 999px;
+  background: rgba(124, 94, 77, 0.12);
+  opacity: 0.75;
+  animation: skeletonPulse 1.2s ease-in-out infinite;
+  will-change: opacity;
+}
+
+.skeleton-pill {
+  height: 28px;
+  width: 86px;
+}
+
+.skeleton-pill--sm {
+  width: 70px;
+}
+
+.skeleton-line {
+  height: 12px;
+  width: 100%;
+}
+
+.skeleton-line--title {
+  height: 16px;
+  width: 72%;
+}
+
+.skeleton-line--meta {
+  height: 12px;
+  width: 42%;
+}
+
+@keyframes skeletonPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+.card {
+  /* 用户反馈：所有卡片圆角过大 => 移动端统一收敛 */
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  border: 1px solid rgba(255, 107, 0, 0.12);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.skill-card {
+  /* 用户反馈：Skill 卡片统一高度，避免两列网格下出现“参差不齐”的节奏 */
+  height: var(--h-skill-card);
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* 两列布局下用 flex-column + footer 自动吸底，让卡片节奏更整齐 */
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 107, 0, 0.12);
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(26, 21, 16, 0.92);
+}
+
+.pill--heat {
+  color: rgba(255, 107, 0, 0.98);
+}
+
+.pill svg {
+  width: 16px;
+  height: 16px;
+}
+
+.skill-card__name {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.22;
+  /* 用户反馈：标题一行超出省略 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skill-card__desc {
+  color: rgba(124, 94, 77, 0.9);
+  font-size: 13px;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  /*
+    描述区域固定为 3 行高度：
+    - 内容不足时也占位，保证卡片内部节奏稳定
+    - 与“卡片定高”结合后，footer 不会出现轻微跳动
+  */
+  min-height: calc(1.55em * 3);
+}
+
+.skill-card__footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: rgba(124, 94, 77, 0.82);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.skill-card__footer .stat--heat {
+  color: rgba(255, 107, 0, 0.98);
+}
+
+.skill-card__footer .stat svg {
+  /* 用户反馈：实践图标太大 => 这里缩小一档 */
+  width: 14px;
+  height: 14px;
+}
+
+.practice-card {
+  /* 用户反馈：实践卡片定高，且两列网格下保持统一节奏 */
+  height: var(--h-practice-card);
+  padding: 14px 14px 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  /*
+    用列方向 flex 让 footer 可靠吸底：
+    - 避免标题/摘要行数变化时，“底部信息”在卡片里上下漂移
+  */
+  display: flex;
+  flex-direction: column;
+}
+
+.practice-card:active {
+  /* 触控反馈：仅压暗/轻微位移，不做 scale（避免布局抖动） */
+  transform: translate3d(0, 1px, 0);
+}
+
+.practice-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(124, 94, 77, 0.88);
+}
+
+/*
+  右上角信息区（日期 + “更多操作”提示）：
+  - 移动端没有 hover，需要一个轻量的“可操作”暗示
+  - 这里用一个小图标，不增加额外按钮，避免视觉噪音
+*/
+.practice-card__top-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.practice-card__source {
+  font-weight: 900;
+  color: rgba(26, 21, 16, 0.88);
+  /* 两列布局下来源文案可能过长：单行省略，避免把右侧信息挤掉 */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.practice-card__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.practice-card__date svg {
+  width: 16px;
+  height: 16px;
+}
+
+.practice-card__hint {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: rgba(124, 94, 77, 0.7);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 107, 0, 0.08);
+}
+
+.practice-card__hint svg {
+  width: 16px;
+  height: 16px;
+}
+
+.practice-card__title {
+  /* 顶部不再放“来源/日期”一行，标题直接顶上来 */
+  margin-top: 0;
+  font-size: 16px;
+  line-height: 1.24;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  /* 标题区域固定为 2 行高度（内容不足时也占位），保证卡片内部布局稳定 */
+  min-height: calc(1.24em * 2);
+}
+
+.practice-card__summary {
+  margin-top: 8px;
+  color: rgba(124, 94, 77, 0.92);
+  font-size: 13px;
+  line-height: 1.55;
+  position: relative;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  /* 摘要区域固定为 5 行高度（内容不足时也占位），符合“留 5 行高度”口径 */
+  min-height: calc(1.55em * 5);
+}
+
+/* 第 5 行整体渐隐：用一个底部遮罩渐变覆盖（纵向渐隐） */
+.practice-card__summary::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1.35em; /* 约等于一行文字高度 */
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.92) 100%);
+}
+
+.practice-card__bottom {
+  /*
+    footer 位置：
+    - 标题/摘要已通过 min-height 固定高度，因此 footer 不会“上蹿下跳”
+    - 这里保持固定间距 12px，避免出现“摘要与 footer 间隔忽大忽小”的观感问题
+  */
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.practice-card__author {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(124, 94, 77, 0.86);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* 详情页关联实践卡与首页实践卡统一样式：不再维护单独的 compact 分支 */
+
+.skills-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  /* 超出部分渐隐：仅对末端做渐隐，避免“全部都淡” */
+  mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 78%, rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 78%, rgba(0, 0, 0, 0) 100%);
+}
+
+.tag {
+  flex: 0 0 auto;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 107, 0, 0.14);
+  background: rgba(255, 255, 255, 0.86);
+  color: rgba(26, 21, 16, 0.86);
+  font-size: 12px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag--more {
+  background: rgba(255, 107, 0, 0.1);
+  border-color: rgba(255, 107, 0, 0.2);
+  color: rgba(255, 107, 0, 0.95);
+}
+
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(124, 94, 77, 0.88);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.stat svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* <= 360px：两列布局信息更紧凑，保留“作者 + 阅读量”即可 */
+
+/* ---------- Infinite Scroll Footer ---------- */
+.m-feed-footer {
+  padding: 14px;
+  text-align: center;
+  color: rgba(124, 94, 77, 0.86);
+  font-size: 12px;
+}
+
+.m-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 107, 0, 0.12);
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 107, 0, 0.2);
+  border-top-color: rgba(255, 107, 0, 0.9);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Bottom Segmented Mode Switch ---------- */
+.m-mode-switch {
+  position: fixed;
+  left: 50%;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(var(--mockup-max), calc(100vw - 18px));
+  z-index: 60;
+  transition: transform 220ms ease, opacity 220ms ease;
+  will-change: transform, opacity;
+}
+
+.m-mode-switch.is-hidden {
+  opacity: 0;
+  transform: translate3d(-50%, 26px, 0);
+  pointer-events: none;
+}
+
+.m-seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 107, 0, 0.14);
+  border-radius: 999px;
+  padding: 4px;
+  box-shadow: var(--shadow-float);
+}
+
+.m-seg__btn {
+  /* 触控热区：移动端建议 >= 44px */
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-weight: 900;
+  color: rgba(124, 94, 77, 0.92);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.m-seg__btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.m-seg__btn.is-active {
+  background: rgba(255, 107, 0, 0.12);
+  color: rgba(255, 107, 0, 0.98);
+}
+
+/* ---------- Back To Top ---------- */
+.m-to-top {
+  position: fixed;
+  right: calc(14px + env(safe-area-inset-right));
+  bottom: calc(92px + env(safe-area-inset-bottom));
+  z-index: 65;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 107, 0, 0.14);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 26px 70px -40px rgba(50, 20, 0, 0.35);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+  transition: opacity 180ms ease, transform 180ms ease;
+  will-change: opacity, transform;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.m-to-top.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+}
+
+.m-to-top svg {
+  width: 18px;
+  height: 18px;
+  color: rgba(255, 107, 0, 0.92);
+}
+
+/* ---------- Bottom Sheet (ActionSheet) ---------- */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: none;
+}
+
+.sheet.is-open {
+  display: block;
+}
+
+.sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  /* 遮罩略加深：减少底层元素“穿透感” */
+  background: rgba(26, 21, 16, 0.42);
+  opacity: 0;
+  transition: opacity 220ms ease;
+  will-change: opacity;
+}
+
+.sheet.is-open .sheet__backdrop {
+  opacity: 1;
+}
+
+.sheet__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 14px calc(14px + env(safe-area-inset-bottom));
+  /* 与卡片圆角统一，避免“面板比卡片更圆”的割裂感 */
+  border-radius: 18px 18px 0 0;
+  /* 面板用纯色：移动端更“干净”，同时避免半透明叠加导致脏 */
+  background: var(--surface-solid);
+  border: 1px solid rgba(255, 107, 0, 0.14);
+  box-shadow: 0 -24px 80px -40px rgba(0, 0, 0, 0.45);
+  transform: translate3d(0, 110%, 0);
+  transition: transform 240ms ease;
+  will-change: transform;
+}
+
+.sheet.is-open .sheet__panel {
+  transform: translate3d(0, 0, 0);
+}
+
+.sheet__grab {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  margin: 2px auto 10px;
+  background: rgba(124, 94, 77, 0.28);
+}
+
+.sheet__info {
+  display: grid;
+  gap: 8px;
+  padding: 6px 2px 12px;
+}
+
+.sheet__title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.22;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+}
+
+.sheet__source {
+  color: rgba(124, 94, 77, 0.86);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sheet__summary {
+  margin: 0;
+  color: rgba(124, 94, 77, 0.92);
+  font-size: 13px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sheet__meta {
+  display: flex;
+  gap: 14px;
+  color: rgba(124, 94, 77, 0.86);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sheet__skills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 2px 2px;
+  mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 86%, rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 86%, rgba(0, 0, 0, 0) 100%);
+}
+
+.sheet__skills::-webkit-scrollbar {
+  display: none;
+}
+
+.sheet__actions {
+  /* 两个主动作并排（左：跳原文；右：筛选相关 Skill） */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.sheet-btn {
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 107, 0, 0.14);
+  background: rgba(255, 255, 255, 0.92);
+  font-weight: 900;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  /*
+    图标位置优化：
+    - 统一 icon 容器尺寸，避免不同 SVG viewBox 导致的“看起来偏上/偏下”
+    - 使用 line-height: 1 收敛文本基线差异，减少视觉抖动
+  */
+  line-height: 1;
+}
+
+.sheet-btn__icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sheet-btn__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sheet-btn--primary {
+  background: rgba(255, 107, 0, 0.92);
+  border-color: rgba(255, 107, 0, 0.92);
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.sheet-btn--muted {
+  background: rgba(124, 94, 77, 0.08);
+  border-color: rgba(124, 94, 77, 0.12);
+  color: rgba(124, 94, 77, 0.92);
+}
+
+/* ---------- Minimal Mobile Footer ---------- */
+.m-footer {
+  padding: 16px 14px 22px;
+  color: rgba(124, 94, 77, 0.86);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.m-footer strong {
+  color: rgba(26, 21, 16, 0.88);
+}
+
+/* ---------- Toast（移动端 PC 专属功能提示） ---------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(120px + env(safe-area-inset-bottom));
+  transform: translate3d(-50%, 10px, 0);
+  z-index: 90;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 107, 0, 0.14);
+  background: rgba(26, 21, 16, 0.9);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+  will-change: opacity, transform;
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translate3d(-50%, 0, 0);
+}
+
+/* ---------- Reduced Motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .spinner {
+    animation: none;
+  }
+
+  .skeleton-block {
+    animation: none;
+  }
+
+  .m-mode-switch,
+  .m-to-top,
+  .sheet__backdrop,
+  .sheet__panel {
+    transition: none;
+  }
+
+  .toast {
+    transition: none;
+  }
+}
+
+/* ---------- Small Screen Tweaks (<= 360px) ---------- */
+@media (max-width: 360px) {
+  /* 小屏略收敛字重/间距，避免 header 过挤 */
+  .icon-btn {
+    padding: 0 6px;
+    gap: 6px;
+  }
+  .icon-btn__label {
+    font-size: 12px;
+  }
+}

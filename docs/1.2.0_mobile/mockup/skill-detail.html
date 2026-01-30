@@ -1,0 +1,106 @@
+<!doctype html>
+<!--
+  Skill Hub 中国 v1.2.0 - Mobile Mockup (Skill Detail)
+  ------------------------------------------------------------
+  说明：
+  - 用于验证“移动端 Skill 详情页”的布局与交互降级口径：
+    - 详情功能保留
+    - PC 专属能力（投稿/下载等）在移动端点击后 toast 提示“请前往PC版网页使用功能”
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skill Hub 中国 · Skill 详情 · Mobile Mockup</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+
+  <body>
+    <div class="mockup">
+      <header class="m-header" role="banner" aria-label="站点头部">
+        <div class="m-header__row">
+          <a class="m-logo" href="./index.html" aria-label="返回首页">
+            <span class="m-logo__mark" aria-hidden="true">S</span>
+            <span class="m-logo__text">
+              <span class="m-logo__title">Skill Hub</span>
+              <span class="m-logo__sub">中国</span>
+            </span>
+          </a>
+
+          <div class="m-header__actions" aria-label="快捷入口">
+            <button class="icon-btn" type="button" aria-label="打开交流群（mock）">
+              <span class="icon-btn__icon" aria-hidden="true" id="communityIcon"></span>
+              <span class="icon-btn__label">交流群</span>
+            </button>
+            <a class="icon-btn" href="https://example.com/docs" target="_blank" rel="noreferrer noopener" aria-label="打开官方文档（新窗口）">
+              <span class="icon-btn__icon" aria-hidden="true" id="docsIcon"></span>
+              <span class="icon-btn__label">文档</span>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- 详情页不需要底部 mode switch，因此单独使用更小的安全区 padding -->
+      <main class="mockup__safe mockup__safe--detail" role="main" aria-label="Skill 详情内容">
+        <!-- Skill 信息卡：移动端纵向排布，避免左右挤压 -->
+        <section class="m-list m-list--single" aria-label="Skill 信息">
+          <article class="card" style="padding: 14px 14px 12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <span class="pill" style="flex:0 0 auto">
+                <!-- 简化：静态标签 -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px">
+                  <path d="M20 13l-7 7-11-11V2h7l11 11z"></path>
+                  <circle cx="7.5" cy="7.5" r="1.5"></circle>
+                </svg>
+                设计
+              </span>
+              <span class="pill pill--heat" title="热度">
+                <!-- 与首页一致：lucide Flame icon path -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px">
+                  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                </svg>
+                9.6
+              </span>
+            </div>
+
+            <h1 style="margin:10px 0 0;font-size:18px;line-height:1.18;letter-spacing:-0.01em">ui-ux-pro-max</h1>
+            <p style="margin:10px 0 0;color:rgba(124,94,77,0.92);font-size:13px;line-height:1.6">
+              UI/UX 设计智能：风格、色板、字体与交互建议，帮你快速做出“像人做的”界面（移动端详情页示意）。
+            </p>
+
+            <!-- 操作区：移动端 PC 专属功能降级为 toast -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+              <button class="sheet-btn sheet-btn--primary" type="button" data-pc-only="true" aria-label="下载 ZIP（PC 专属）">
+                下载 ZIP
+              </button>
+              <button class="sheet-btn" type="button" data-pc-only="true" aria-label="投稿实践（PC 专属）">
+                投稿实践
+              </button>
+            </div>
+          </article>
+        </section>
+
+        <!-- 关联实践：无限滚动 + 两列网格 -->
+        <section class="m-detail-heading" aria-label="关联实践">
+          <h2 class="m-detail-heading__title">关联实践</h2>
+        </section>
+
+        <section class="m-list" id="detailPracticesList" aria-label="关联实践列表"></section>
+        <div id="detailSentinel" aria-hidden="true"></div>
+        <div class="m-feed-footer" id="detailFeedFooter" aria-label="列表状态"></div>
+
+        <footer class="m-footer" role="contentinfo">
+          <div>
+            连接优质 Skill 与场景落地，沉淀可复用的 AI 生产力模块，让每位开发者都能快速构建强大应用。
+          </div>
+          <div style="margin-top: 8px"><strong>© 2026 Skill Hub 中国</strong></div>
+        </footer>
+      </main>
+    </div>
+
+    <!-- Toast：用于移动端提示“请前往PC版网页使用功能” -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="./detail.js"></script>
+  </body>
+</html>

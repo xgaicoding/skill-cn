@@ -1,0 +1,157 @@
+<!doctype html>
+<!--
+  Skill Hub 中国 v1.2.0 - Mobile Mockup (Home)
+  ------------------------------------------------------------
+  说明：
+  - 该页面用于验证“移动端首页”的视觉与交互口径（静态 HTML）。
+  - 不依赖构建工具；可直接用浏览器打开。
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <!-- 移动端必备：避免页面缩放导致布局错乱 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skill Hub 中国 · Mobile Mockup</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+
+  <body>
+    <div class="mockup">
+      <!-- Header：Logo / 交流群 / 官方文档 + 搜索（移动端不显示提交Skill/登录入口） -->
+      <header class="m-header" role="banner" aria-label="站点头部">
+        <div class="m-header__row">
+          <a class="m-logo" href="./index.html" aria-label="返回首页">
+            <span class="m-logo__mark" aria-hidden="true">S</span>
+            <span class="m-logo__text">
+              <span class="m-logo__title">Skill Hub</span>
+              <span class="m-logo__sub">中国</span>
+            </span>
+          </a>
+
+          <div class="m-header__actions" aria-label="快捷入口">
+            <button class="icon-btn" type="button" aria-label="打开交流群（mock）">
+              <span class="icon-btn__icon" id="communityIcon" aria-hidden="true"></span>
+              <span class="icon-btn__label">交流群</span>
+            </button>
+            <a class="icon-btn" href="https://example.com/docs" target="_blank" rel="noreferrer noopener" aria-label="打开官方文档（新窗口）">
+              <span class="icon-btn__icon" id="docsIcon" aria-hidden="true"></span>
+              <span class="icon-btn__label">文档</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="m-search" role="search" aria-label="搜索">
+          <span class="m-search__icon" id="searchIcon" aria-hidden="true"></span>
+          <input
+            class="m-search__input"
+            id="searchInput"
+            type="search"
+            placeholder="搜索 Skill 名称、描述、标签"
+            autocomplete="off"
+            aria-label="搜索关键词"
+          />
+        </div>
+      </header>
+
+      <main class="mockup__safe" role="main" aria-label="首页内容">
+        <!-- Hero：移动端改为横向轮播（第1张品牌卡 + 推荐实践卡） -->
+        <section class="m-hero" aria-label="移动端 Hero 轮播">
+          <div class="m-hero__track" id="heroTrack" aria-label="轮播内容"></div>
+          <div class="m-hero__dots" id="heroDots" aria-label="轮播分页指示"></div>
+        </section>
+
+        <!-- 筛选条：吸顶（sticky），标签横滑 + 排序切换 + ids 锁定集合提示（仅 skills 模式） -->
+        <section class="m-toolbar" id="toolbar" data-has-ids="false" aria-label="筛选与排序">
+          <div class="m-toolbar__row">
+            <nav class="m-chips" id="tagChips" aria-label="分类标签（横向可滚动）"></nav>
+
+            <div class="m-sort" role="group" aria-label="排序">
+              <button class="m-sort__btn is-active" id="sortHeat" type="button" aria-pressed="true">
+                <span aria-hidden="true" id="heatIcon"></span>
+                最热
+              </button>
+              <button class="m-sort__btn" id="sortRecent" type="button" aria-pressed="false">
+                <span aria-hidden="true" id="recentIcon"></span>
+                最新
+              </button>
+            </div>
+          </div>
+
+          <!-- ids 锁定集合：仅在 skills 模式且存在 ids 时展示 -->
+          <div class="m-toolbar__subrow" aria-label="关联技能筛选提示">
+            <button class="ids-chip" id="idsChip" type="button" aria-label="已启用关联技能筛选，点击清除">
+              <span>关联技能 <span class="ids-chip__muted">(<span id="idsChipCount">0</span>)</span></span>
+              <span class="ids-chip__x" id="idsX" aria-hidden="true"></span>
+            </button>
+          </div>
+        </section>
+
+        <!-- 列表区域：skills / practices 两套列表，切换模式时切换展示 -->
+        <section class="m-list" id="skillsList" aria-label="Skill 列表"></section>
+        <section class="m-list" id="practicesList" aria-label="实践文章列表" hidden></section>
+
+        <!-- 无限滚动：sentinel 作为触底观察点；feedFooter 展示加载/失败/已到底 -->
+        <div id="sentinel" aria-hidden="true"></div>
+        <div class="m-feed-footer" id="feedFooter" aria-label="列表状态"></div>
+
+        <!-- Footer：极简版本 -->
+        <footer class="m-footer" role="contentinfo">
+          <div>
+            连接优质 Skill 与场景落地，沉淀可复用的 AI 生产力模块，让每位开发者都能快速构建强大应用。
+          </div>
+          <div style="margin-top: 8px"><strong>© 2026 Skill Hub 中国</strong></div>
+        </footer>
+      </main>
+    </div>
+
+    <!-- 回到顶部：滚动超过一定距离后出现 -->
+    <button class="m-to-top" id="toTop" type="button" aria-label="回到顶部"></button>
+
+    <!-- 底部模式切换：滚动下隐藏 / 上滑或停住出现 -->
+    <div class="m-mode-switch" id="modeSwitch" aria-label="模式切换">
+      <div class="m-seg" role="tablist" aria-label="首页模式">
+        <button class="m-seg__btn is-active" id="modeSkills" type="button" role="tab" aria-selected="true">
+          <span aria-hidden="true" id="skillsModeIcon"></span>
+          Skills
+        </button>
+        <button class="m-seg__btn" id="modePractices" type="button" role="tab" aria-selected="false">
+          <span aria-hidden="true" id="practicesModeIcon"></span>
+          实践
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Sheet ActionSheet：点击实践卡任意区域弹出 -->
+    <div class="sheet" id="sheet" aria-label="实践操作面板" role="dialog" aria-modal="true">
+      <div class="sheet__backdrop" id="sheetBackdrop" aria-hidden="true"></div>
+      <div class="sheet__panel" role="document">
+        <div class="sheet__grab" aria-hidden="true"></div>
+
+        <!-- 信息区：用于确认“我点的是哪篇”，并补齐 <=360px 被隐藏的信息 -->
+        <div class="sheet__info" aria-label="文章信息">
+          <h3 class="sheet__title" id="sheetTitle">-</h3>
+          <div class="sheet__source" id="sheetSource">-</div>
+          <p class="sheet__summary" id="sheetSummary">-</p>
+          <div class="sheet__meta" aria-label="补齐信息">
+            <span>日期：<span id="sheetMetaDate">-</span></span>
+            <span>阅读：<span id="sheetMetaViews">-</span></span>
+          </div>
+          <div class="sheet__skills" id="sheetSkills" aria-label="关联技能（横向滚动）"></div>
+        </div>
+
+        <div class="sheet__actions" aria-label="操作按钮">
+          <button class="sheet-btn sheet-btn--primary" id="sheetOpenOriginal" type="button">
+            <span class="sheet-btn__icon" aria-hidden="true" id="sheetOpenIcon"></span>
+            跳转原文
+          </button>
+          <button class="sheet-btn" id="sheetFilterSkills" type="button">
+            <span class="sheet-btn__icon" aria-hidden="true" id="sheetFilterIcon"></span>
+            筛选相关 Skill
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
