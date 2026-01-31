@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SKILL_ISSUE_URL, TAG_OPTIONS, SORT_OPTIONS, PAGE_SIZE } from "@/lib/constants";
 import type { Paginated, Practice, PracticeWithSkills, Skill } from "@/lib/types";
+import type { DeviceKind } from "@/lib/device";
 import SkillCard from "@/components/home/SkillCard";
 import { SkillCardSkeleton } from "@/components/SkillCardSkeleton";
 import FeaturedCarousel from "@/components/home/FeaturedCarousel";
@@ -13,6 +14,7 @@ import ModeDock, { type HomeMode } from "@/components/home/ModeDock";
 import PracticeFeedCard from "@/components/home/PracticeFeedCard";
 import PracticeFeedCardSkeleton from "@/components/home/PracticeFeedCardSkeleton";
 import { Clock, Filter, FilterX, Flame, Plus, RefreshCcw, SearchX, Sparkles, TriangleAlert, X } from "lucide-react";
+import HomeMobileView from "@/components/home/mobile/HomeMobileView";
 
 export type HomeInitialState = {
   q?: string;
@@ -23,7 +25,18 @@ export type HomeInitialState = {
   ids?: string;
 };
 
-export default function HomePage({ initial }: { initial: HomeInitialState }) {
+export default function HomePage({
+  initial,
+  deviceKind = "desktop",
+}: {
+  initial: HomeInitialState;
+  /**
+   * 设备类型（来自 Server Component UA 判断）：
+   * - mobile：渲染移动端专属 View（v1.2.0）
+   * - tablet/desktop：本期统一按桌面 View 处理
+   */
+  deviceKind?: DeviceKind;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -57,6 +70,10 @@ export default function HomePage({ initial }: { initial: HomeInitialState }) {
   const [loading, setLoading] = useState(true);
   // 标记是否完成过至少一次请求，用于控制空状态的显示时机。
   const [hasLoaded, setHasLoaded] = useState(false);
+  // skills 请求错误信息（移动端需要“失败重试”，桌面端也可复用该口径）。
+  const [skillsError, setSkillsError] = useState<string | null>(null);
+  // retry 触发器：递增即可强制重新请求（避免把 fetch 逻辑暴露到渲染层）。
+  const [skillsReloadKey, setSkillsReloadKey] = useState(0);
 
   const [practices, setPractices] = useState<PracticeWithSkills[]>([]);
   const [practiceTotalPages, setPracticeTotalPages] = useState(1);
@@ -158,6 +175,9 @@ export default function HomePage({ initial }: { initial: HomeInitialState }) {
     return search.toString();
   }, [page, tag, query, sort, ids, mode]);
 
+  // 设备判定：本期 tablet 按 desktop 处理，避免扩大改造范围。
+  const isMobile = deviceKind === "mobile";
+
   useEffect(() => {
     let cancelled = false;
     const fetchFeatured = async () => {
@@ -193,17 +213,34 @@ export default function HomePage({ initial }: { initial: HomeInitialState }) {
     let cancelled = false;
     const fetchSkills = async () => {
       setLoading(true);
+      setSkillsError(null);
       try {
         const res = await fetch(`/api/skills?${params}`, { cache: "no-store" });
-        const json: Paginated<Skill> = await res.json();
-        if (!cancelled) {
-          setSkills(json.data || []);
-          setTotalPages(json.totalPages || 1);
+        const json = await res.json();
+        if (!res.ok) {
+          throw new Error(json?.error || "加载失败");
         }
-      } catch {
+        const payload = json as Paginated<Skill>;
+        if (!cancelled) {
+          const next = payload.data || [];
+          // 移动端无限滚动：第 2 页起做“追加”而非“整页替换”。
+          if (isMobile && page > 1) {
+            setSkills((prev) => {
+              const map = new Map<number, Skill>();
+              for (const item of prev) map.set(item.id, item);
+              for (const item of next) map.set(item.id, item);
+              return Array.from(map.values());
+            });
+          } else {
+            setSkills(next);
+          }
+          setTotalPages(payload.totalPages || 1);
+        }
+      } catch (err: any) {
         if (!cancelled) {
           setSkills([]);
           setTotalPages(1);
+          setSkillsError(err?.message || "加载失败");
         }
       } finally {
         if (!cancelled) {
@@ -217,7 +254,7 @@ export default function HomePage({ initial }: { initial: HomeInitialState }) {
     return () => {
       cancelled = true;
     };
-  }, [params, mode]);
+  }, [params, mode, isMobile, page, skillsReloadKey]);
 
   useEffect(() => {
     // 仅在「实践模式」请求 practices，避免在刷 Skill 下做无意义请求。
@@ -237,7 +274,18 @@ export default function HomePage({ initial }: { initial: HomeInitialState }) {
         }
         const payload = json as Paginated<PracticeWithSkills>;
         if (!cancelled) {
-          setPractices(payload.data || []);
+          const next = payload.data || [];
+          // 移动端无限滚动：第 2 页起做“追加”而非“整页替换”。
+          if (isMobile && page > 1) {
+            setPractices((prev) => {
+              const map = new Map<number, PracticeWithSkills>();
+              for (const item of prev) map.set(item.id, item);
+              for (const item of next) map.set(item.id, item);
+              return Array.from(map.values());
+            });
+          } else {
+            setPractices(next);
+          }
           setPracticeTotalPages(payload.totalPages || 1);
         }
       } catch (err: any) {
@@ -258,7 +306,7 @@ export default function HomePage({ initial }: { initial: HomeInitialState }) {
     return () => {
       cancelled = true;
     };
-  }, [params, mode, practiceReloadKey]);
+  }, [params, mode, practiceReloadKey, isMobile, page]);
 
   const handleTagChange = (next: string) => {
     /**
@@ -349,6 +397,87 @@ export default function HomePage({ initial }: { initial: HomeInitialState }) {
   // 顶部筛选条的 loading/禁用状态需要随模式切换：实践模式下以 practiceLoading 为准。
   const listLoading = mode === "skills" ? loading : practiceLoading;
 
+  /**
+   * “筛选相关 Skill”（移动端同页切换方案）
+   * ------------------------------------------------------------
+   * 需求：
+   * - 在 skills 模式展示 ids 锁定集合（Chip 可清除）
+   * - 为避免“原筛选条件导致列表为空”让用户困惑：
+   *   这里构造一个“干净”的 URL（不带 q/tag/mode），只保留 ids + sort
+   *   行为与桌面端“新开 Tab”保持一致（只是打开方式不同）
+   */
+  const handleFilterSkillsByIds = (skillIds: number[]) => {
+    if (!skillIds.length) return;
+
+    // 切换模式时回到顶部，保持移动端体验一致。
+    window.scrollTo({ top: 0 });
+
+    const current = new URLSearchParams(searchParams?.toString() || "");
+    const next = new URLSearchParams();
+    next.set("ids", skillIds.join(","));
+    // sort 继承当前页面（若没有则默认 heat）
+    next.set("sort", current.get("sort") || "heat");
+
+    pushSearchParams(next, { scroll: true });
+
+    // 同步本地 state：避免“URL 已变但 UI 还停留在旧模式/旧筛选”的短暂割裂。
+    setMode("skills");
+    setIds(skillIds.join(","));
+    setTag("全部");
+    setQuery("");
+    setPage(1);
+  };
+
+  const handleMobileLoadMore = () => {
+    // 由视图层判定 hasMore，这里只做“安全递增”。
+    setPage((prev) => prev + 1);
+  };
+
+  const handleMobileRetry = () => {
+    // retry 只需要触发一次“重新请求”，无需额外修改筛选条件。
+    if (mode === "skills") {
+      setSkillsReloadKey((key) => key + 1);
+      return;
+    }
+    setPracticeReloadKey((key) => key + 1);
+  };
+
+  // 移动端：使用专属 View（两列网格 + 无限滚动 + ActionSheet）。
+  if (isMobile) {
+    return (
+      <HomeMobileView
+        mode={mode}
+        tag={tag}
+        sort={sort}
+        page={page}
+        featured={featured}
+        featuredLoading={featuredLoading}
+        idsCount={idsCount}
+        skills={{
+          items: skills,
+          loading,
+          hasLoaded,
+          error: skillsError,
+          totalPages,
+        }}
+        practices={{
+          items: practices,
+          loading: practiceLoading,
+          hasLoaded: practiceHasLoaded,
+          error: practiceError,
+          totalPages: practiceTotalPages,
+        }}
+        onModeChange={handleModeChange}
+        onTagChange={handleTagChange}
+        onSortChange={handleSortChange}
+        onClearIds={handleClearIds}
+        onLoadMore={handleMobileLoadMore}
+        onRetry={handleMobileRetry}
+        onFilterSkillsByIds={handleFilterSkillsByIds}
+      />
+    );
+  }
+
   return (
     <>
       <FeaturedCarousel practices={featured} loading={featuredLoading} />
@@ -422,6 +551,23 @@ export default function HomePage({ initial }: { initial: HomeInitialState }) {
               Array.from({ length: PAGE_SIZE }).map((_, index) => (
                 <SkillCardSkeleton key={`skill-skeleton-${index}`} />
               ))
+            ) : skillsError ? (
+              <EmptyState
+                title="加载失败"
+                description={skillsError}
+                icon={<TriangleAlert className="icon" />}
+                action={
+                  <button
+                    className="btn btn--soft btn--sm"
+                    type="button"
+                    onClick={() => setSkillsReloadKey((key) => key + 1)}
+                    aria-label="重试加载 Skill 列表"
+                  >
+                    <RefreshCcw className="icon" aria-hidden="true" />
+                    重试
+                  </button>
+                }
+              />
             ) : skills.length === 0 ? (
               <EmptyState
                 title={hasFilters ? "暂无匹配的 Skill" : "暂无 Skill"}

@@ -14,7 +14,7 @@ type CommunityModalProps = {
   primaryQrUrl: string;
   // 备用二维码图片地址（用于备用入口或分流展示）。
   backupQrUrl: string;
-  // 触发按钮引用：用于“点击外部关闭”的判断。
+  // 触发按钮引用：历史兼容字段（移动端改为“抽屉”后不再依赖该判断，但保留避免上层改动）。
   triggerRef?: RefObject<HTMLElement>;
 };
 
@@ -23,7 +23,6 @@ export default function CommunityModal({
   onClose,
   primaryQrUrl,
   backupQrUrl,
-  triggerRef,
 }: CommunityModalProps) {
   // 面板引用：用于打开时聚焦，提升可访问性与键盘可控性。
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -33,6 +32,20 @@ export default function CommunityModal({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    /**
+     * 移动端 Drawer/Sheet 打开时锁住背景滚动：
+     * - 与首页实践 ActionSheet 复用同一套 body class（见 app/mobile.css）
+     * - 这样可以避免“遮罩打开但页面还能滚”的晕动感
+     */
+    if (!open) {
+      document.body.classList.remove("is-sheet-open");
+      return;
+    }
+    document.body.classList.add("is-sheet-open");
+    return () => document.body.classList.remove("is-sheet-open");
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -54,22 +67,6 @@ export default function CommunityModal({
     panelRef.current?.focus();
   }, [open]);
 
-  useEffect(() => {
-    if (!open) return;
-    // 点击外部区域自动关闭：避免覆盖式遮罩时造成操作阻断。
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target as Node | null;
-      if (!target) return;
-      if (panelRef.current?.contains(target)) return;
-      if (triggerRef?.current?.contains(target)) return;
-      onClose();
-    };
-    window.addEventListener("pointerdown", handlePointerDown);
-    return () => {
-      window.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, [open, onClose, triggerRef]);
-
   if (!open || !mounted) return null;
 
   return createPortal(
@@ -80,6 +77,16 @@ export default function CommunityModal({
       aria-labelledby="community-modal-title"
       aria-describedby="community-modal-desc"
     >
+      {/* Backdrop：遮罩层
+          - 负责点击外部关闭
+          - 视觉上也用于“压暗背景”，避免内容干扰二维码阅读 */}
+      <button
+        type="button"
+        className="community-modal__backdrop"
+        aria-label="关闭弹窗"
+        onClick={onClose}
+      />
+
       <div className="community-modal__panel" ref={panelRef} tabIndex={-1} role="document">
         {/* 关闭按钮：右上角固定位置 */}
         <button className="community-modal__close" type="button" onClick={onClose} aria-label="关闭">

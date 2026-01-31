@@ -28,6 +28,24 @@ export default function AppFooter() {
 
   return (
     <footer className="footer" role="contentinfo">
+      {/* 移动端极简 Footer（v1.2.0 Mobile Web）
+          ------------------------------------------------------------
+          需求口径：
+          - 移动端仅保留品牌文案 + 版权
+          - 其余（快速入口/共创/联系/免责声明）在移动端隐藏，避免信息噪音与占屏过大
+          说明：
+          - 为避免“两个 Footer 组件各自维护”的复杂度，这里同组件渲染两套结构
+          - 通过 app/mobile.css 在小屏下隐藏桌面版 .footer__shell，仅展示该块
+      */}
+      <div className="footer__mobile" aria-label="移动端页脚">
+        <p className="footer__mobile-desc">
+          连接优质 Skill 与场景落地，沉淀可复用的 AI 生产力模块，让每位开发者都能快速构建强大应用。
+        </p>
+        <p className="footer__mobile-copy">
+          <strong>© {currentYear} Skill Hub 中国</strong>
+        </p>
+      </div>
+
       {/* 页脚整体容器：玻璃态背景 + 结构化信息分区 */}
       <div className="footer__shell">
         {/* 顶部信息网格：品牌、快速入口、社区共创、联系支持 */}

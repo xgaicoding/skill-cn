@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import "./globals.css";
+// 移动端差异覆盖样式必须在 globals.css 之后引入，保证同等选择器下后者能覆盖前者。
+import "./mobile.css";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 

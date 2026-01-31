@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { BookOpen, Search, Users } from "lucide-react";
 import AuthActions from "@/components/AuthActions";
@@ -9,9 +9,24 @@ import { COMMUNITY_QR_BACKUP_URL, COMMUNITY_QR_URL, OFFICIAL_DOCS_LINK } from "@
 import CommunityModal from "@/components/CommunityModal";
 
 export default function AppHeader() {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  // PRD：实践模式下，Header 搜索切换为“实践搜索”（仅匹配标题/描述）。
-  const isPracticesMode = searchParams?.get("mode") === "practices";
+  /**
+   * PRD（v1.2.0 Mobile Web）：
+   * - 移动端 Skill 详情页不展示搜索框（更克制，减少信息噪音）
+   *
+   * 重要补充（用户验收反馈）：
+   * - PC 端详情页仍需要保留 Header 搜索框，否则会破坏 Header 结构与视觉对齐
+   *
+   * 因此这里的实现策略改为：
+   * - Header 组件“始终渲染搜索框”，保证桌面端结构稳定（避免 detail 页变形）
+   * - 移动端的“详情页隐藏搜索”由 `app/mobile.css` 通过 `body.is-detail` + media query 覆盖实现
+   *
+   * 说明：
+   * - `pathname` 在此处仍会被使用（例如未来若需要做路由细分），因此保留获取
+   * - 但当前版本不再用 pathname 去条件渲染搜索框，避免 PC 端回归
+   */
+  void pathname;
   // skills 模式下可能携带 ids=1,2,3（从实践卡片“筛选相关 Skill”进入），搜索时需要保留该筛选。
   const currentIds = searchParams?.get("ids") || "";
   // 顶部筛选条（tag/sort）现在与 URL 同步：Header 搜索提交时也需要保留，避免用户“搜一下筛选就丢了”。
@@ -60,10 +75,8 @@ export default function AppHeader() {
         </Link>
 
         <form className="search" role="search" aria-label="全局搜索" action="/" method="get">
-          {/* 保持 mode 可分享：实践模式下提交搜索时需要带上 mode=practices */}
-          {isPracticesMode ? <input type="hidden" name="mode" value="practices" /> : null}
-          {/* 保持 ids 筛选：skills 模式下如果带 ids，则搜索在当前筛选集合内进行 */}
-          {!isPracticesMode && currentIds ? <input type="hidden" name="ids" value={currentIds} /> : null}
+          {/* 保持 ids 筛选：如果带 ids，则搜索在当前锁定集合内进行（仅 skills 模式有意义）。 */}
+          {currentIds ? <input type="hidden" name="ids" value={currentIds} /> : null}
           {/* 保持 tag/sort：与筛选条一致，提交搜索时也要带上（否则筛选会“突然丢失”）。 */}
           {currentTag && currentTag !== "全部" ? <input type="hidden" name="tag" value={currentTag} /> : null}
           {currentSort ? <input type="hidden" name="sort" value={currentSort} /> : null}
@@ -74,7 +87,12 @@ export default function AppHeader() {
             type="search"
             name="q"
             ref={searchInputRef}
-            placeholder={isPracticesMode ? "搜索文章标题、描述" : "搜索 Skill 名称、描述、标签"}
+            /*
+              PC 端 Header 搜索统一按 “Skill 搜索” 处理：
+              - 视觉口径：保持旧版 Header 的占位符文案与样式（用户验收要求）
+              - 交互口径：提交搜索默认回到 skills 模式（URL 不携带 mode=practices）
+            */
+            placeholder="搜索 Skill 名称、描述、标签"
             aria-label="搜索关键词"
           />
           <button type="submit">搜索</button>
@@ -115,7 +133,10 @@ export default function AppHeader() {
               <span>官方文档</span>
             </a>
           </div>
-          <AuthActions />
+          {/* 登录 / 提交 Skill：移动端不需要，后续用 CSS 隐藏该块即可（避免在组件里塞太多端判断）。 */}
+          <div className="nav-actions__auth">
+            <AuthActions />
+          </div>
         </div>
       </div>
 

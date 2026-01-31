@@ -1,0 +1,1351 @@
+/*
+  Skill Hub 中国 - Mobile Overrides (v1.2.0)
+  ------------------------------------------------------------
+  设计目标：
+  - 保持 app/globals.css 作为「通用 + 桌面默认」样式入口
+  - 本文件只承载“移动端差异覆盖”，尽量减少样式散落与重复维护
+  - 以 @media (max-width: 767px) 为主（验收口径：手机端）
+*/
+
+/* -------------------------------------------------------------------------- */
+/* Mobile Base (<= 767px)                                                     */
+/* -------------------------------------------------------------------------- */
+
+/* 默认隐藏移动端专属结构，避免在桌面端出现“双 Footer”。 */
+.footer__mobile {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  :root {
+    /*
+      移动端卡片圆角（用户反馈：当前圆角过大）
+      - 不直接改全局 radius-*：避免影响按钮/输入框等非卡片元素
+      - 只在移动端收敛“卡片容器”的圆角，整体更利落
+    */
+    --radius-card: 18px;
+    --radius-hero: 20px;
+
+    /*
+      移动端两列卡片：定高（用于对齐网格节奏）
+      - 数值参考 mockup，后续只需要改这里即可全局同步
+    */
+    --h-skill-card: 152px;
+    --h-practice-card: 206px;
+
+    /* 移动端页面左右内边距 */
+    --mobile-gutter: 14px;
+  }
+
+  html {
+    /* 回到顶部按钮使用 smooth scroll；在 prefers-reduced-motion 下会被 globals.css 兜底关闭 */
+    scroll-behavior: smooth;
+  }
+
+  /* Bottom Sheet 打开时锁住背景滚动（避免遮罩下背景继续滚动造成晕动感） */
+  body.is-sheet-open {
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  /*
+    Bottom Sheet 打开时隐藏浮层控件：
+    - 避免遮罩下看到底部 mode bar / 回到顶部按钮产生“穿透脏感”
+    - 也能减少误触（面板打开时，用户的注意力应聚焦在面板内）
+  */
+  body.is-sheet-open .m-mode-switch,
+  body.is-sheet-open .m-to-top {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Header                                                                  */
+  /* ---------------------------------------------------------------------- */
+
+  /*
+    移动端 Header 采用“普通文档流”：
+    - 避免固定悬浮占用过多视野
+    - 让筛选条（toolbar）成为滚动中常驻的核心操作区（更符合列表浏览场景）
+  */
+  .app-header {
+    position: relative;
+    top: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    background: transparent;
+    margin: 0;
+    padding: 0;
+  }
+
+  .app-header__inner {
+    padding: 14px var(--mobile-gutter) 10px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .logo {
+    font-size: 18px;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 14px;
+  }
+
+  /* 右侧入口：移动端用“文字链按钮”风格（去掉胶囊容器） */
+  .nav-actions {
+    margin-left: auto;
+    gap: 8px;
+  }
+
+  .nav-actions__links {
+    gap: 8px;
+  }
+
+  .nav-actions__link {
+    height: 44px;
+    padding: 0 8px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: rgba(255, 107, 0, 0.96);
+    border-radius: 12px; /* 仅用于 pressed 态轻反馈 */
+  }
+
+  .nav-actions__link .icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .nav-actions__link span {
+    font-size: 13px;
+    font-weight: 900;
+  }
+
+  .nav-actions__link:active {
+    background: rgba(255, 107, 0, 0.08);
+  }
+
+  /* 移动端不需要提交 Skill / 登录入口 */
+  .nav-actions__auth {
+    display: none;
+  }
+
+  /* 搜索：移动端占满一行（第二行） */
+  .search {
+    order: 3;
+    flex: 1 1 100%;
+    margin-left: 0;
+    display: flex; /* 覆盖 globals.css 里旧的 max-width:720 隐藏规则 */
+    padding: 10px 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(255, 107, 0, 0.16);
+    box-shadow: 0 16px 36px -28px rgba(50, 20, 0, 0.18);
+  }
+
+  .search button {
+    /* 移动端用键盘“搜索/回车”提交即可，隐藏显式按钮减少拥挤 */
+    display: none;
+  }
+
+  .search input {
+    font-size: 14px;
+    padding: 2px 0;
+  }
+
+  /*
+    移动端 Skill 详情页：不展示 Header 搜索框
+    - PRD 口径：详情页信息密度更高，搜索会抢占注意力
+    - 实现说明：PC 端仍需要搜索框保持 Header 结构稳定，因此仅在移动端 + 详情页隐藏
+    - `body.is-detail` 由详情页通过 BodyClass 注入（见 components/BodyClass.tsx）
+  */
+  body.is-detail .app-header .search {
+    display: none;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Footer                                                                  */
+  /* ---------------------------------------------------------------------- */
+
+  .footer {
+    margin: 18px 0 0;
+    padding: 0;
+    background: transparent;
+  }
+
+  /* 桌面版 Footer 在移动端隐藏，仅展示极简块 */
+  .footer__shell {
+    display: none;
+  }
+
+  .footer__mobile {
+    display: block;
+    /*
+      移动端极简 Footer（对齐 mockup）：
+      - 居中排版更“稳”
+      - 需要为底部固定 mode bar 预留空间，避免内容被遮挡
+    */
+    padding: 16px var(--mobile-gutter) calc(104px + env(safe-area-inset-bottom));
+    color: rgba(124, 94, 77, 0.86);
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .footer__mobile-desc {
+    margin: 0;
+  }
+
+  .footer__mobile-copy {
+    margin: 8px 0 0;
+    color: rgba(26, 21, 16, 0.88);
+  }
+
+  /* 详情页没有底部 mode bar：Footer 不需要额外预留 104px */
+  body.is-detail .footer__mobile {
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Mobile Home Layout                                                      */
+  /* ---------------------------------------------------------------------- */
+
+  .m-safe {
+    padding: 0 var(--mobile-gutter) calc(104px + env(safe-area-inset-bottom));
+  }
+
+  /* 详情页没有底部 mode bar：减少多余留白，避免 footer “飘起来” */
+  .m-safe--detail {
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+
+  /* Hero */
+  .m-hero {
+    margin: 8px 0 10px;
+  }
+
+  .m-hero__swiper {
+    /*
+      轮播容器需要裁剪横向溢出：
+      - Swiper 内部 wrapper 宽度会远大于容器（多张 slide 横向排列）
+      - 如果这里 overflow 可见，会把页面“撑出横向滚动”（用户反馈问题）
+      - 因此必须保持 overflow:hidden，只在容器内部用“slide 宽度 < 容器宽度”实现露出下一张
+    */
+    overflow: hidden;
+    border-radius: var(--radius-hero);
+    /* 给卡片留出一点 breathing space，避免边框/高光贴边显得局促 */
+    padding: 6px 2px 0;
+  }
+
+  /*
+    Slide 宽度（露出下一张）：
+    - 对齐 mockup：width = 100% - 34px
+    - 配合 Swiper 的 spaceBetween=12px，可露出 ~22px 的下一张卡片
+  */
+  .m-hero__swiper .swiper-slide {
+    width: calc(100% - 34px);
+    height: auto;
+  }
+
+  /*
+    Pagination 位置：
+    - Swiper 默认用 absolute 贴在底部，容易“压住卡片内容”
+    - 这里改为正常文档流（static/relative），让 dots 出现在卡片下方
+  */
+  .m-hero__swiper .swiper-pagination {
+    position: relative;
+    inset: auto;
+    margin-top: 6px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .m-hero-card {
+    border-radius: var(--radius-hero);
+    /*
+      轮播卡统一高度（解决：卡片高度不一致）
+      - 使用 clamp 兼容 320/360/390 等不同宽度
+    */
+    height: clamp(172px, 52vw, 214px);
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 107, 0, 0.12);
+    /*
+      用户反馈：轮播区底部阴影“脏”
+      - 这里去掉外部 drop shadow，仅保留轻微 inset 质感
+      - 避免在 Swiper 容器内形成“阴影带”
+    */
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55) inset;
+    overflow: hidden;
+    position: relative;
+    padding: 16px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Hero 骨架屏：让内容“像在加载”，避免一整块空白 */
+  .m-hero-card--skeleton {
+    /* skeleton 需要自然堆叠，而不是 space-between 拉开成“上下两段” */
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .m-hero-card--skeleton::before {
+    /* 骨架态弱化氛围光，避免“脏/花” */
+    opacity: 0.35;
+  }
+
+  .m-hero-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(60% 60% at 20% 10%, rgba(255, 204, 0, 0.22) 0%, transparent 60%),
+      radial-gradient(56% 56% at 90% 0%, rgba(255, 107, 0, 0.18) 0%, transparent 62%);
+    opacity: 0.9;
+  }
+
+  .m-hero-card > * {
+    position: relative;
+  }
+
+  .m-hero-brand__badge {
+    /*
+      品牌字（Skill Hub 中国）：
+      - 复用 PC 端的“渐变高光扫过”文字质感（缩小版）
+      - 不使用胶囊容器（避免“像标签”）
+      - 动效尽量收敛：只移动第一层高光（其余层固定）
+    */
+    --brand-aura-size: 190%;
+    --brand-aura-speed: 10s;
+    --brand-aura-1: rgba(255, 204, 0, 0.92);
+    --brand-aura-2: rgba(255, 107, 0, 0.86);
+    --brand-aura-3: rgba(255, 51, 102, 0.22);
+    --brand-aura-4: rgba(255, 255, 255, 0.4);
+
+    display: inline-block;
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+    font-weight: 950;
+    font-size: clamp(20px, 6vw, 26px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    background-image:
+      linear-gradient(115deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.46) 14%, rgba(255, 255, 255, 0) 30%),
+      radial-gradient(at 62% 9%, var(--brand-aura-1) 0px, transparent 44%),
+      radial-gradient(at 69% 60%, var(--brand-aura-2) 0px, transparent 48%),
+      radial-gradient(at 24% 89%, var(--brand-aura-3) 0px, transparent 52%),
+      radial-gradient(at 51% 77%, var(--brand-aura-4) 0px, transparent 58%),
+      radial-gradient(at 78% 92%, var(--brand-aura-1) 0px, transparent 50%),
+      linear-gradient(135deg, var(--primary-strong) 0%, var(--primary) 56%, var(--accent) 120%);
+    background-blend-mode: screen, screen, screen, screen, screen, screen, normal;
+    background-size: 240% 180%, var(--brand-aura-size) var(--brand-aura-size),
+      var(--brand-aura-size) var(--brand-aura-size), var(--brand-aura-size) var(--brand-aura-size),
+      var(--brand-aura-size) var(--brand-aura-size), var(--brand-aura-size) var(--brand-aura-size), 100% 100%;
+    background-position: -40% 30%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+    animation: m-brand-aura var(--brand-aura-speed) linear infinite;
+    will-change: background-position, transform;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-shadow: 0 0 0.44ch rgba(255, 107, 0, 0.14), 0 0 1.18ch rgba(255, 204, 0, 0.1);
+    filter: saturate(1.18) contrast(1.06);
+  }
+
+  @keyframes m-brand-aura {
+    0% {
+      background-position: -40% 30%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+    }
+    50% {
+      background-position: 140% 70%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+    }
+    100% {
+      background-position: -40% 30%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .m-hero-brand__badge {
+      animation: none;
+    }
+  }
+
+  .m-hero-brand__headline {
+    margin: 12px 0 0;
+    font-size: 20px;
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    font-weight: 950;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .m-hero-brand__headline em {
+    font-style: normal;
+    color: rgba(255, 107, 0, 0.98);
+  }
+
+  .m-hero-brand__desc {
+    margin: 10px 0 0;
+    color: rgba(124, 94, 77, 0.9);
+    font-size: 14px;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .m-hero-card--practice {
+    color: inherit;
+  }
+
+  .m-hero-practice__title {
+    margin: 0;
+    font-weight: 950;
+    font-size: 18px;
+    line-height: 1.22;
+    letter-spacing: -0.012em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .m-hero-practice__summary {
+    color: rgba(124, 94, 77, 0.9);
+    font-size: 13px;
+    line-height: 1.55;
+    margin: 10px 0 0;
+    display: -webkit-box;
+    /* 固定高度下，摘要略收敛，保证 meta 不被挤压 */
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .m-hero-practice__meta {
+    margin-top: 12px;
+    color: rgba(124, 94, 77, 0.8);
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  /* Swiper dots：更贴合站点暖色 */
+  .m-hero .swiper-pagination-bullet {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(124, 94, 77, 0.18);
+    opacity: 1;
+    transition: width 220ms ease, background 220ms ease;
+  }
+
+  .m-hero .swiper-pagination-bullet-active {
+    width: 18px;
+    background: rgba(255, 107, 0, 0.72);
+  }
+
+  /* Toolbar */
+  .m-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    /*
+      Toolbar 扁平化（对齐 mockup / 预期视觉）：
+      - 去掉“整块胶囊容器感”，改为贴着页面背景的吸顶条
+      - 保留轻微 blur 作为增强；不支持 blur 时自动降级
+    */
+    /* calc() 只使用加减，避免部分浏览器对乘法支持不一致 */
+    margin: 10px calc(0px - var(--mobile-gutter)) 10px;
+    padding: 10px var(--mobile-gutter);
+    background: rgba(255, 241, 230, 0.78);
+    border-bottom: 1px solid rgba(255, 107, 0, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .m-toolbar {
+      background: rgba(255, 241, 230, 0.94);
+    }
+  }
+
+  .m-toolbar__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .m-chips {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 2px;
+    flex: 1 1 auto;
+    /* 横向滚动末端渐隐：用 mask-image，避免额外 DOM */
+    mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 86%, rgba(0, 0, 0, 0) 100%);
+    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 86%, rgba(0, 0, 0, 0) 100%);
+  }
+
+  .m-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .m-chip {
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 107, 0, 0.14);
+    background: rgba(255, 255, 255, 0.86);
+    color: rgba(26, 21, 16, 0.92);
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .m-chip.is-active {
+    background: rgba(255, 107, 0, 0.12);
+    border-color: rgba(255, 107, 0, 0.28);
+    color: rgba(255, 107, 0, 0.98);
+  }
+
+  .m-sort {
+    display: inline-flex;
+    border-radius: 999px;
+    padding: 2px;
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(255, 107, 0, 0.14);
+    flex: 0 0 auto;
+    gap: 4px;
+  }
+
+  .m-sort__btn {
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    color: rgba(124, 94, 77, 0.9);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .m-sort__btn .icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .m-sort__btn.is-active {
+    background: rgba(255, 107, 0, 0.12);
+    color: rgba(230, 82, 0, 0.98);
+  }
+
+  .m-toolbar__subrow {
+    margin-top: 8px;
+  }
+
+  .ids-chip {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 107, 0, 0.18);
+    background: rgba(255, 107, 0, 0.08);
+    color: rgba(230, 82, 0, 0.98);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 900;
+  }
+
+  .ids-chip__text {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ids-chip__x {
+    opacity: 0.72;
+  }
+
+  /* Grid & Cards */
+  .m-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .m-card {
+    border-radius: var(--radius-card);
+    border: 1px solid rgba(255, 255, 255, 0.88);
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 22px 60px -34px rgba(50, 20, 0, 0.18), 0 0 0 1px rgba(255, 107, 0, 0.08) inset;
+    padding: 12px 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .m-card--skill {
+    height: var(--h-skill-card);
+  }
+
+  .m-skill__title {
+    font-weight: 900;
+    font-size: 14px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .m-skill__desc {
+    color: rgba(124, 94, 77, 0.88);
+    font-size: 12px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .m-skill__meta {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 107, 0, 0.12);
+  }
+
+  .m-skill__stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(124, 94, 77, 0.92);
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  .m-skill__stat .icon {
+    width: 15px;
+    height: 15px;
+    color: rgba(255, 107, 0, 0.9);
+  }
+
+  .m-card--practice {
+    height: var(--h-practice-card);
+    text-align: left;
+  }
+
+  .m-practice__title {
+    font-weight: 900;
+    font-size: 14px;
+    line-height: 1.22;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .m-practice__summary {
+    color: rgba(124, 94, 77, 0.88);
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .m-practice__summary-text {
+    display: block;
+    position: relative;
+    height: 8em; /* 5 行：1.6 * 5 = 8em */
+    overflow: hidden;
+    /*
+      第 5 行纵向整体渐隐：
+      - 使用 mask 优先（更干净）
+      - 不支持 mask 时，使用 ::after 叠加蒙层兜底
+    */
+    mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 0,
+      rgba(0, 0, 0, 1) 6.4em,
+      rgba(0, 0, 0, 0.35) 7.2em,
+      rgba(0, 0, 0, 0) 8em
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 0,
+      rgba(0, 0, 0, 1) 6.4em,
+      rgba(0, 0, 0, 0.35) 7.2em,
+      rgba(0, 0, 0, 0) 8em
+    );
+  }
+
+  .m-practice__summary-text::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 6.4em;
+    bottom: 0;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.16) 22%, rgba(255, 255, 255, 0.78) 100%);
+  }
+
+  @supports ((mask-image: linear-gradient(#000, transparent)) or (-webkit-mask-image: linear-gradient(#000, transparent))) {
+    .m-practice__summary-text::after {
+      display: none;
+    }
+  }
+
+  .m-practice__meta {
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 107, 0, 0.12);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 900;
+    color: rgba(124, 94, 77, 0.92);
+  }
+
+  .m-practice__author {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .m-practice__views {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .m-practice__views .icon {
+    width: 15px;
+    height: 15px;
+    color: rgba(255, 107, 0, 0.9);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Skeleton cards（移动端专属：对齐 mockup 结构）                           */
+  /* ---------------------------------------------------------------------- */
+
+  .m-card--skeleton {
+    padding: 14px 14px 12px;
+    display: grid;
+    gap: 10px;
+  }
+
+  .m-skeleton-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .m-skeleton-block {
+    border-radius: 999px;
+    background: rgba(124, 94, 77, 0.12);
+    opacity: 0.75;
+    animation: m-skeleton-pulse 1.2s ease-in-out infinite;
+    will-change: opacity;
+  }
+
+  .m-skeleton-pill {
+    height: 28px;
+    width: 86px;
+  }
+
+  .m-skeleton-pill--sm {
+    width: 70px;
+  }
+
+  .m-skeleton-line {
+    height: 12px;
+    width: 100%;
+  }
+
+  .m-skeleton-line--title {
+    height: 16px;
+    width: 72%;
+  }
+
+  .m-skeleton-line--meta {
+    height: 12px;
+    width: 42%;
+  }
+
+  @keyframes m-skeleton-pulse {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 0.95;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .m-skeleton-block {
+      animation: none;
+    }
+  }
+
+  /* Feed footer / error state */
+  .m-feed-footer {
+    padding: 14px 0 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .m-feed-footer__loading,
+  .m-feed-footer__end {
+    color: rgba(124, 94, 77, 0.85);
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .m-feed-footer__retry {
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 14px;
+    background: rgba(255, 107, 0, 0.1);
+    border: 1px solid rgba(255, 107, 0, 0.16);
+    color: rgba(230, 82, 0, 0.98);
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .m-feed-state {
+    grid-column: 1 / -1;
+    padding: 16px 12px;
+    border-radius: var(--radius-card);
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.86);
+    color: rgba(124, 94, 77, 0.9);
+  }
+
+  .m-feed-state__title {
+    font-weight: 900;
+    color: rgba(26, 21, 16, 0.92);
+  }
+
+  .m-feed-state__desc {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .m-retry {
+    margin-top: 10px;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 14px;
+    background: rgba(255, 107, 0, 0.1);
+    border: 1px solid rgba(255, 107, 0, 0.16);
+    color: rgba(230, 82, 0, 0.98);
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Mobile Detail Page                                                      */
+  /* ---------------------------------------------------------------------- */
+
+  .m-detail-card {
+    border-radius: var(--radius-card);
+    border: 1px solid rgba(255, 255, 255, 0.88);
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 22px 60px -34px rgba(50, 20, 0, 0.18), 0 0 0 1px rgba(255, 107, 0, 0.08) inset;
+    padding: 14px 14px 12px;
+    overflow: hidden;
+  }
+
+  .m-detail-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .m-pill {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 107, 0, 0.16);
+    background: rgba(255, 107, 0, 0.08);
+    color: rgba(230, 82, 0, 0.96);
+    font-size: 12px;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .m-pill .icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .m-pill--heat {
+    background: rgba(255, 204, 0, 0.16);
+    border-color: rgba(255, 204, 0, 0.3);
+    color: rgba(124, 94, 77, 0.92);
+  }
+
+  .m-detail-card__title {
+    margin: 10px 0 0;
+    font-size: 18px;
+    line-height: 1.18;
+    letter-spacing: -0.01em;
+    font-weight: 900;
+  }
+
+  .m-detail-card__desc {
+    margin: 10px 0 0;
+    color: rgba(124, 94, 77, 0.92);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .m-detail-card__actions {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .m-detail-btn {
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 107, 0, 0.18);
+    background: rgba(255, 255, 255, 0.9);
+    color: rgba(124, 94, 77, 0.92);
+    font-weight: 900;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .m-detail-btn--primary {
+    background: rgba(255, 107, 0, 0.14);
+    border-color: rgba(255, 107, 0, 0.22);
+    color: rgba(230, 82, 0, 0.98);
+  }
+
+  .m-detail-heading {
+    margin-top: 14px;
+    margin-bottom: 10px;
+  }
+
+  .m-detail-heading__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 900;
+    color: rgba(26, 21, 16, 0.92);
+    letter-spacing: -0.01em;
+  }
+
+  /* Toast：仅做 opacity/transform 过渡（GPU 友好） */
+  .m-toast {
+    position: fixed;
+    left: 50%;
+    /* 屏幕居中靠上（避免被底部固定 mode bar 遮挡，也更符合“提示”语义） */
+    top: 18vh;
+    bottom: auto;
+    transform: translateX(-50%) translateY(-10px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 260;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(26, 21, 16, 0.92);
+    color: rgba(255, 255, 255, 0.96);
+    font-size: 13px;
+    font-weight: 900;
+    box-shadow: 0 20px 60px -34px rgba(0, 0, 0, 0.45);
+    transition: transform 220ms ease, opacity 220ms ease;
+    will-change: transform, opacity;
+    max-width: calc(100vw - 28px);
+    text-align: center;
+  }
+
+  .m-toast[data-visible="true"] {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Floating Controls (ModeBar / ToTop)                                     */
+  /* ---------------------------------------------------------------------- */
+
+  .m-mode-switch {
+    position: fixed;
+    left: 50%;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    z-index: 120;
+    width: min(92vw, 420px);
+    transition: transform 220ms ease, opacity 220ms ease;
+    will-change: transform, opacity;
+  }
+
+  .m-mode-switch[data-visible="false"] {
+    opacity: 0;
+    transform: translateX(-50%) translateY(18px);
+    pointer-events: none;
+  }
+
+  .m-seg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 18px;
+    /*
+      轻玻璃态（用户反馈：能透过浮层看到底下文字）
+      - 增加 blur 与更高不透明度，减少“穿透脏感”
+    */
+    /*
+      这里比其它卡片更“实”一些：
+      - Mode 切换属于关键控件，出现时不应被背景内容干扰（否则会显得“脏”和不聚焦）
+      - 将透明度提升到接近纯色，搭配轻微 blur 做质感增强（而不是依赖透明度本身）
+    */
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 40px 90px -30px rgba(50, 20, 0, 0.22), 0 0 0 1px rgba(255, 107, 0, 0.08) inset;
+  }
+
+  .m-seg__btn {
+    height: 44px;
+    border-radius: 14px;
+    font-weight: 900;
+    font-size: 13px;
+    color: rgba(124, 94, 77, 0.92);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .m-seg__btn.is-active {
+    background: rgba(255, 107, 0, 0.14);
+    border-color: rgba(255, 107, 0, 0.22);
+    color: rgba(230, 82, 0, 0.98);
+  }
+
+  .m-seg__icon .icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .m-to-top {
+    position: fixed;
+    right: 14px;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    z-index: 121;
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 28px 70px -34px rgba(50, 20, 0, 0.22), 0 0 0 1px rgba(255, 107, 0, 0.08) inset;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 220ms ease, opacity 220ms ease;
+    will-change: transform, opacity;
+  }
+
+  .m-to-top[data-visible="false"] {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+    pointer-events: none;
+  }
+
+  .m-to-top .icon {
+    width: 20px;
+    height: 20px;
+    color: rgba(255, 107, 0, 0.92);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Bottom Sheet (ActionSheet)                                              */
+  /* ---------------------------------------------------------------------- */
+
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    align-items: end;
+    justify-items: stretch;
+    pointer-events: none;
+  }
+
+  .sheet[data-open="true"] {
+    pointer-events: auto;
+  }
+
+  .sheet__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 14, 10, 0.38);
+    opacity: 0;
+    transition: opacity 220ms ease;
+  }
+
+  .sheet[data-open="true"] .sheet__backdrop {
+    opacity: 1;
+  }
+
+  .sheet__panel {
+    position: relative;
+    width: 100%;
+    /* 与卡片圆角统一，避免“面板比卡片更圆”的割裂感 */
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 40px 90px -30px rgba(50, 20, 0, 0.25);
+    padding: 10px 14px calc(14px + env(safe-area-inset-bottom));
+    transform: translate3d(0, 22px, 0);
+    opacity: 0;
+    transition: transform 240ms ease, opacity 240ms ease;
+    will-change: transform, opacity;
+  }
+
+  .sheet[data-open="true"] .sheet__panel {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+
+  .sheet__grab {
+    width: 42px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(124, 94, 77, 0.22);
+    margin: 2px auto 10px;
+  }
+
+  .sheet__title {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.22;
+    letter-spacing: -0.01em;
+    font-weight: 900;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .sheet__source {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 900;
+    color: rgba(230, 82, 0, 0.92);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sheet__summary {
+    margin: 10px 0 0;
+    color: rgba(124, 94, 77, 0.9);
+    font-size: 13px;
+    line-height: 1.65;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .sheet__meta {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    color: rgba(124, 94, 77, 0.9);
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .sheet__meta > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sheet__meta .icon {
+    width: 16px;
+    height: 16px;
+    color: rgba(255, 107, 0, 0.9);
+  }
+
+  .sheet__skills {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+
+  .sheet__skills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sheet__actions {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .sheet-btn {
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 107, 0, 0.18);
+    background: rgba(255, 255, 255, 0.9);
+    color: rgba(124, 94, 77, 0.92);
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sheet-btn--primary {
+    background: rgba(255, 107, 0, 0.14);
+    border-color: rgba(255, 107, 0, 0.22);
+    color: rgba(230, 82, 0, 0.98);
+  }
+
+  .sheet-btn__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+  }
+
+  .sheet-btn__icon .icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Community Drawer (Mobile)                                               */
+  /* ---------------------------------------------------------------------- */
+
+  /*
+    需求：移动端“交流群”不使用居中弹窗，改为上浮抽屉（bottom sheet）
+    - 复用全站暖色玻璃态风格
+    - 增加 blur，减少“透过抽屉看到下层文字”的脏感
+  */
+  .community-modal__panel {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    padding: 16px 14px calc(14px + env(safe-area-inset-bottom));
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    transform: translate3d(0, 10px, 0);
+    opacity: 0;
+    animation: m-community-drawer-in 240ms ease both;
+  }
+
+  /*
+    二维码布局：移动端也保持“两列并排”
+    - mockup 里小屏会堆叠，但产品最新验收要求：并排展示
+    - 同时需要覆盖 globals.css 里 <=420px 的单列降级规则
+  */
+  .community-modal__qr-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /*
+    小屏并排时二维码尺寸需要收敛：
+    - 不能沿用 globals.css <=420px 的 160px（会造成拥挤甚至溢出）
+    - 用 clamp 兼顾 320/360/390/414 等机型
+  */
+  .community-modal__qr-frame img {
+    width: clamp(120px, 32vw, 150px);
+    height: clamp(120px, 32vw, 150px);
+  }
+
+  @keyframes m-community-drawer-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 16px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+}

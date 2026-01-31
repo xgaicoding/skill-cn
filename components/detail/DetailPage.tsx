@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -18,6 +18,7 @@ import {
   Clock,
   Star,
   Tag,
+  RefreshCcw,
 } from "lucide-react";
 
 import BodyClass from "@/components/BodyClass";
@@ -28,6 +29,7 @@ import { PRACTICE_ISSUE_URL, PAGE_SIZE } from "@/lib/constants";
 import { signInWithGitHub, useAuthUser } from "@/lib/auth";
 import type { Paginated, Practice, Skill } from "@/lib/types";
 import { formatCompactNumber, formatDate, formatHeat } from "@/lib/format";
+import type { DeviceKind } from "@/lib/device";
 
 /**
  * 解析 Markdown 顶部的 YAML Frontmatter，并将其转换为 Markdown 表格。
@@ -135,6 +137,76 @@ const PracticeCardSkeleton = () => {
 };
 
 /**
+ * MobilePracticeCardSkeleton：
+ * - v1.2.0 移动端「关联实践」两列网格骨架
+ * - 结构与 docs/1.2.0_mobile/mockup 一致：标题（2 行）+ 摘要多行 + footer
+ * - 使用 app/mobile.css 的 m-skeleton-pulse（仅 opacity），性能更稳
+ */
+const MobilePracticeCardSkeleton = ({ index }: { index: number }) => {
+  const delay = `${index * 90}ms`;
+
+  return (
+    <div className="m-card m-card--practice m-card--skeleton" aria-hidden="true">
+      {/* 标题（两行） */}
+      <div className="m-skeleton-block m-skeleton-line" style={{ height: 16, width: "78%", animationDelay: delay }} />
+      <div className="m-skeleton-block m-skeleton-line" style={{ height: 16, width: "56%", animationDelay: delay }} />
+
+      {/* 摘要（多行，模拟真实密度） */}
+      <div className="m-skeleton-block m-skeleton-line" style={{ width: "96%", animationDelay: delay }} />
+      <div className="m-skeleton-block m-skeleton-line" style={{ width: "90%", animationDelay: delay }} />
+      <div className="m-skeleton-block m-skeleton-line" style={{ width: "84%", animationDelay: delay }} />
+      <div className="m-skeleton-block m-skeleton-line" style={{ width: "88%", animationDelay: delay }} />
+      <div className="m-skeleton-block m-skeleton-line" style={{ width: "76%", animationDelay: delay }} />
+
+      {/* Footer（作者/阅读） */}
+      <div className="m-skeleton-row">
+        <div className="m-skeleton-block m-skeleton-line m-skeleton-line--meta" style={{ width: "46%", animationDelay: delay }} />
+        <div className="m-skeleton-block m-skeleton-line m-skeleton-line--meta" style={{ width: "32%", animationDelay: delay }} />
+      </div>
+    </div>
+  );
+};
+
+/**
+ * MobileDetailCardSkeleton：
+ * - v1.2.0 移动端 Skill 详情页“信息卡”骨架
+ * - 目标：加载中不出现一整块空白，而是呈现可读的结构占位（pills / 标题 / 描述 / 按钮）
+ */
+const MobileDetailCardSkeleton = () => {
+  // 单卡内做轻微错峰，避免同一张卡里所有块同频闪烁
+  const delays = ["0ms", "70ms", "120ms", "160ms", "210ms"];
+
+  return (
+    <article className="m-detail-card m-card--skeleton" aria-hidden="true">
+      <div className="m-detail-card__top" aria-hidden="true">
+        <div className="m-skeleton-block m-skeleton-pill" style={{ animationDelay: delays[0] }} />
+        <div className="m-skeleton-block m-skeleton-pill m-skeleton-pill--sm" style={{ animationDelay: delays[1] }} />
+      </div>
+
+      {/* 标题（两行） */}
+      <div className="m-skeleton-block m-skeleton-line m-skeleton-line--title" style={{ animationDelay: delays[2] }} />
+      <div className="m-skeleton-block m-skeleton-line" style={{ width: "78%", animationDelay: delays[2] }} />
+
+      {/* 描述（两行） */}
+      <div className="m-skeleton-block m-skeleton-line" style={{ width: "92%", animationDelay: delays[3] }} />
+      <div className="m-skeleton-block m-skeleton-line" style={{ width: "70%", animationDelay: delays[3] }} />
+
+      {/* 操作按钮（两列） */}
+      <div className="m-detail-card__actions" aria-hidden="true">
+        <div
+          className="m-skeleton-block"
+          style={{ height: 44, width: "100%", borderRadius: 14, animationDelay: delays[4] }}
+        />
+        <div
+          className="m-skeleton-block"
+          style={{ height: 44, width: "100%", borderRadius: 14, animationDelay: delays[4] }}
+        />
+      </div>
+    </article>
+  );
+};
+
+/**
  * 详情页「实践文章」卡片的强调色：
  * - 需求：与首页/全站“暖色（橙/黄）”基调保持一致，尽量避免过多粉色与绿色。
  * - 实现：用 CSS 自定义变量 `--accent` 驱动卡片内部的描边/高光（见 app/globals.css .practice-card）。
@@ -146,8 +218,20 @@ const PRACTICE_ACCENTS = [
   "rgba(255,168,0,0.90)", // golden orange
 ];
 
-export default function DetailPage({ id }: { id: string }) {
+export default function DetailPage({
+  id,
+  deviceKind = "desktop",
+}: {
+  id: string;
+  /**
+   * 设备类型（来自 Server Component UA 判断）：
+   * - mobile：渲染移动端专属详情页（简化布局 + 关联实践两列无限滚动）
+   * - tablet/desktop：保持现有桌面详情页逻辑
+   */
+  deviceKind?: DeviceKind;
+}) {
   const skillId = Number(id);
+  const isMobile = deviceKind === "mobile";
   const [skill, setSkill] = useState<Skill | null>(null);
   const [skillLoading, setSkillLoading] = useState(true);
   const { user } = useAuthUser();
@@ -159,8 +243,34 @@ export default function DetailPage({ id }: { id: string }) {
   const [practicePage, setPracticePage] = useState(1);
   const [practiceTotalPages, setPracticeTotalPages] = useState(1);
   const [practiceLoading, setPracticeLoading] = useState(false);
+  const [practiceError, setPracticeError] = useState<string | null>(null);
+  const [practiceReloadKey, setPracticeReloadKey] = useState(0);
   // 实践排序：参考首页“最热/最新”，热度按点击量，最新按更新时间。
   const [practiceSort, setPracticeSort] = useState<"heat" | "recent">("heat");
+
+  /**
+   * Mobile Toast（用于“PC 专属能力”降级提示）
+   * ------------------------------------------------------------
+   * 需求口径：
+   * - 下载/投稿等 PC 专属能力，在移动端点击后统一 toast 提示：
+   *   “请前往PC版网页使用功能”
+   */
+  const [toastMessage, setToastMessage] = useState<string>("");
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastTimerRef = useRef<number | null>(null);
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setToastVisible(true);
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = null;
+    }
+    toastTimerRef.current = window.setTimeout(() => {
+      setToastVisible(false);
+      toastTimerRef.current = null;
+    }, 2000);
+  };
 
   // 对 Markdown 做一次预处理，避免每次渲染重复解析
   const renderedMarkdown = useMemo(() => buildMarkdownForRender(skill?.markdown || ""), [skill?.markdown]);
@@ -219,6 +329,18 @@ export default function DetailPage({ id }: { id: string }) {
   }, [practicePage, practiceSort]);
 
   useEffect(() => {
+    /**
+     * 当 skillId 变化时重置实践列表分页状态：
+     * - 避免从上一个 Skill 的“第 N 页”带到新 Skill 导致空列表/越界
+     * - 对移动端无限滚动同样必要：否则会把不同 skill 的实践 append 到一起
+     */
+    setPractices((prev) => (prev.length > 0 ? [] : prev));
+    setPracticePage((prev) => (prev === 1 ? prev : 1));
+    setPracticeTotalPages((prev) => (prev === 1 ? prev : 1));
+    setPracticeError((prev) => (prev ? null : prev));
+  }, [skillId]);
+
+  useEffect(() => {
     let cancelled = false;
     const fetchSkill = async () => {
       setSkillLoading(true);
@@ -260,19 +382,36 @@ export default function DetailPage({ id }: { id: string }) {
     let cancelled = false;
     const fetchPractices = async () => {
       setPracticeLoading(true);
+      setPracticeError(null);
       try {
         const res = await fetch(`/api/skills/${skillId}/practices?${practicesQuery}`, {
           cache: "no-store",
         });
-        const json: Paginated<Practice> = await res.json();
-        if (!cancelled) {
-          setPractices(json.data || []);
-          setPracticeTotalPages(json.totalPages || 1);
+        const json = await res.json();
+        if (!res.ok) {
+          throw new Error(json?.error || "加载失败");
         }
-      } catch {
+        const payload = json as Paginated<Practice>;
+        if (!cancelled) {
+          const next = payload.data || [];
+          // 移动端无限滚动：第 2 页起做“追加”而非“整页替换”。
+          if (isMobile && practicePage > 1) {
+            setPractices((prev) => {
+              const map = new Map<number, Practice>();
+              for (const item of prev) map.set(item.id, item);
+              for (const item of next) map.set(item.id, item);
+              return Array.from(map.values());
+            });
+          } else {
+            setPractices(next);
+          }
+          setPracticeTotalPages(payload.totalPages || 1);
+        }
+      } catch (err: any) {
         if (!cancelled) {
           setPractices([]);
           setPracticeTotalPages(1);
+          setPracticeError(err?.message || "加载失败");
         }
       } finally {
         if (!cancelled) setPracticeLoading(false);
@@ -282,9 +421,14 @@ export default function DetailPage({ id }: { id: string }) {
     return () => {
       cancelled = true;
     };
-  }, [skillId, practicesQuery]);
+  }, [skillId, practicesQuery, isMobile, practicePage, practiceReloadKey]);
 
   const handleDownload = async () => {
+    // 移动端降级：不执行真实下载逻辑，统一提示用户前往 PC。
+    if (isMobile) {
+      showToast("请前往PC版网页使用功能");
+      return;
+    }
     if (!skill || downloadPending) return;
     // 兜底：如果该 Skill 不支持下载 ZIP，则直接引导到官方地址。
     if (!supportsDownloadZip) {
@@ -323,6 +467,11 @@ export default function DetailPage({ id }: { id: string }) {
   };
 
   const handleSubmitPractice = async () => {
+    // 移动端降级：不执行登录/投稿跳转，统一提示用户前往 PC。
+    if (isMobile) {
+      showToast("请前往PC版网页使用功能");
+      return;
+    }
     // 实践投稿入口固定为 create-practice Issue 模板，避免依赖环境变量导致链接缺失。
     if (user) {
       window.open(PRACTICE_ISSUE_URL, "_blank", "noreferrer");
@@ -336,12 +485,246 @@ export default function DetailPage({ id }: { id: string }) {
     }
   };
 
+  /**
+   * 移动端关联实践：无限滚动触底加载
+   * ------------------------------------------------------------
+   * 说明：
+   * - 本期不要求“返回恢复页数/滚动位置”，因此这里保持实现简单
+   * - 触底加载的关键是“避免重复触发”：
+   *   - 有下一页
+   *   - 当前不在 loading
+   *   - 当前没有 error
+  */
+  const practiceSentinelRef = useRef<HTMLDivElement | null>(null);
+  // 防止 IntersectionObserver 在同一滚动段内重复触发，导致 page 连续递增。
+  const practiceLoadMoreLockedRef = useRef(false);
+
+  useEffect(() => {
+    // 每次请求结束（loading=false）后解锁，允许下一次触底加载。
+    if (!practiceLoading) {
+      practiceLoadMoreLockedRef.current = false;
+    }
+  }, [practiceLoading]);
+
+  useEffect(() => {
+    if (!isMobile) {
+      return;
+    }
+
+    const el = practiceSentinelRef.current;
+    if (!el) {
+      return;
+    }
+
+    const hasMore = practicePage < (practiceTotalPages || 1);
+    if (!hasMore) {
+      return;
+    }
+    if (practiceLoading) {
+      return;
+    }
+    if (practiceError) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) return;
+        if (practiceLoadMoreLockedRef.current) return;
+        practiceLoadMoreLockedRef.current = true;
+        setPracticePage((prev) => prev + 1);
+      },
+      { rootMargin: "600px 0px", threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isMobile, practiceLoading, practiceError, practicePage, practiceTotalPages]);
+
+  // 卸载时清理 toast 定时器，避免潜在的 setState on unmounted。
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
+    };
+  }, []);
+
   // 详情页首屏加载：优先渲染骨架屏，避免空白页 + 文案闪烁。
   if (skillLoading) {
+    if (isMobile) {
+      return (
+        <>
+          <BodyClass className="is-detail" />
+          <main className="m-safe m-safe--detail" role="main" aria-label="Skill 详情（移动端）">
+            <MobileDetailCardSkeleton />
+            <div style={{ height: 12 }} />
+            <div className="m-grid" aria-hidden="true">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <MobilePracticeCardSkeleton key={`m-detail-practice-skeleton-${index}`} index={index} />
+              ))}
+            </div>
+          </main>
+        </>
+      );
+    }
     return (
       <>
         <BodyClass className="is-detail" />
         <SkillDetailSkeleton />
+      </>
+    );
+  }
+
+  // 移动端详情页：使用 mockup 对齐的“简化布局”（以关联实践列表为主）。
+  if (isMobile) {
+    const title = skill?.name || "未找到";
+    const desc = skill?.description || "";
+    const skillTag = skill?.tag || "-";
+
+    const hasMore = practicePage < (practiceTotalPages || 1);
+    const showFirstPageSkeleton = practiceLoading && practicePage === 1;
+    const loadingMore = practiceLoading && practicePage > 1;
+
+    return (
+      <>
+        <BodyClass className="is-detail" />
+
+        <main className="m-safe m-safe--detail" role="main" aria-label="Skill 详情（移动端）">
+          {/* Skill 信息卡：移动端纵向排布 */}
+          <section aria-label="Skill 信息">
+            <article className="m-detail-card">
+              <div className="m-detail-card__top">
+                <span className="m-pill" aria-label={`分类 ${skillTag}`}>
+                  <Tag className="icon" aria-hidden="true" />
+                  {skillTag}
+                </span>
+                <span className="m-pill m-pill--heat" aria-label={`热度 ${formatHeat(skill?.heat_score)}`}>
+                  <Flame className="icon" aria-hidden="true" />
+                  {formatHeat(skill?.heat_score)}
+                </span>
+              </div>
+
+              <h1 className="m-detail-card__title">{title}</h1>
+              <p className="m-detail-card__desc">{desc}</p>
+
+              {/* PC 专属能力：移动端降级为 toast 提示 */}
+              <div className="m-detail-card__actions" aria-label="操作区">
+                <button className="m-detail-btn m-detail-btn--primary" type="button" onClick={handleDownload}>
+                  下载 ZIP
+                </button>
+                <button className="m-detail-btn" type="button" onClick={handleSubmitPractice}>
+                  投稿实践
+                </button>
+              </div>
+            </article>
+          </section>
+
+          <section className="m-detail-heading" aria-label="关联实践标题">
+            <h2 className="m-detail-heading__title">关联实践</h2>
+          </section>
+
+          {/* 关联实践：两列网格 + 无限滚动 */}
+          <section className="m-grid" aria-label="关联实践列表" aria-busy={practiceLoading}>
+            {practiceError ? (
+              <div className="m-feed-state" role="status" aria-label="加载失败">
+                <div className="m-feed-state__title">加载失败</div>
+                <div className="m-feed-state__desc">{practiceError}</div>
+                <button
+                  className="m-retry"
+                  type="button"
+                  onClick={() => setPracticeReloadKey((key) => key + 1)}
+                  aria-label="重试加载关联实践"
+                >
+                  <RefreshCcw className="icon" aria-hidden="true" />
+                  重试
+                </button>
+              </div>
+            ) : showFirstPageSkeleton ? (
+              Array.from({ length: 4 }).map((_, index) => (
+                <MobilePracticeCardSkeleton key={`m-detail-practice-skeleton-${index}`} index={index} />
+              ))
+            ) : practices.length === 0 ? (
+              <div className="m-feed-state" role="status" aria-label="暂无实践">
+                <div className="m-feed-state__title">暂无实践</div>
+                <div className="m-feed-state__desc">稍后再来看看，或在 PC 端投稿你的实践。</div>
+              </div>
+            ) : (
+              practices.map((practice) => {
+                const pTitle = practice.title || "-";
+                const summaryText = (practice.summary || "").replace(/\\n/g, "\n").replace(/\r?\n/g, " ").trim();
+                const channel = practice.channel?.trim();
+                const author = practice.author_name?.trim();
+                const sourceText = channel && author ? `${channel}·${author}` : channel || author || "-";
+
+                return (
+                  <a
+                    key={practice.id}
+                    className="m-card m-card--practice"
+                    href={practice.source_url || "#"}
+                    target={practice.source_url ? "_blank" : undefined}
+                    rel={practice.source_url ? "noreferrer noopener" : undefined}
+                    aria-label={`打开原文：${pTitle}`}
+                    aria-disabled={!practice.source_url}
+                    onClick={(event) => {
+                      if (!practice.source_url) {
+                        event.preventDefault();
+                        return;
+                      }
+                      handlePracticeClick(practice);
+                    }}
+                  >
+                    <div className="m-practice__title">{pTitle}</div>
+                    <div className="m-practice__summary" aria-label="文章简介（最多 5 行，末行渐隐）">
+                      <span className="m-practice__summary-text">{summaryText}</span>
+                    </div>
+                    <div className="m-practice__meta" aria-label="文章元信息">
+                      <span className="m-practice__author" title={sourceText}>
+                        {sourceText}
+                      </span>
+                      <span className="m-practice__views" aria-label={`阅读量 ${formatCompactNumber(practice.click_count)}`}>
+                        <Eye className="icon" aria-hidden="true" />
+                        {formatCompactNumber(practice.click_count)}
+                      </span>
+                    </div>
+                  </a>
+                );
+              })
+            )}
+          </section>
+
+          {/* 无限滚动哨兵 */}
+          <div ref={practiceSentinelRef} className="m-sentinel" aria-hidden="true" />
+
+          <div className="m-feed-footer" aria-label="列表状态">
+            {loadingMore ? (
+              <div className="m-feed-footer__loading" aria-label="加载中">
+                加载中…
+              </div>
+            ) : practiceError ? (
+              <button
+                className="m-feed-footer__retry"
+                type="button"
+                onClick={() => setPracticeReloadKey((key) => key + 1)}
+                aria-label="重试加载"
+              >
+                <RefreshCcw className="icon" aria-hidden="true" />
+                重试
+              </button>
+            ) : !showFirstPageSkeleton && !hasMore && practices.length > 0 ? (
+              <div className="m-feed-footer__end" aria-label="已到底">
+                已到底
+              </div>
+            ) : null}
+          </div>
+        </main>
+
+        {/* Toast：用于移动端提示“请前往PC版网页使用功能” */}
+        <div className="m-toast" role="status" aria-live="polite" data-visible={toastVisible ? "true" : "false"}>
+          {toastMessage}
+        </div>
       </>
     );
   }

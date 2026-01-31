@@ -4,6 +4,8 @@
 /* Swiper 卡片轮播基础样式 */
 @import "swiper/css";
 @import "swiper/css/effect-cards";
+/* Mobile Hero 需要 Swiper Pagination 的基础样式（圆点指示器） */
+@import "swiper/css/pagination";
 
 :root {
   --font-heading: "Fredoka", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
@@ -65,6 +67,12 @@
 
 html {
   height: 100%;
+  /*
+    兜底禁止根节点横向滚动：
+    - 一些第三方组件（如轮播）在特定样式组合下可能把页面“撑宽”
+    - body 的 overflow-x:hidden 在部分浏览器/场景下不够稳，这里与 body 同步兜底
+  */
+  overflow-x: hidden;
 }
 
 body {
@@ -1109,6 +1117,19 @@ button[data-loading="true"] .btn__loading {
   gap: 10px;
 }
 
+/*
+  Header 右侧 Auth 区（“+ Skill / 登录 / 用户菜单”）：
+  - 这里必须显式用 inline-flex + gap 控制按钮间距
+  - 否则 React/HTML 的空白文本节点、以及不同浏览器对 inline 元素的间距处理，
+    可能导致“+ Skill”和“登录”之间的视觉间隔不一致（用户验收反馈）
+  - gap 数值与 nav-actions__links 对齐，保证右侧按钮节奏统一
+*/
+.nav-actions__auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .nav-actions__link {
   font-size: 13px;
 }
@@ -1139,7 +1160,24 @@ button[data-loading="true"] .btn__loading {
   z-index: 220;
   /* 轻微上移弹窗，视觉更贴近 Hero 中心 */
   --community-modal-offset-y: -18px;
-  pointer-events: none;
+  /* 需要遮罩可点击（点击外部关闭），因此不能关闭 pointer-events */
+  pointer-events: auto;
+}
+
+.community-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  padding: 0;
+  cursor: default;
+  /* 遮罩略加深：减少底层元素“穿透感” */
+  background: rgba(26, 21, 16, 0.42);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  /* 入场动画仅用 opacity（合成层友好） */
+  animation: communityBackdropIn 220ms ease both;
+  will-change: opacity;
 }
 
 .community-modal__panel {
@@ -1321,7 +1359,20 @@ button[data-loading="true"] .btn__loading {
   }
 }
 
+@keyframes communityBackdropIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .community-modal__backdrop {
+    animation: none;
+  }
+
   .community-modal__panel {
     animation: none;
   }
@@ -4785,8 +4836,13 @@ button[data-loading="true"] .btn__loading {
 }
 
 .page--detail {
-  padding-top: 56px;
-  padding-bottom: 24px;
+  /*
+    Detail 页内容区需要与 Hero 的左右 gutter 对齐：
+    - Hero 使用 `padding: ... var(--page-gutter) ...`（避免内容贴边）
+    - 如果详情页主体不加左右 padding，实践卡片网格会显得“过宽/不对齐”（用户验收反馈）
+    - 只改 detail 页，避免影响首页等其它页面的排版
+  */
+  padding: 56px var(--page-gutter) 24px;
 }
 
 /* ---------- Detail Tabs (static mockup) ---------- */
