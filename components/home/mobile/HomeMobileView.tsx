@@ -620,7 +620,7 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
                         <h2 className="m-hero-brand__headline">
                           连接优质 Skill 与场景落地，沉淀 <em>可复用</em> 的 AI 生产力模块
                         </h2>
-                        <p className="m-hero-brand__desc">移动端改为横向轮播：第一张品牌卡，后面播推荐实践。</p>
+                        <p className="m-hero-brand__desc">汇聚优质 Skill，打通真实场景，沉淀持续生产力</p>
                       </div>
                     </SwiperSlide>
                   );

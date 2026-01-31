@@ -295,7 +295,12 @@
     padding: 16px 16px 14px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: space-around;
+  }
+
+  .m-hero-card--brand {
+    padding-top: 24px;
+    padding-bottom: 24px;
   }
 
   /* Hero 骨架屏：让内容“像在加载”，避免一整块空白 */
@@ -436,12 +441,12 @@
 
   .m-hero-practice__summary {
     color: rgba(124, 94, 77, 0.9);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.55;
     margin: 10px 0 0;
     display: -webkit-box;
     /* 固定高度下，摘要略收敛，保证 meta 不被挤压 */
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
