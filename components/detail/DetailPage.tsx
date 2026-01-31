@@ -655,9 +655,9 @@ export default function DetailPage({
               practices.map((practice) => {
                 const pTitle = practice.title || "-";
                 const summaryText = (practice.summary || "").replace(/\\n/g, "\n").replace(/\r?\n/g, " ").trim();
-                const channel = practice.channel?.trim();
                 const author = practice.author_name?.trim();
-                const sourceText = channel && author ? `${channel}·${author}` : channel || author || "-";
+                // 需求：移动端 Skill 详情页「关联实践」卡片作者处仅展示作者名（不展示渠道名）
+                const sourceText = author || "-";
 
                 return (
                   <a

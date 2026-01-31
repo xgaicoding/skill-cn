@@ -641,7 +641,7 @@
 
   .m-skill__desc {
     color: rgba(124, 94, 77, 0.88);
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.55;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -692,7 +692,7 @@
 
   .m-practice__summary {
     color: rgba(124, 94, 77, 0.88);
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.6;
     margin: 0;
     flex: 1 1 auto;
@@ -959,7 +959,7 @@
   .m-detail-card__desc {
     margin: 10px 0 0;
     color: rgba(124, 94, 77, 0.92);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.6;
   }
 
