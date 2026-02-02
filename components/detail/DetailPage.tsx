@@ -13,6 +13,7 @@ import {
   Flame,
   Github,
   Link2,
+  User,
   Plus,
   Sparkles,
   Clock,
@@ -943,6 +944,11 @@ export default function DetailPage({
                 <div className="practice-grid">
                   {practices.map((practice, index) => {
                     const accent = PRACTICE_ACCENTS[index % PRACTICE_ACCENTS.length];
+                    // 作者名/渠道名可能为空：统一 trim 后组合展示，保证 UI 始终有可读内容。
+                    const channelName = practice.channel?.trim();
+                    const authorName = practice.author_name?.trim();
+                    // 同时存在时用“渠道·作者”格式；否则回退到任一可用值，最后兜底为 "-"。
+                    const sourceText = channelName && authorName ? `${channelName}·${authorName}` : channelName || authorName || "-";
                     return (
                       <a
                         key={practice.id}
@@ -967,9 +973,10 @@ export default function DetailPage({
                           <span className="meta" aria-label={`点击 ${formatCompactNumber(practice.click_count)}`}>
                             <Eye className="icon" />{formatCompactNumber(practice.click_count)}
                           </span>
-                          <span className="meta" aria-hidden="true">
-                            <Link2 className="icon" />
-                            查看原文
+                          {/* 实践卡片底部元信息：展示“渠道·作者”，更符合来源信息语义。 */}
+                          <span className="meta" aria-label={`来源 ${sourceText}`} title={sourceText}>
+                            <User className="icon" />
+                            {sourceText}
                           </span>
                         </div>
                       </a>
