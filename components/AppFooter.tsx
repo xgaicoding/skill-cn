@@ -92,7 +92,7 @@ export default function AppFooter() {
                 tabIndex={hasOfficialDocsLink ? 0 : -1}
               >
                 <BookOpen className="footer__link-icon" aria-hidden="true" />
-                官方文档
+                入门教程
               </a>
               <a
                 className="footer__link"

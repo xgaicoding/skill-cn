@@ -125,12 +125,12 @@ export default function AppHeader() {
               href={hasOfficialDocsLink ? OFFICIAL_DOCS_LINK : "#"}
               target={hasOfficialDocsLink ? "_blank" : undefined}
               rel={hasOfficialDocsLink ? "noreferrer noopener" : undefined}
-              aria-label="官方文档"
+              aria-label="入门教程"
               aria-disabled={!hasOfficialDocsLink}
               tabIndex={hasOfficialDocsLink ? 0 : -1}
             >
               <BookOpen className="icon" aria-hidden="true" />
-              <span>官方文档</span>
+              <span>入门教程</span>
             </a>
           </div>
           {/* 登录 / 提交 Skill：移动端不需要，后续用 CSS 隐藏该块即可（避免在组件里塞太多端判断）。 */}
