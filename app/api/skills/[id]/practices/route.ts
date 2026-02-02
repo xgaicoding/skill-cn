@@ -15,27 +15,38 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
   const supabase = getSupabaseServerClient();
 
+  /**
+   * 详情页实践列表：
+   * - 直接从 practices 表筛选 skill_ids，避免 join 排序不稳定的问题
+   * - 与首页 practices 列表使用同一排序规则，保证“最热/最新”一致
+   *
+   * 说明：
+   * - skill_ids 由数据库触发器维护（见 supabase/migrations）
+   * - 使用 overlaps([skillId]) 即可匹配包含该 skill 的实践
+   */
   let query = supabase
-    .from("practice_skills")
-    // 通过 join 表拿到 practice，避免依赖 practices.skill_id（已迁移为多对多关系）。
-    .select("practices!inner(*)", { count: "exact" })
-    .eq("skill_id", skillId)
+    .from("practices")
+    .select("id, title, summary, channel, updated_at, source_url, author_name, is_listed, is_featured, click_count", {
+      count: "exact",
+    })
     // 仅统计/返回上架的实践，保持与列表页统计逻辑一致。
-    .eq("practices.is_listed", true);
+    .eq("is_listed", true)
+    // 关联当前 Skill 的实践（skill_ids 数组包含当前 skillId 即可命中）。
+    .overlaps("skill_ids", [skillId]);
 
   // 实践排序：
   // - heat：按点击量（click_count）降序，其次更新时间
   // - recent：按更新时间降序，其次点击量
   if (sort === "recent") {
     query = query
-      // 注意：排序字段属于 practices 表，需要指定 foreignTable。
-      .order("updated_at", { ascending: false, foreignTable: "practices" })
-      .order("click_count", { ascending: false, foreignTable: "practices" });
+      // 最新优先：更新时间降序，其次点击量。
+      .order("updated_at", { ascending: false })
+      .order("click_count", { ascending: false });
   } else {
     query = query
-      // 默认按热度（点击量）排序，其次按更新时间，均来自 practices 表。
-      .order("click_count", { ascending: false, foreignTable: "practices" })
-      .order("updated_at", { ascending: false, foreignTable: "practices" });
+      // 最热优先：点击量降序，其次更新时间。
+      .order("click_count", { ascending: false })
+      .order("updated_at", { ascending: false });
   }
 
   const from = (page - 1) * size;
@@ -46,17 +57,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // 将 join 查询返回的结构拍平成 practices 数组，避免前端改动。
-  // 注意：Supabase 在缺少显式关系类型时，可能把 practices 推断成数组。
-  // 这里统一做兼容处理，确保类型与运行时都稳定。
-  const practices = (data || []).flatMap((row) => {
-    const payload =
-      (row as { practices?: Record<string, unknown> | Record<string, unknown>[] | null }).practices || null;
-    if (!payload) {
-      return [];
-    }
-    return Array.isArray(payload) ? payload : [payload];
-  });
+  // 直接返回 practices 表数据，避免 join 结构拍平导致顺序混乱。
+  const practices = data || [];
 
   const total = count || 0;
   const totalPages = Math.max(Math.ceil(total / size), 1);
