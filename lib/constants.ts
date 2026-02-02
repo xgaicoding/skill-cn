@@ -1,4 +1,4 @@
-export const TAG_OPTIONS = ["全部", "研究", "编程", "写作", "数据分析", "设计", "生产力"] as const;
+export const TAG_OPTIONS = ["全部", "研究", "编程", "数据分析", "设计", "生产力"] as const;
 export const SORT_OPTIONS = [
   { value: "heat", label: "最热" },
   { value: "recent", label: "最新" },
