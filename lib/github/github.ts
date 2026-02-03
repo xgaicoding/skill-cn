@@ -107,7 +107,67 @@ export async function getSkillMarkdown(
   }
 }
 
+/**
+ * 获取仓库根目录的 README（用于“技能包”展示）：
+ * - 需求口径：技能包详情页不展示 SKILL.md，改为展示仓库根目录 README
+ * - 说明：使用 GitHub 的 readme endpoint，可自动识别 README / README.md / README.MD 等文件名
+ */
+export async function getRepoReadmeMarkdown(
+  owner: string,
+  repo: string,
+  branch: string,
+) {
+  const octokit = getOctokit();
+  /**
+   * README 读取优先级（产品追更）：
+   * 1) README.zh.md（中文优先，便于国内用户阅读）
+   * 2) README.md
+   *
+   * 说明：
+   * - 这里不使用 GitHub 的 `/readme` endpoint，因为它会自动选一个“默认 README”，
+   *   无法满足“先 zh 再默认”的明确优先级规则。
+   */
+  const tryPaths = ["README.zh.md", "README.md"];
+
+  for (const filePath of tryPaths) {
+    try {
+      const { data } = await octokit.request("GET /repos/{owner}/{repo}/contents/{path}", {
+        owner,
+        repo,
+        path: filePath,
+        ref: branch,
+      });
+
+      if (!data || Array.isArray(data)) {
+        continue;
+      }
+
+      const content = (data as { content?: string }).content;
+      if (!content) {
+        continue;
+      }
+
+      return Buffer.from(content, "base64").toString("utf-8");
+    } catch {
+      // ignore：继续尝试下一个候选文件
+    }
+  }
+
+  return null;
+}
+
 export function shouldRenderPlain(markdown: string): boolean {
+  /**
+   * 历史逻辑说明（保留函数但不再作为“默认降级策略”）：
+   * - 早期为了避免 README/SKILL.md 中存在相对链接（如 ./README.md、./images/a.png）
+   *   导致站内渲染出现 404/空白，因此用“整篇降级为纯文本”规避。
+   *
+   * v1.3.0 之后的策略：
+   * - 不再因为“存在链接/相对链接”就把整篇 Markdown 降级
+   * - 前端会对不支持的相对链接做“按需转换”（例如转成 GitHub blob/raw URL），做到“能渲染的正常渲染”
+   *
+   * 因此：该函数目前仅作为参考保留，不再用于决定 renderMode。
+   */
   const urls: string[] = [];
   const inlineRegex = /!?\[[^\]]*\]\(([^)]+)\)/g;
   const refRegex = /^\s*\[[^\]]+\]:\s*(\S+)/gm;
@@ -136,19 +196,32 @@ export async function syncSkillFromGitHub(skill: Skill) {
   const ownerInfo = await getOwnerInfo(repoInfo.ownerLogin);
   const branch = repoInfo.defaultBranch; // 统一使用默认分支
 
-  const latestCommit = await getLatestCommit(owner, repo, branch, path);
-  const markdown = await getSkillMarkdown(owner, repo, branch, path);
+  /**
+   * v1.3.0 技能包（is_package）：
+   * - 普通 Skill：读取（path 下的）SKILL.md
+   * - 技能包：读取仓库根目录 README（与“合集”语义一致）
+   *
+   * 同时，技能包的更新时间更贴近“仓库级别变化”，因此取全仓库最新提交（path=null）
+   */
+  const isPackage = skill.is_package === true;
+  const latestCommit = await getLatestCommit(owner, repo, branch, isPackage ? null : path);
+  const markdown = isPackage
+    ? await getRepoReadmeMarkdown(owner, repo, branch)
+    : await getSkillMarkdown(owner, repo, branch, path);
 
   const repoStars = repoInfo.stars ?? 0;
   const heatScore = calcHeat(skill.practice_count ?? 0, repoStars);
   const repoOwnerName = ownerInfo.displayName || repoInfo.ownerLogin;
 
   let renderMode: "markdown" | "plain" = "markdown";
-  if (markdown) {
-    renderMode = shouldRenderPlain(markdown) ? "plain" : "markdown";
-  } else {
-    renderMode = "plain";
-  }
+  /**
+   * 渲染模式策略（追更）：
+   * - 只要拿到 Markdown 内容，默认都按 markdown 渲染
+   * - 不再因为“存在相对链接”而整篇降级为 plain
+   *
+   * 原因：详情页会在渲染层把相对链接按需转换为 GitHub 链接，从而做到“局部降级、整体可读”。
+   */
+  renderMode = markdown ? "markdown" : "plain";
 
   return {
     repo_stars: repoStars,

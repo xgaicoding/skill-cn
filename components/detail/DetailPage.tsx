@@ -2,7 +2,7 @@
 
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import {
@@ -322,6 +322,102 @@ export default function DetailPage({
   const downloadHelpId = `download-help-${skillId}`;
   // v1.3.0：技能包提示气泡的 id（仅桌面端 hover/聚焦展示；移动端不做该交互）。
   const packageHelpId = `package-help-${skillId}`;
+  /**
+   * v1.3.0：技能包文档展示口径（仅 PC 端）
+   * - 普通 Skill：展示 SKILL.md
+   * - 技能包（is_package=true）：展示仓库根目录 README
+   */
+  const docTitle = skill?.is_package ? "README" : "SKILL.md";
+  // README 读取自仓库根目录，因此“前往 Source”应指向仓库主页；普通 Skill 仍指向原 source_url（可能是子目录）。
+  const docSourceUrl = skill?.is_package ? repoHomeUrl : skill?.source_url || "#";
+
+  /**
+   * 将 Markdown 内的相对链接/图片链接转换为 GitHub 绝对地址：
+   * - 目标：避免因为存在相对链接（如 ./README.md、./images/a.png）而把整篇 Markdown 降级为纯文本
+   * - 规则：
+   *   - 仅处理相对 URL（非 http/https/mailto/tel/#）
+   *   - 普通 Skill：相对路径基于 source_url 所在目录（可能是子目录）解析
+   *   - 技能包：README 来自仓库根目录，因此基于根目录解析
+   *   - 链接：转为 GitHub `blob/HEAD/...`（可阅读/可跳转）
+   *   - 图片：转为 GitHub `raw/HEAD/...`（可直接展示图片）
+   *
+   * 性能与安全：
+   * - 仅做字符串转换，不触发布局；对 `javascript:` 等危险协议做拦截
+   */
+  const resolveGitHubUri = (uri: string, kind: "link" | "image"): string => {
+    const raw = (uri || "").trim();
+    if (!raw) return raw;
+    if (raw.startsWith("#")) return raw;
+    if (/^(https?:|mailto:|tel:)/i.test(raw)) return raw;
+    if (/^javascript:/i.test(raw)) return "";
+
+    // 兜底：repoHomeUrl 不是 github.com 时直接返回原值（避免误拼接导致更差体验）
+    if (!repoHomeUrl || !repoHomeUrl.startsWith("https://github.com/")) {
+      return raw;
+    }
+
+    // 解析 source_url 的目录（只用于普通 Skill；技能包固定以根目录为 base）
+    const getBaseDirFromSourceUrl = (sourceUrl?: string | null): string => {
+      if (!sourceUrl) return "";
+      try {
+        const parsed = new URL(sourceUrl);
+        if (parsed.hostname !== "github.com") return "";
+        const parts = parsed.pathname.split("/").filter(Boolean);
+        if (parts.length < 2) return "";
+
+        // 结构：/owner/repo/(tree|blob)/ref/...
+        if (parts.length >= 4 && (parts[2] === "tree" || parts[2] === "blob")) {
+          const tail = parts.slice(4);
+          if (tail.length === 0) return "";
+          // 若 source_url 指向文件（blob），baseDir 应该是它的上级目录
+          if (parts[2] === "blob") {
+            return tail.slice(0, -1).join("/");
+          }
+          return tail.join("/");
+        }
+
+        return "";
+      } catch {
+        return "";
+      }
+    };
+
+    const baseDir = skill?.is_package ? "" : getBaseDirFromSourceUrl(skill?.source_url);
+
+    // 用 URL 做 posix 归一化：支持 ./ 与 ../
+    // 注意：这里用 /\/+$/ 去掉尾部多余的斜杠，避免 baseDir 末尾自带 / 导致拼接出双斜杠。
+    const base = `https://example.com/${baseDir ? `${baseDir.replace(/\/+$/, "")}/` : ""}`;
+    let resolved: URL;
+    try {
+      resolved = new URL(raw, base);
+    } catch {
+      return raw;
+    }
+
+    // resolved.pathname 始终以 / 开头，这里去掉前导 /，得到仓库内相对路径
+    const normalizedPath = resolved.pathname.replace(/^\/+/, "");
+    const suffix = `${normalizedPath}${resolved.search || ""}${resolved.hash || ""}`;
+
+    if (kind === "image") {
+      return `${repoHomeUrl}/raw/HEAD/${suffix}`;
+    }
+    return `${repoHomeUrl}/blob/HEAD/${suffix}`;
+  };
+
+  /**
+   * react-markdown v9 使用 urlTransform 统一处理所有 URL：
+   * - key: 常见为 href（链接）/ src（图片）
+   * - node: 当前 HAST 节点（这里不需要依赖它做判断，key 足够）
+   *
+   * 这里先用 react-markdown 内置的 defaultUrlTransform 做一次“安全过滤”，
+   * 再做 GitHub 相对路径转换，最后再做一次安全过滤，避免引入危险协议。
+   */
+  const urlTransform = (url: string, key: string) => {
+    const safeUrl = defaultUrlTransform(url);
+    const kind = key === "src" ? "image" : "link";
+    const resolved = resolveGitHubUri(safeUrl, kind);
+    return defaultUrlTransform(resolved);
+  };
 
   const practicesQuery = useMemo(() => {
     const search = new URLSearchParams();
@@ -890,7 +986,7 @@ export default function DetailPage({
                   <span className="detail-switch__count">{formatCompactNumber(skill?.practice_count ?? 0)}</span>
                 </label>
                 <label className="detail-switch__tab" htmlFor="view-skillmd">
-                  SKILL.md
+                  {docTitle}
                 </label>
                 <span className="detail-switch__indicator" aria-hidden="true" />
               </div>
@@ -1050,21 +1146,23 @@ export default function DetailPage({
               </nav>
             </section>
 
-            <section className="detail-card detail-tabpanel detail-tabpanel--skillmd" aria-label="SKILL.md 内容区">
+            <section className="detail-card detail-tabpanel detail-tabpanel--skillmd" aria-label={`${docTitle} 内容区`}>
               <header className="section-header">
-                <h2>SKILL.md</h2>
-                <a className="btn btn--ghost btn--sm" href={skill?.source_url || "#"} target="_blank" rel="noreferrer">
+                <h2>{docTitle}</h2>
+                <a className="btn btn--ghost btn--sm" href={docSourceUrl} target="_blank" rel="noreferrer">
                   前往 Source
                 </a>
               </header>
 
               <article className="markdown">
                 {!skill?.markdown ? (
-                  <p>未找到 SKILL.md</p>
-                ) : skill.markdown_render_mode === "plain" ? (
-                  <pre>{skill.markdown}</pre>
+                  <p>未找到 {docTitle}</p>
                 ) : (
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeHighlight]}
+                    urlTransform={urlTransform}
+                  >
                     {renderedMarkdown}
                   </ReactMarkdown>
                 )}
