@@ -4414,6 +4414,127 @@ button[data-loading="true"] .btn__loading {
   align-self: center;
 }
 
+/* v1.3.0：技能包标识（与分类 Tag 区分，用更中性的琥珀色） */
+.detail-hero__package {
+  align-self: center;
+}
+
+.tag--package {
+  background: rgba(255, 204, 0, 0.14);
+  border-color: rgba(255, 204, 0, 0.28);
+  color: rgba(124, 94, 77, 0.92);
+  /* 技能包标签内包含问号按钮：稍微加大子元素间距，减少“挤在一起”的拥挤感 */
+  gap: 8px;
+}
+
+/*
+  技能包问号提示（仅桌面端 hover/聚焦展示）：
+  - 需求：问号“包含在技能包 label 内”，因此问号按钮作为 tag 的子元素渲染
+  - 气泡位置：右上（相对问号按钮向上弹出，并向右展开），减少遮挡标题/副标题的概率
+  - 动效：仅使用 transform/opacity，避免触发布局，滚动/hover 更稳定
+*/
+.tag--package .tag__help {
+  position: relative;
+  /*
+    需求：问号 icon 不需要外层容器
+    - 去掉圆形背景/描边，让它更像标签的一部分，而不是一个“额外按钮”
+    - 仍保留 button 语义：可聚焦，支持键盘触达（focus-visible）
+  */
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: rgba(255, 204, 0, 0.92); /* 与标签背景同一色相（更“融入”技能包标签） */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 180ms ease, filter 180ms ease, color 180ms ease;
+  will-change: transform;
+}
+
+.tag--package .tag__help:focus-visible {
+  outline: 2px solid rgba(255, 204, 0, 0.34);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+.tag--package .tag__help:hover,
+.tag--package .tag__help:focus-visible {
+  transform: translate3d(0, -1px, 0);
+  color: rgba(255, 204, 0, 0.98);
+  filter: drop-shadow(0 10px 18px rgba(255, 107, 0, 0.18));
+}
+
+.tag--package .tag__help .icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
+}
+
+.tag--package .tag__tooltip {
+  position: absolute;
+  /*
+    右上气泡定位：
+    - 以问号 icon 的右侧为锚点（right），让气泡主体向左展开
+    - 目的：把气泡挪到“问号左上方”的空白区域（用户标注红框），避免压住右侧的其它标签（如“生产力”）
+  */
+  right: -6px;
+  bottom: calc(100% + 10px);
+  /*
+    文案较短时，tooltip 不需要“强行撑宽”：
+    - 之前的 min-width 会导致两侧留出过多空白（用户反馈红框）
+    - 改为内容自适应宽度，同时保留 max-width 作为兜底，避免未来文案变长时撑爆
+  */
+  min-width: 0;
+  width: max-content;
+  max-width: 220px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 204, 0, 0.22);
+  background: rgba(255, 255, 255, 0.96);
+  color: rgba(71, 85, 105, 0.92);
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 600;
+  /* 避免 tag 的字距/不换行设置影响气泡排版 */
+  letter-spacing: normal;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  box-shadow: 0 16px 30px -22px rgba(255, 107, 0, 0.32);
+  backdrop-filter: blur(12px) saturate(160%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* 气泡从下往上“弹出”一点点，视觉更自然 */
+  transform: translate3d(0, 6px, 0);
+  transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+  will-change: transform, opacity;
+  z-index: 6;
+}
+
+.tag--package .tag__tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  /* 箭头对齐问号 icon：气泡以 right 为锚点时，用 right 侧定位更稳定 */
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid rgba(255, 204, 0, 0.22);
+  border-bottom: 1px solid rgba(255, 204, 0, 0.22);
+  background: rgba(255, 255, 255, 0.96);
+  transform: translate3d(0, 50%, 0) rotate(45deg);
+}
+
+.tag--package .tag__help:hover .tag__tooltip,
+.tag--package .tag__help:focus-visible .tag__tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate3d(0, 0, 0);
+}
+
 .hero-copy__brand--skill {
   --brand-aura-size: 165%;
   --brand-aura-speed: 14s;

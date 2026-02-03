@@ -320,6 +320,8 @@ export default function DetailPage({
   const supportsDownloadZip = skill?.supports_download_zip ?? true;
   // 下载提示气泡的 id，用于 aria-describedby 与无障碍说明。
   const downloadHelpId = `download-help-${skillId}`;
+  // v1.3.0：技能包提示气泡的 id（仅桌面端 hover/聚焦展示；移动端不做该交互）。
+  const packageHelpId = `package-help-${skillId}`;
 
   const practicesQuery = useMemo(() => {
     const search = new URLSearchParams();
@@ -608,7 +610,15 @@ export default function DetailPage({
                 </span>
               </div>
 
-              <h1 className="m-detail-card__title">{title}</h1>
+              {/* v1.3.0：技能包标识（is_package=true 时展示「技能包」Label） */}
+              <div className="m-detail-card__title-row">
+                <h1 className="m-detail-card__title">{title}</h1>
+                {skill?.is_package ? (
+                  <span className="m-badge m-badge--package" aria-label="技能包">
+                    技能包
+                  </span>
+                ) : null}
+              </div>
               <p className="m-detail-card__desc">{desc}</p>
 
               {/* PC 专属能力：移动端降级为 toast 提示 */}
@@ -751,6 +761,24 @@ export default function DetailPage({
                   {skillLoading ? "加载中..." : skill?.name || "未找到"}
                 </span>
               </h1>
+              {/* v1.3.0：技能包标识（is_package=true 时展示「技能包」Label） */}
+              {!skillLoading && skill?.is_package ? (
+                <span className="tag tag--package detail-hero__package" aria-label="技能包">
+                  技能包
+
+                  {/*
+                    技能包问号提示（仅桌面端）：
+                    - 需求：问号需要“包含在技能包 label 内”，避免作为独立元素导致断行/错位
+                    - 交互：hover / focus-visible 时展示气泡；移动端不做该交互（移动端使用独立布局，不渲染此段）
+                  */}
+                  <button className="tag__help" type="button" aria-label="技能包说明" aria-describedby={packageHelpId}>
+                    <CircleHelp className="icon" aria-hidden="true" />
+                    <span className="tag__tooltip" id={packageHelpId} role="tooltip">
+                      包含数个子技能
+                    </span>
+                  </button>
+                </span>
+              ) : null}
               <span className="tag detail-hero__tag">
                 <Tag className="icon" />
                 {skill?.tag || "-"}

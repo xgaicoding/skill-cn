@@ -948,12 +948,45 @@
     color: rgba(124, 94, 77, 0.92);
   }
 
+  /* 标题行：标题 + v1.3.0「技能包」标识同排展示，必要时自动换行 */
+  .m-detail-card__title-row {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
   .m-detail-card__title {
-    margin: 10px 0 0;
+    margin: 0;
     font-size: 18px;
     line-height: 1.18;
     letter-spacing: -0.01em;
     font-weight: 900;
+  }
+
+  /*
+    技能包标识（v1.3.0）：
+    - 视觉上与站内 Chip/Tag 保持同一语言
+    - 尺寸更克制，避免在移动端标题旁抢占过多空间
+  */
+  .m-badge {
+    height: 22px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 204, 0, 0.32);
+    background: rgba(255, 204, 0, 0.14);
+    color: rgba(124, 94, 77, 0.94);
+    font-size: 12px;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  /* 预留 modifier：后续如需区分更多 badge 类型可直接扩展 */
+  .m-badge--package {
+    /* 目前保持默认样式即可；单独类名用于语义与未来扩展 */
   }
 
   .m-detail-card__desc {

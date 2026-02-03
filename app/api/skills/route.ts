@@ -33,7 +33,8 @@ export async function GET(request: Request) {
       .from("skills")
       .select(
         // supports_download_zip 用于前端判断是否展示“直接下载”入口
-        "id, name, description, tag, source_url, supports_download_zip, download_count, heat_score, repo_stars, repo_owner_name, repo_owner_avatar_url, updated_at",
+        // is_package：用于详情页（以及未来列表页）展示“技能包”标识
+        "id, name, description, tag, source_url, is_package, supports_download_zip, download_count, heat_score, repo_stars, repo_owner_name, repo_owner_avatar_url, updated_at",
         { count: "exact" }
       )
       .eq("is_listed", true);

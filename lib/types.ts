@@ -5,6 +5,12 @@ export type Skill = {
   tag: string;
   source_url: string;
   is_listed: boolean;
+  /**
+   * 是否为“技能包”：
+   * - true：该 Skill 代表一组 skills 的合集概念（详情页需展示「技能包」Label）
+   * - false：普通单一 Skill（默认）
+   */
+  is_package: boolean;
   download_count: number;
   practice_count: number;
   heat_score: number;
