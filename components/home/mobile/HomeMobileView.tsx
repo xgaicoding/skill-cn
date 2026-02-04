@@ -568,6 +568,28 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
 
   const activeSortLabel = SORT_OPTIONS.find((item) => item.value === sort)?.label || "最热";
 
+  /**
+   * 移动端 Hero 自动轮播（banner）：
+   * ------------------------------------------------------------
+   * 用户反馈：移动端 banner “不会自动轮播”。
+   *
+   * 根因：
+   * - 首屏时 featured 还在加载（featuredLoading=true），Swiper 已经初始化过一次
+   * - 此时我们会把 autoplay 置为 false（因为只有骨架/或只有 1 张 slide）
+   * - 等数据回来后再把 autoplay 从 false 改成对象，Swiper 不一定会自动启动 autoplay
+   *
+   * 解法：
+   * - 用 key 在“加载态 -> 数据态”切换时强制重建 Swiper 实例
+   * - 这样 autoplay 在初始化阶段就会按配置启动，行为最稳定
+   */
+  const heroAutoplay =
+    !featuredLoading && heroSlides.length > 1
+      ? {
+          delay: 3600,
+          disableOnInteraction: false,
+        }
+      : false;
+
   return (
     <>
       <main className="m-safe" role="main" aria-label="移动端首页内容">
@@ -575,6 +597,8 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
         <section className="m-hero" aria-label="移动端 Hero 轮播" aria-busy={featuredLoading}>
           <Swiper
             className="m-hero__swiper"
+            // 关键：加载态与数据态切换时重建 Swiper，确保 autoplay 能按预期启动。
+            key={`m-hero-swiper-${featuredLoading ? "loading" : "ready"}-${heroSlides.length}`}
             modules={[Autoplay, SwiperPagination]}
             /*
               轮播卡片“露出下一张”的视觉（对齐 mockup）：
@@ -585,14 +609,7 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
             spaceBetween={12}
             rewind
             speed={520}
-            autoplay={
-              heroSlides.length > 1
-                ? {
-                    delay: 3600,
-                    disableOnInteraction: false,
-                  }
-                : false
-            }
+            autoplay={heroAutoplay}
             pagination={{ clickable: true }}
           >
             {featuredLoading ? (
