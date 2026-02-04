@@ -247,7 +247,10 @@ export default function DetailPage({
   const [practiceError, setPracticeError] = useState<string | null>(null);
   const [practiceReloadKey, setPracticeReloadKey] = useState(0);
   // 实践排序：参考首页“最热/最新”，热度按点击量，最新按更新时间。
-  const [practiceSort, setPracticeSort] = useState<"heat" | "recent">("heat");
+  // 实践列表默认按「最新」展示：
+  // - 对应 UI 上的「最新」分段按钮
+  // - 与首页实践模式的默认排序保持一致，降低用户心智成本
+  const [practiceSort, setPracticeSort] = useState<"heat" | "recent">("recent");
 
   /**
    * Mobile Toast（用于“PC 专属能力”降级提示）
@@ -640,6 +643,74 @@ export default function DetailPage({
     observer.observe(el);
     return () => observer.disconnect();
   }, [isMobile, practiceLoading, practiceError, practicePage, practiceTotalPages]);
+
+  /**
+   * 无限滚动兜底：Scroll 监听
+   * ------------------------------------------------------------
+   * 为什么需要：
+   * - 部分移动端 WebView（尤其是 iOS 某些内嵌浏览器）存在 IntersectionObserver 不触发/偶发失效的情况
+   * - 用户会表现为“滑到底也不加载下一页”，非常影响体验
+   *
+   * 方案：
+   * - 保留 IntersectionObserver（性能更好、语义更清晰）
+   * - 同时增加一个 scroll-based fallback：当哨兵距离视口底部 <= 600px 时触发加载
+   *
+   * 说明：
+   * - 这里使用 requestAnimationFrame 做轻量节流，避免高频 scroll 回调导致的性能问题
+   * - 触发条件与 Observer 的 rootMargin 口径保持一致（600px），体验上更一致
+   */
+  useEffect(() => {
+    if (!isMobile) {
+      return;
+    }
+
+    let rafId: number | null = null;
+
+    const maybeLoadMoreByScroll = () => {
+      const el = practiceSentinelRef.current;
+      if (!el) return;
+
+      const hasMore = practicePage < (practiceTotalPages || 1);
+      if (!hasMore) return;
+      if (practiceLoading) return;
+      if (practiceError) return;
+      if (practiceLoadMoreLockedRef.current) return;
+
+      const rect = el.getBoundingClientRect();
+      const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
+
+      // 触发阈值：哨兵进入“视口底部往下 600px”范围即加载下一页（与 Observer rootMargin 对齐）
+      const shouldLoad = rect.top - viewportH <= 600;
+      if (!shouldLoad) return;
+
+      practiceLoadMoreLockedRef.current = true;
+      setPracticePage((prev) => prev + 1);
+    };
+
+    const onScroll = () => {
+      // rAF 节流：同一帧内最多执行一次检查
+      if (rafId != null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        maybeLoadMoreByScroll();
+      });
+    };
+
+    // 首次绑定时立即检查一次：
+    // - 列表不足一屏时可直接触发下一页加载（避免用户“无路可滑”）
+    onScroll();
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (rafId != null) {
+        window.cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    };
+  }, [isMobile, practicePage, practiceTotalPages, practiceLoading, practiceError]);
 
   // 卸载时清理 toast 定时器，避免潜在的 setState on unmounted。
   useEffect(() => {

@@ -848,6 +848,18 @@
     justify-content: center;
   }
 
+  /*
+    无限滚动哨兵（Skill 详情页关联实践）：
+    - IntersectionObserver 观察的目标是一个空 div
+    - 若该元素高度为 0，在 iOS Safari / 部分 WebView 下可能出现“永远不触发 isIntersecting”的情况
+    - 因此这里显式给 1px 高度，确保触底加载稳定可靠
+  */
+  .m-sentinel {
+    height: 10px;
+    width: 100%;
+    pointer-events: none;
+  }
+
   .m-feed-footer__loading,
   .m-feed-footer__end {
     color: rgba(124, 94, 77, 0.85);
