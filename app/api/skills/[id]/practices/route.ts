@@ -37,16 +37,21 @@ export async function GET(request: Request, { params }: { params: { id: string }
   // 实践排序：
   // - heat：按点击量（click_count）降序，其次更新时间
   // - recent：按更新时间降序，其次点击量
+  // - 追加 id 作为最终兜底排序键，保证分页在“同分/同日”场景下仍然稳定（避免翻页重复/漏数据）
   if (sort === "recent") {
     query = query
       // 最新优先：更新时间降序，其次点击量。
       .order("updated_at", { ascending: false })
-      .order("click_count", { ascending: false });
+      .order("click_count", { ascending: false })
+      // 最终兜底：保证排序稳定（尤其是大量实践同一天更新、点击量一致时）。
+      .order("id", { ascending: false });
   } else {
     query = query
       // 最热优先：点击量降序，其次更新时间。
       .order("click_count", { ascending: false })
-      .order("updated_at", { ascending: false });
+      .order("updated_at", { ascending: false })
+      // 最终兜底：保证排序稳定（尤其是大量实践点击量一致时）。
+      .order("id", { ascending: false });
   }
 
   const from = (page - 1) * size;

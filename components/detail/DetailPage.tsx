@@ -496,8 +496,10 @@ export default function DetailPage({
         const payload = json as Paginated<Practice>;
         if (!cancelled) {
           const next = payload.data || [];
-          // 移动端无限滚动：第 2 页起做“追加”而非“整页替换”。
-          if (isMobile && practicePage > 1) {
+          // 无限滚动：第 2 页起做“追加”而非“整页替换”，避免滚动加载时丢失上一页内容。
+          // - mobile：详情页关联实践两列网格无限滚动
+          // - desktop：Skill 详情页下方实践卡片同样改为无限滚动
+          if (practicePage > 1) {
             setPractices((prev) => {
               const map = new Map<number, Practice>();
               for (const item of prev) map.set(item.id, item);
@@ -511,8 +513,15 @@ export default function DetailPage({
         }
       } catch (err: any) {
         if (!cancelled) {
-          setPractices([]);
-          setPracticeTotalPages(1);
+          /**
+           * 错误处理策略：
+           * - 首屏（page=1）失败：清空列表，展示错误态（与原逻辑一致）
+           * - 触底加载（page>1）失败：保留已加载的列表，仅展示底部错误提示，允许重试
+           */
+          if (practicePage <= 1) {
+            setPractices([]);
+            setPracticeTotalPages(1);
+          }
           setPracticeError(err?.message || "加载失败");
         }
       } finally {
@@ -609,12 +618,12 @@ export default function DetailPage({
   }, [practiceLoading]);
 
   useEffect(() => {
-    if (!isMobile) {
-      return;
-    }
-
     const el = practiceSentinelRef.current;
     if (!el) {
+      return;
+    }
+    // 当哨兵处于 display:none（例如桌面端切到 README Tab）时不触发加载。
+    if (el.offsetParent === null) {
       return;
     }
 
@@ -637,7 +646,11 @@ export default function DetailPage({
         practiceLoadMoreLockedRef.current = true;
         setPracticePage((prev) => prev + 1);
       },
-      { rootMargin: "600px 0px", threshold: 0 },
+      {
+        // 桌面端屏幕更高，提前一点触发体验更顺滑；移动端保持原 600px 口径。
+        rootMargin: isMobile ? "600px 0px" : "800px 0px",
+        threshold: 0,
+      },
     );
 
     observer.observe(el);
@@ -660,15 +673,13 @@ export default function DetailPage({
    * - 触发条件与 Observer 的 rootMargin 口径保持一致（600px），体验上更一致
    */
   useEffect(() => {
-    if (!isMobile) {
-      return;
-    }
-
     let rafId: number | null = null;
 
     const maybeLoadMoreByScroll = () => {
       const el = practiceSentinelRef.current;
       if (!el) return;
+      // 当哨兵不可见（display:none）时不触发加载，避免切到 README Tab 时误触发把实践全刷出来。
+      if (el.offsetParent === null) return;
 
       const hasMore = practicePage < (practiceTotalPages || 1);
       if (!hasMore) return;
@@ -680,7 +691,8 @@ export default function DetailPage({
       const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
 
       // 触发阈值：哨兵进入“视口底部往下 600px”范围即加载下一页（与 Observer rootMargin 对齐）
-      const shouldLoad = rect.top - viewportH <= 600;
+      const thresholdPx = isMobile ? 600 : 800;
+      const shouldLoad = rect.top - viewportH <= thresholdPx;
       if (!shouldLoad) return;
 
       practiceLoadMoreLockedRef.current = true;
@@ -1126,95 +1138,125 @@ export default function DetailPage({
                   </span>
                 </span>
               </button>
-              {practiceLoading ? (
-                // 实践列表加载中：使用骨架卡片占位，保持网格高度稳定。
-                <div className="practice-grid" aria-busy="true">
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <PracticeCardSkeleton key={`practice-skeleton-${index}`} />
-                  ))}
-                </div>
-              ) : practices.length === 0 ? (
-                <div className="empty-state">暂无实践</div>
-              ) : (
-                <div className="practice-grid">
-                  {practices.map((practice, index) => {
-                    const accent = PRACTICE_ACCENTS[index % PRACTICE_ACCENTS.length];
-                    // 作者名/渠道名可能为空：统一 trim 后组合展示，保证 UI 始终有可读内容。
-                    const channelName = practice.channel?.trim();
-                    const authorName = practice.author_name?.trim();
-                    // 同时存在时用“渠道·作者”格式；否则回退到任一可用值，最后兜底为 "-"。
-                    const sourceText = channelName && authorName ? `${channelName}·${authorName}` : channelName || authorName || "-";
-                    return (
-                      <a
-                        key={practice.id}
-                        className="practice-card"
-                        href={practice.source_url || "#"}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={() => handlePracticeClick(practice)}
-                        aria-label={`打开实践：${practice.title}（新窗口）`}
-                        style={{ "--accent": accent } as CSSProperties}
-                      >
-                        <div className="practice-card__top">
-                          <span className="practice-card__channel">{practice.channel}</span>
-                          <span className="stat stat--empty" aria-label={`更新时间 ${formatDate(practice.updated_at)}`}>
-                            <CalendarDays className="icon" />
-                            {formatDate(practice.updated_at)}
-                          </span>
-                        </div>
-                        <h3>{practice.title}</h3>
-                        <p>{practice.summary}</p>
-                        <div className="practice-card__bottom">
-                          <span className="meta" aria-label={`点击 ${formatCompactNumber(practice.click_count)}`}>
-                            <Eye className="icon" />{formatCompactNumber(practice.click_count)}
-                          </span>
-                          {/* 实践卡片底部元信息：展示“渠道·作者”，更符合来源信息语义。 */}
-                          <span className="meta" aria-label={`来源 ${sourceText}`} title={sourceText}>
-                            <User className="icon" />
-                            {sourceText}
-                          </span>
-                        </div>
-                      </a>
-                    );
-                  })}
-                </div>
-              )}
+              {(() => {
+                const hasMore = practicePage < (practiceTotalPages || 1);
+                const showFirstPageSkeleton = practiceLoading && practicePage === 1;
+                const loadingMore = practiceLoading && practicePage > 1;
 
-              <nav className="pagination" aria-label="实践分页">
-                <button
-                  className="page-btn"
-                  type="button"
-                  disabled={practicePage <= 1 || practiceLoading}
-                  onClick={() => setPracticePage(Math.max(practicePage - 1, 1))}
-                  aria-label="上一页"
-                >
-                  ‹
-                </button>
-                {Array.from({ length: practiceTotalPages }, (_, i) => i + 1)
-                  .slice(0, 10)
-                  .map((p) => (
-                    <button
-                      key={p}
-                      className={`page-btn ${p === practicePage ? "is-active" : ""}`}
-                      type="button"
-                      onClick={() => setPracticePage(p)}
-                      disabled={practiceLoading}
-                      data-loading={practiceLoading && p === practicePage}
-                      aria-busy={practiceLoading && p === practicePage}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                <button
-                  className="page-btn"
-                  type="button"
-                  disabled={practicePage >= practiceTotalPages || practiceLoading}
-                  onClick={() => setPracticePage(Math.min(practicePage + 1, practiceTotalPages))}
-                  aria-label="下一页"
-                >
-                  ›
-                </button>
-              </nav>
+                // 触底加载的手动兜底：当用户不希望等自动触发时，可点击“加载更多”。
+                const handleLoadMore = () => {
+                  if (!hasMore) return;
+                  if (practiceLoading) return;
+                  if (practiceError) return;
+                  if (practiceLoadMoreLockedRef.current) return;
+                  practiceLoadMoreLockedRef.current = true;
+                  setPracticePage((prev) => prev + 1);
+                };
+
+                if (practiceError && practicePage <= 1) {
+                  return (
+                    <div className="empty-state" role="status" aria-label="加载失败">
+                      加载失败：{practiceError}
+                      <button
+                        className="pagination__btn"
+                        type="button"
+                        style={{ marginLeft: 10 }}
+                        onClick={() => setPracticeReloadKey((key) => key + 1)}
+                        aria-label="重试加载实践列表"
+                      >
+                        重试
+                      </button>
+                    </div>
+                  );
+                }
+
+                if (showFirstPageSkeleton) {
+                  return (
+                    <div className="practice-grid" aria-busy="true">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <PracticeCardSkeleton key={`practice-skeleton-${index}`} />
+                      ))}
+                    </div>
+                  );
+                }
+
+                if (practices.length === 0) {
+                  return <div className="empty-state">暂无实践</div>;
+                }
+
+                return (
+                  <>
+                    <div className="practice-grid">
+                      {practices.map((practice, index) => {
+                        const accent = PRACTICE_ACCENTS[index % PRACTICE_ACCENTS.length];
+                        // 作者名/渠道名可能为空：统一 trim 后组合展示，保证 UI 始终有可读内容。
+                        const channelName = practice.channel?.trim();
+                        const authorName = practice.author_name?.trim();
+                        // 同时存在时用“渠道·作者”格式；否则回退到任一可用值，最后兜底为 "-"。
+                        const sourceText =
+                          channelName && authorName ? `${channelName}·${authorName}` : channelName || authorName || "-";
+                        return (
+                          <a
+                            key={practice.id}
+                            className="practice-card"
+                            href={practice.source_url || "#"}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={() => handlePracticeClick(practice)}
+                            aria-label={`打开实践：${practice.title}（新窗口）`}
+                            style={{ "--accent": accent } as CSSProperties}
+                          >
+                            <div className="practice-card__top">
+                              <span className="practice-card__channel">{practice.channel}</span>
+                              <span className="stat stat--empty" aria-label={`更新时间 ${formatDate(practice.updated_at)}`}>
+                                <CalendarDays className="icon" />
+                                {formatDate(practice.updated_at)}
+                              </span>
+                            </div>
+                            <h3>{practice.title}</h3>
+                            <p>{practice.summary}</p>
+                            <div className="practice-card__bottom">
+                              <span className="meta" aria-label={`点击 ${formatCompactNumber(practice.click_count)}`}>
+                                <Eye className="icon" />
+                                {formatCompactNumber(practice.click_count)}
+                              </span>
+                              {/* 实践卡片底部元信息：展示“渠道·作者”，更符合来源信息语义。 */}
+                              <span className="meta" aria-label={`来源 ${sourceText}`} title={sourceText}>
+                                <User className="icon" />
+                                {sourceText}
+                              </span>
+                            </div>
+                          </a>
+                        );
+                      })}
+                    </div>
+
+                    {/* 触底哨兵：PC 端实践列表也启用无限滚动加载 */}
+                    <div ref={practiceSentinelRef} className="practice-sentinel" aria-hidden="true" />
+
+                    {/* 列表底部状态（loading / error / end / manual-loadmore） */}
+                    <div className="practice-feed-footer" aria-label="实践列表状态">
+                      {practiceError ? (
+                        <button className="pagination__btn" type="button" onClick={() => setPracticeReloadKey((key) => key + 1)}>
+                          重试加载
+                        </button>
+                      ) : loadingMore ? (
+                        <div className="practice-feed-footer__loading" aria-label="加载中">
+                          加载中…
+                        </div>
+                      ) : hasMore ? (
+                        <button className="pagination__btn" type="button" onClick={handleLoadMore} aria-label="加载更多实践">
+                          加载更多
+                        </button>
+                      ) : (
+                        <div className="practice-feed-footer__end" aria-label="已到底">
+                          已到底
+                        </div>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
             </section>
 
             <section className="detail-card detail-tabpanel detail-tabpanel--skillmd" aria-label={`${docTitle} 内容区`}>

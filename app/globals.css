@@ -5619,6 +5619,33 @@ body.is-detail::after {
   gap: 18px;
 }
 
+/*
+  Skill 详情页（桌面端）实践列表：无限滚动辅助样式
+  ------------------------------------------------------------------
+  需求：
+  - 详情页下方实践卡片从“分页”改为“触底加载”
+  - 需要一个“哨兵元素”给 IntersectionObserver/scroll fallback 使用
+  - 需要底部状态区展示：加载中 / 已到底 / 重试 / 手动加载更多（兜底）
+*/
+.practice-sentinel {
+  height: 1px;
+  width: 100%;
+  pointer-events: none;
+}
+
+.practice-feed-footer {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.practice-feed-footer__loading,
+.practice-feed-footer__end {
+  color: rgba(124, 94, 77, 0.88);
+  font-weight: 800;
+  font-size: 13px;
+}
+
 .practice-card {
   --card-accent: var(--accent, rgba(255, 107, 0, 0.9));
   position: relative;
