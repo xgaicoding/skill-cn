@@ -8,6 +8,8 @@ import rehypeHighlight from "rehype-highlight";
 import {
   CalendarDays,
   CircleHelp,
+  Copy,
+  Check,
   Download,
   Eye,
   Flame,
@@ -239,6 +241,13 @@ export default function DetailPage({
   // 按钮级别的请求状态，用于展示“正在处理”的过渡态。
   const [downloadPending, setDownloadPending] = useState(false);
   const [submitPracticePending, setSubmitPracticePending] = useState(false);
+  /**
+   * v1.4.0：npx 命令复制状态（仅 PC）
+   * - 用于在按钮上给出“已复制/复制失败”等轻量反馈
+   * - 不使用全局 Toast，避免引入额外依赖与样式回归风险
+   */
+  const [npxCopyState, setNpxCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const npxCopyTimerRef = useRef<number | null>(null);
 
   const [practices, setPractices] = useState<Practice[]>([]);
   const [practicePage, setPracticePage] = useState(1);
@@ -321,6 +330,12 @@ export default function DetailPage({
   const repoHomeUrl = useMemo(() => getRepoHomeUrl(skill?.source_url), [skill?.source_url]);
   // 默认支持下载 ZIP；若字段缺失，则按支持处理，避免影响历史数据。
   const supportsDownloadZip = skill?.supports_download_zip ?? true;
+  /**
+   * v1.4.0：npx 下载/安装指令（仅 PC）
+   * - 命令框展示在「下载 ZIP」入口上方（与 ZIP 下载并行，不互斥）
+   * - 允许为空：为空时不展示命令块，避免误导用户
+   */
+  const npxCommand = useMemo(() => (skill?.npx_download_command || "").trim(), [skill?.npx_download_command]);
   // 下载提示气泡的 id，用于 aria-describedby 与无障碍说明。
   const downloadHelpId = `download-help-${skillId}`;
   // v1.3.0：技能包提示气泡的 id（仅桌面端 hover/聚焦展示；移动端不做该交互）。
@@ -440,6 +455,17 @@ export default function DetailPage({
     setPracticePage((prev) => (prev === 1 ? prev : 1));
     setPracticeTotalPages((prev) => (prev === 1 ? prev : 1));
     setPracticeError((prev) => (prev ? null : prev));
+
+    /**
+     * v1.4.0：skillId 变化时重置 npx 复制状态
+     * - 避免从上一个 Skill 延续“已复制/复制失败”的反馈文案
+     * - 同时清理定时器，防止切换详情页后仍触发 setState
+     */
+    setNpxCopyState("idle");
+    if (npxCopyTimerRef.current) {
+      window.clearTimeout(npxCopyTimerRef.current);
+      npxCopyTimerRef.current = null;
+    }
   }, [skillId]);
 
   useEffect(() => {
@@ -558,6 +584,76 @@ export default function DetailPage({
     // 设置短暂延迟，避免下载触发但按钮立刻恢复导致“像是没反应”。
     window.setTimeout(() => setDownloadPending(false), 2000);
     window.location.href = `/api/skills/${skill.id}/download`;
+  };
+
+  /**
+   * v1.4.0：复制 npx 下载指令（仅 PC）
+   * ------------------------------------------------------------
+   * 复制策略：
+   * 1) 优先使用 Clipboard API（现代浏览器 + HTTPS/localhost）
+   * 2) 若失败，降级使用 `document.execCommand("copy")`（兼容老浏览器/特殊环境）
+   *
+   * 注意：
+   * - 复制逻辑不应阻塞主线程太久；这里仅创建一个临时 textarea 后立即销毁
+   * - 复制成功/失败用按钮文案做轻量反馈（“已复制/复制失败”），不影响页面其他交互
+   */
+  const copyTextToClipboard = async (text: string): Promise<boolean> => {
+    const payload = (text || "").trim();
+    if (!payload) return false;
+
+    // 现代浏览器优先：navigator.clipboard
+    try {
+      if (window.isSecureContext && navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(payload);
+        return true;
+      }
+    } catch {
+      // ignore：继续走降级方案
+    }
+
+    // 降级：临时 textarea + execCommand
+    let textarea: HTMLTextAreaElement | null = null;
+    try {
+      textarea = document.createElement("textarea");
+      textarea.value = payload;
+      textarea.setAttribute("readonly", "");
+      // 放到视口外，避免滚动抖动；opacity=0 避免闪现
+      textarea.style.position = "fixed";
+      textarea.style.top = "-1000px";
+      textarea.style.left = "-1000px";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      textarea.setSelectionRange(0, payload.length);
+      return document.execCommand("copy");
+    } catch {
+      return false;
+    } finally {
+      if (textarea) {
+        document.body.removeChild(textarea);
+      }
+    }
+  };
+
+  const handleCopyNpxCommand = async () => {
+    // 仅 PC 端展示 npx 命令块；移动端不要求该能力。
+    if (isMobile) return;
+    if (!npxCommand) return;
+
+    // 清理旧的反馈定时器，避免连续点击造成状态抖动。
+    if (npxCopyTimerRef.current) {
+      window.clearTimeout(npxCopyTimerRef.current);
+      npxCopyTimerRef.current = null;
+    }
+
+    const ok = await copyTextToClipboard(npxCommand);
+    setNpxCopyState(ok ? "copied" : "error");
+
+    // 反馈仅短暂展示，然后自动恢复为“复制”。
+    npxCopyTimerRef.current = window.setTimeout(() => {
+      setNpxCopyState("idle");
+      npxCopyTimerRef.current = null;
+    }, ok ? 1600 : 2400);
   };
 
   // 切换实践排序时回到第一页，避免页码越界造成空列表。
@@ -730,6 +826,10 @@ export default function DetailPage({
       if (toastTimerRef.current) {
         window.clearTimeout(toastTimerRef.current);
         toastTimerRef.current = null;
+      }
+      if (npxCopyTimerRef.current) {
+        window.clearTimeout(npxCopyTimerRef.current);
+        npxCopyTimerRef.current = null;
       }
     };
   }, []);
@@ -1013,6 +1113,31 @@ export default function DetailPage({
             <div className="detail-panel__actions">
               {/* 下载按钮增加扫光轮播特效与独立 hover 逻辑，保持视觉强调但不再上浮 */}
               <div className="detail-panel__download" data-unsupported={!supportsDownloadZip}>
+                {/* v1.4.0：npx 指令下载（仅 PC）
+                    - 需求：npx 区块在“下载 ZIP”入口上方
+                    - 视觉：不展示额外标题/外层容器，只展示命令框 + 复制图标 */}
+                {npxCommand ? (
+                  <div className="detail-panel__npx" aria-label="npx 下载指令">
+                    <div className="detail-panel__npx-scroll" aria-label="npx 命令（可选中复制）">
+                      <code className="detail-panel__npx-code">{npxCommand}</code>
+                    </div>
+                    <button
+                      className="detail-panel__npx-copy"
+                      type="button"
+                      onClick={handleCopyNpxCommand}
+                      data-state={npxCopyState}
+                      aria-label="复制 npx 下载指令"
+                      title={npxCopyState === "error" ? "复制失败，请手动复制" : "复制"}
+                    >
+                      {npxCopyState === "copied" ? (
+                        <Check className="icon" aria-hidden="true" />
+                      ) : (
+                        <Copy className="icon" aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                ) : null}
+
                 {/* 不支持 ZIP 下载时，按钮改为白色外链，并把问号图标放进按钮内 */}
                 {supportsDownloadZip ? (
                   <button

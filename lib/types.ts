@@ -22,6 +22,12 @@ export type Skill = {
   markdown_render_mode: "markdown" | "plain";
   // 是否支持直接下载 ZIP（默认 true；为 false 时引导用户去官方渠道下载）。
   supports_download_zip: boolean;
+  /**
+   * npx 下载/安装指令：
+   * - 仅 PC 端详情页展示（下载按钮下方），用于一键复制
+   * - 允许为空：不配置时不展示，不影响 ZIP 下载/外链下载
+   */
+  npx_download_command: string | null;
 };
 
 /**

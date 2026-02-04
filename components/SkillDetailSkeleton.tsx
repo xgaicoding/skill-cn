@@ -54,6 +54,8 @@ export const SkillDetailSkeleton = () => {
               </div>
             </div>
             <div className="detail-panel__actions">
+              {/* v1.4.0：npx 命令框占位（无标题，仅展示一行命令 + 复制按钮） */}
+              <Skeleton width="100%" height={40} style={{ borderRadius: 16 }} />
               <Skeleton width="100%" height={44} style={{ borderRadius: 999 }} />
             </div>
           </aside>

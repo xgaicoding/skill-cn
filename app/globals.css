@@ -4892,6 +4892,102 @@ button[data-loading="true"] .btn__loading {
   transform: translate3d(0, 0, 0);
 }
 
+/* v1.4.0：详情页 npx 命令框（仅 PC）
+   - 展示位置：下载区域上方（与 ZIP 下载并行，不互斥）
+   - 视觉：不额外展示“npx 下载”等标题，仅展示命令 + 复制图标
+   - 性能：hover/pressed 仅使用 transform/opacity（GPU 友好） */
+.detail-panel__npx {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 107, 0, 0.14);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 14px 26px -24px rgba(255, 107, 0, 0.22);
+  overflow: hidden;
+}
+
+.detail-panel__npx-scroll {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* 右侧渐隐：提示“命令可横向滚动/可复制”，与站内其他渐隐语义一致 */
+.detail-panel__npx-scroll::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 38px;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.96));
+  pointer-events: none;
+}
+
+.detail-panel__npx-code {
+  display: block;
+  padding-right: 38px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.6;
+  color: rgba(15, 23, 42, 0.92);
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  user-select: text;
+}
+
+.detail-panel__npx-code::-webkit-scrollbar {
+  display: none;
+}
+
+.detail-panel__npx-copy {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 107, 0, 0.16);
+  background: rgba(255, 107, 0, 0.08);
+  color: rgba(15, 23, 42, 0.9);
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  will-change: transform;
+}
+
+.detail-panel__npx-copy .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.detail-panel__npx-copy:hover,
+.detail-panel__npx-copy:focus-visible {
+  transform: translate3d(0, -1px, 0);
+  background: rgba(255, 107, 0, 0.12);
+  border-color: rgba(255, 107, 0, 0.24);
+  box-shadow: 0 14px 26px -22px rgba(255, 107, 0, 0.26);
+}
+
+.detail-panel__npx-copy:active {
+  transform: translate3d(0, 0, 0);
+}
+
+.detail-panel__npx-copy[data-state="copied"] {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.detail-panel__npx-copy[data-state="error"] {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+}
+
 /* 详情页右侧仓库信息：头像 + 作者 + 仓库短地址 */
 .detail-panel__repo {
   display: flex;
