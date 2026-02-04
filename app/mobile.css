@@ -508,6 +508,15 @@
     gap: 10px;
   }
 
+  /*
+    二级 Tab（最热/最新）行：
+    - 与 chips 分行后，chips 可以占满整行，横向滑动更顺手
+    - 排序作为二级 Tab 放在下方，视觉层级更清晰
+  */
+  .m-toolbar__row--sort {
+    margin-top: 8px;
+  }
+
   .m-chips {
     display: flex;
     align-items: center;
@@ -535,6 +544,7 @@
     font-size: 13px;
     font-weight: 800;
     white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .m-chip.is-active {
@@ -544,36 +554,68 @@
   }
 
   .m-sort {
+    /*
+      二级 Tab（最热/最新）：
+      - 参考用户给的示例：两个“胶囊按钮”并排，选中态更突出
+      - 不做整行分段容器（避免误读成“一级 Tab”），改为更轻的二级筛选控件
+    */
     display: inline-flex;
-    border-radius: 999px;
-    padding: 2px;
-    background: rgba(255, 255, 255, 0.86);
-    border: 1px solid rgba(255, 107, 0, 0.14);
-    flex: 0 0 auto;
-    gap: 4px;
+    align-items: center;
+    gap: 10px;
   }
 
   .m-sort__btn {
-    height: 30px;
-    padding: 0 10px;
+    height: 32px;
+    padding: 0 14px;
     border-radius: 999px;
+    border: 1px solid rgba(255, 107, 0, 0.14);
+    background: rgba(255, 255, 255, 0.86);
     font-size: 12px;
     font-weight: 800;
     color: rgba(124, 94, 77, 0.9);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .m-sort__btn .icon {
-    width: 16px;
-    height: 16px;
+  .m-sort__btn.is-active {
+    background: rgba(255, 107, 0, 0.92);
+    border-color: rgba(255, 107, 0, 0.92);
+    color: rgba(255, 255, 255, 0.98);
+    /* box-shadow: 0 18px 46px -36px rgba(255, 107, 0, 0.65); */
   }
 
-  .m-sort__btn.is-active {
-    background: rgba(255, 107, 0, 0.12);
-    color: rgba(230, 82, 0, 0.98);
+  .m-sort__btn:active {
+    transform: translate3d(0, 1px, 0);
+  }
+
+  .m-sort__btn:focus-visible {
+    outline: 2px solid rgba(255, 107, 0, 0.45);
+    outline-offset: 2px;
+  }
+
+  .m-sort__mark {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    background: rgba(124, 94, 77, 0.18);
+    border: 1px solid rgba(124, 94, 77, 0.12);
+  }
+
+  .m-sort__btn.is-active .m-sort__mark {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.44);
+  }
+
+  .m-sort__mark .icon {
+    width: 12px;
+    height: 12px;
+    color: rgba(255, 255, 255, 0.96);
   }
 
   .m-toolbar__subrow {

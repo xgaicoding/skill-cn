@@ -7,7 +7,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import {
   CalendarDays,
   ChevronUp,
-  Clock,
+  Check,
   ExternalLink,
   Eye,
   Filter,
@@ -680,7 +680,15 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
                 </button>
               ))}
             </nav>
+          </div>
 
+          {/*
+            移动端筛选条改为“两层结构”：
+            - 第 1 行：分类 chips（需要尽可能宽的可滑动区域）
+            - 第 2 行：排序（最热/最新）作为二级 Tab，避免与 chips 抢横向空间
+            这样用户更容易在分类较多时横向滑动，且排序入口依然稳定可见。
+          */}
+          <div className="m-toolbar__row m-toolbar__row--sort">
             <div className="m-sort" role="group" aria-label="排序">
               {SORT_OPTIONS.map((option) => (
                 <button
@@ -692,7 +700,9 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
                   disabled={current.loading}
                   title={option.label}
                 >
-                  {option.value === "heat" ? <Flame className="icon" aria-hidden="true" /> : <Clock className="icon" aria-hidden="true" />}
+                  <span className="m-sort__mark" aria-hidden="true">
+                    {option.value === sort ? <Check className="icon" aria-hidden="true" /> : null}
+                  </span>
                   {option.label}
                 </button>
               ))}
