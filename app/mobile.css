@@ -624,6 +624,21 @@
     gap: 8px;
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
+    /*
+      iOS / 微信内置浏览器兼容：
+      - <button> 在 iOS 上默认文字颜色是系统蓝（看起来像链接），会导致卡片标题“变蓝”
+      - <a> 在部分 UA 下也可能出现 visited 变紫/下划线等默认样式
+      因此在卡片容器层统一做“可控的默认样式重置”，让内部文本都按设计稿走。
+    */
+    color: rgba(26, 21, 16, 0.92);
+    text-decoration: none;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  /* 兜底：被访问过的卡片链接不变色（避免出现“紫色标题”）。 */
+  .m-card:visited {
+    color: rgba(26, 21, 16, 0.92);
   }
 
   .m-card--skill {
@@ -634,6 +649,13 @@
     font-weight: 900;
     font-size: 14px;
     line-height: 1.2;
+    /*
+      iOS 微信内置浏览器兼容：
+      - 部分环境下 button/a 会被注入“系统蓝”默认文本色
+      - 标题不显式设置颜色时会继承该蓝色，导致“技能标题像链接一样发蓝”
+      - 这里直接固定为正文主色，确保跨环境一致
+    */
+    color: rgba(26, 21, 16, 0.92);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -684,6 +706,14 @@
     font-weight: 900;
     font-size: 14px;
     line-height: 1.22;
+    /*
+      iOS 微信内置浏览器兼容：
+      - 首页「实践模式」卡片容器是 <button>（用于打开底部抽屉，而不是直接跳原文）
+      - iOS/微信对 <button> 可能应用默认“系统蓝”文本色
+      - 摘要/元信息有各自的颜色设置，唯独标题若不显式设置会被染蓝
+      因此这里固定为正文主色，避免标题“变蓝”。
+    */
+    color: rgba(26, 21, 16, 0.92);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -748,6 +778,8 @@
     border-top: 1px solid rgba(255, 107, 0, 0.12);
     display: flex;
     align-items: center;
+    /* 让“作者在左、阅读量在右”的布局在各浏览器下都稳定（不依赖 flex:1 的挤压行为）。 */
+    justify-content: space-between;
     gap: 10px;
     font-size: 12px;
     font-weight: 900;
