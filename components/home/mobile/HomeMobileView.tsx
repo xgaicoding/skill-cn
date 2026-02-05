@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Autoplay, Pagination as SwiperPagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
+import type { Swiper as SwiperInstance } from "swiper";
 import {
   CalendarDays,
   ChevronUp,
@@ -568,6 +569,11 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
 
   const activeSortLabel = SORT_OPTIONS.find((item) => item.value === sort)?.label || "最热";
 
+  // Swiper 实例引用：用于在 Hero 不可见时暂停 autoplay（减少后台无意义渲染）。
+  const heroSwiperRef = useRef<SwiperInstance | null>(null);
+  // Hero 区域引用：用于 IntersectionObserver 判断 Hero 是否在视口内。
+  const heroSectionRef = useRef<HTMLElement | null>(null);
+
   /**
    * 移动端 Hero 自动轮播（banner）：
    * ------------------------------------------------------------
@@ -590,16 +596,57 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
         }
       : false;
 
+  useEffect(() => {
+    const heroEl = heroSectionRef.current;
+    if (!heroEl) return;
+
+    // 没有 autoplay（只有 1 张卡片）时，确保停止，避免无意义的定时器。
+    if (!heroAutoplay) {
+      heroSwiperRef.current?.autoplay?.stop?.();
+      return;
+    }
+
+    /**
+     * 性能优化（移动端）：
+     * - 用户向下刷列表后，Hero 通常已不在视口内
+     * - 如果 autoplay 仍在后台运行，会持续做 transform/重排，导致卡顿/发热
+     * - 因此：Hero 不可见时暂停 autoplay；回到顶部可见时再恢复
+     */
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const inView = Boolean(entry?.isIntersecting);
+        const swiper = heroSwiperRef.current;
+        if (!swiper?.autoplay) return;
+        // destroyed 防护：避免 Swiper 重建/卸载期间调用导致异常。
+        if ((swiper as any).destroyed) return;
+
+        if (inView) {
+          swiper.autoplay.start();
+        } else {
+          swiper.autoplay.stop();
+        }
+      },
+      { threshold: 0.12 },
+    );
+
+    observer.observe(heroEl);
+    return () => observer.disconnect();
+  }, [heroAutoplay]);
+
   return (
     <>
       <main className="m-safe" role="main" aria-label="移动端首页内容">
         {/* Hero：移动端横向轮播 */}
-        <section className="m-hero" aria-label="移动端 Hero 轮播" aria-busy={featuredLoading}>
+        <section ref={heroSectionRef} className="m-hero" aria-label="移动端 Hero 轮播" aria-busy={featuredLoading}>
           <Swiper
             className="m-hero__swiper"
             // 关键：加载态与数据态切换时重建 Swiper，确保 autoplay 能按预期启动。
             key={`m-hero-swiper-${featuredLoading ? "loading" : "ready"}-${heroSlides.length}`}
             modules={[Autoplay, SwiperPagination]}
+            onSwiper={(swiper) => {
+              heroSwiperRef.current = swiper;
+            }}
             /*
               轮播卡片“露出下一张”的视觉（对齐 mockup）：
               - slidesPerView=auto：由 CSS 控制每张 slide 的宽度（见 app/mobile.css）

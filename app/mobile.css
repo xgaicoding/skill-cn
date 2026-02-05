@@ -332,9 +332,9 @@
   .m-hero-brand__badge {
     /*
       品牌字（Skill Hub 中国）：
-      - 复用 PC 端的“渐变高光扫过”文字质感（缩小版）
+      - 复用 PC 端的“渐变高光”文字质感（缩小版）
       - 不使用胶囊容器（避免“像标签”）
-      - 动效尽量收敛：只移动第一层高光（其余层固定）
+      - 移动端不做无限动效：避免 iOS/微信环境下持续重绘导致卡顿/发热
     */
     --brand-aura-size: 190%;
     --brand-aura-speed: 10s;
@@ -365,16 +365,17 @@
       var(--brand-aura-size) var(--brand-aura-size), var(--brand-aura-size) var(--brand-aura-size),
       var(--brand-aura-size) var(--brand-aura-size), var(--brand-aura-size) var(--brand-aura-size), 100% 100%;
     background-position: -40% 30%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
-    animation: m-brand-aura var(--brand-aura-speed) linear infinite;
-    will-change: background-position, transform;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
+    /*
+      性能优化（移动端）：
+      - iOS/微信环境下，背景位置的无限动画会导致持续重绘，出现“卡顿 + 发烫”
+      - 这里保留“渐变特效”但取消无限动画，避免长时间占用 GPU/CPU
+    */
+    animation: none;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
     text-shadow: 0 0 0.44ch rgba(255, 107, 0, 0.14), 0 0 1.18ch rgba(255, 204, 0, 0.1);
-    filter: saturate(1.18) contrast(1.06);
   }
 
   @keyframes m-brand-aura {
@@ -485,21 +486,18 @@
     /*
       Toolbar 扁平化（对齐 mockup / 预期视觉）：
       - 去掉“整块胶囊容器感”，改为贴着页面背景的吸顶条
-      - 保留轻微 blur 作为增强；不支持 blur 时自动降级
+      - 移动端不使用 backdrop-filter：iOS/微信滚动时容易持续重绘，导致卡顿/发热
     */
     /* calc() 只使用加减，避免部分浏览器对乘法支持不一致 */
     margin: 10px calc(0px - var(--mobile-gutter)) 10px;
     padding: 10px var(--mobile-gutter);
-    background: rgba(255, 241, 230, 0.78);
+    /*
+      性能优化（移动端）：
+      - sticky + backdrop-filter 在 iOS/微信里会导致滚动时持续重绘，明显卡顿/发热
+      - 这里改为更不透明的纯色背景（视觉更干净，也能解决“透出文字很乱”的问题）
+    */
+    background: rgba(255, 241, 230, 0.96);
     border-bottom: 1px solid rgba(255, 107, 0, 0.08);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .m-toolbar {
-      background: rgba(255, 241, 230, 0.94);
-    }
   }
 
   .m-toolbar__row {
@@ -1175,17 +1173,11 @@
     padding: 8px;
     border-radius: 18px;
     /*
-      轻玻璃态（用户反馈：能透过浮层看到底下文字）
-      - 增加 blur 与更高不透明度，减少“穿透脏感”
-    */
-    /*
-      这里比其它卡片更“实”一些：
-      - Mode 切换属于关键控件，出现时不应被背景内容干扰（否则会显得“脏”和不聚焦）
-      - 将透明度提升到接近纯色，搭配轻微 blur 做质感增强（而不是依赖透明度本身）
+      性能优化（移动端）：
+      - fixed + backdrop-filter 在 iOS/微信滚动时同样代价很高
+      - 这里用“接近纯色”的面板替代 blur，视觉更稳、更省电
     */
     background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.92);
     box-shadow: 0 40px 90px -30px rgba(50, 20, 0, 0.22), 0 0 0 1px rgba(255, 107, 0, 0.08) inset;
   }
@@ -1224,9 +1216,7 @@
     width: 44px;
     height: 44px;
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    background: rgba(255, 255, 255, 0.98);
     border: 1px solid rgba(255, 255, 255, 0.92);
     box-shadow: 0 28px 70px -34px rgba(50, 20, 0, 0.22), 0 0 0 1px rgba(255, 107, 0, 0.08) inset;
     display: inline-flex;
