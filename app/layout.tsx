@@ -5,10 +5,19 @@ import "./globals.css";
 import "./mobile.css";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
+import { getSiteUrl } from "@/lib/site";
+
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   title: "Skill Hub 中国",
   description: "助力国内 Skill 使用者快速找到能用、好用、可复用的实践方案",
+  /**
+   * metadataBase 用于拼接 canonical / OG / Twitter 等绝对 URL：
+   * - 统一从环境变量读取，确保生产环境 URL 正确
+   * - 本地开发缺省时自动回退到 localhost，避免报错
+   */
+  metadataBase: siteUrl,
   /*
    * 统一配置站点图标：兼顾现代浏览器的 SVG、传统浏览器的 ICO，
    * 以及移动端的触控图标，避免仅依赖默认 favicon 导致的模糊或缺失。
@@ -29,6 +38,20 @@ export const metadata: Metadata = {
    */
   manifest: "/site.webmanifest",
   themeColor: "#FF6B00",
+  /**
+   * 全局 Open Graph / Twitter 默认值：
+   * - 作为“兜底”配置，详情页 metadata 会按需覆盖
+   * - 预置默认分享图，避免在动态 OG 图上线前出现空白预览
+   */
+  openGraph: {
+    siteName: "Skill Hub 中国",
+    locale: "zh_CN",
+    type: "website",
+    images: [{ url: "/og-cover.png", alt: "Skill Hub 中国" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -28,6 +28,8 @@ export type HomeInitialState = {
 export default function HomePage({
   initial,
   deviceKind = "desktop",
+  initialSkills,
+  initialTotalPages,
 }: {
   initial: HomeInitialState;
   /**
@@ -36,6 +38,16 @@ export default function HomePage({
    * - tablet/desktop：本期统一按桌面 View 处理
    */
   deviceKind?: DeviceKind;
+  /**
+   * 首页首屏 SSR 预取的 Skill 列表（仅默认首页注入）：
+   * - 允许为空数组（代表“确实没有数据”）
+   * - undefined 表示未预取（仍走原有 CSR 拉取）
+   */
+  initialSkills?: Skill[];
+  /**
+   * SSR 预取对应的总页数（与初始技能列表一致）。
+   */
+  initialTotalPages?: number;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -64,12 +76,19 @@ export default function HomePage({
   const [ids, setIds] = useState(initial.ids || "");
   const [page, setPage] = useState(1);
 
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  // 首屏默认视为加载中，避免“先出现暂无 Skill 再闪回骨架”的视觉抖动。
-  const [loading, setLoading] = useState(true);
+  /**
+   * SSR 预取标记：
+   * - 只要 props 有传入（即使是空数组），就认为首屏已经“有结果”
+   * - 用于控制加载态与空状态的展示逻辑
+   */
+  const hasInitialSkills = typeof initialSkills !== "undefined";
+
+  const [skills, setSkills] = useState<Skill[]>(initialSkills || []);
+  const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
+  // 首屏默认视为加载中；若已 SSR 预取，则直接视为“已加载完成”。
+  const [loading, setLoading] = useState(!hasInitialSkills);
   // 标记是否完成过至少一次请求，用于控制空状态的显示时机。
-  const [hasLoaded, setHasLoaded] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(hasInitialSkills);
   // skills 请求错误信息（移动端需要“失败重试”，桌面端也可复用该口径）。
   const [skillsError, setSkillsError] = useState<string | null>(null);
   // retry 触发器：递增即可强制重新请求（避免把 fetch 逻辑暴露到渲染层）。
@@ -104,6 +123,22 @@ export default function HomePage({
       .filter((num) => Number.isFinite(num) && num > 0);
     return new Set(parts).size;
   }, [ids]);
+
+  /**
+   * 默认首屏请求判断：
+   * - 用于决定是否沿用 SSR 预取结果（避免内容 -> 骨架 的闪动）
+   * - 只覆盖“默认首页 + 第 1 页 + 最热排序”
+   */
+  const isDefaultSkillRequest = useMemo(() => {
+    return (
+      mode === "skills" &&
+      page === 1 &&
+      !query &&
+      (!tag || tag === "全部") &&
+      !ids &&
+      sort === "heat"
+    );
+  }, [mode, page, query, tag, ids, sort]);
 
   /**
    * 首页空状态（暂无 Skill / 暂无结果）展示策略：
@@ -212,7 +247,14 @@ export default function HomePage({
     }
     let cancelled = false;
     const fetchSkills = async () => {
-      setLoading(true);
+      /**
+       * 若首屏已由 SSR 预取填充，则不再触发骨架屏：
+       * - 避免 hydration 后“先显示内容 -> 又闪回加载态”的抖动
+       */
+      const shouldShowLoading = !(hasInitialSkills && isDefaultSkillRequest);
+      if (shouldShowLoading) {
+        setLoading(true);
+      }
       setSkillsError(null);
       try {
         const res = await fetch(`/api/skills?${params}`, { cache: "no-store" });
@@ -254,7 +296,7 @@ export default function HomePage({
     return () => {
       cancelled = true;
     };
-  }, [params, mode, isMobile, page, skillsReloadKey]);
+  }, [params, mode, isMobile, page, skillsReloadKey, hasInitialSkills, isDefaultSkillRequest]);
 
   useEffect(() => {
     // 仅在「实践模式」请求 practices，避免在刷 Skill 下做无意义请求。

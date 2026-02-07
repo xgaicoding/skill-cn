@@ -224,6 +224,7 @@ const PRACTICE_ACCENTS = [
 export default function DetailPage({
   id,
   deviceKind = "desktop",
+  initialSkill,
 }: {
   id: string;
   /**
@@ -232,11 +233,17 @@ export default function DetailPage({
    * - tablet/desktop：保持现有桌面详情页逻辑
    */
   deviceKind?: DeviceKind;
+  /**
+   * 详情页 SSR 预取数据：
+   * - 有值时直接用于首屏渲染，避免爬虫抓到“空壳页面”
+   * - 依旧保留客户端刷新逻辑，用于补最新数据
+   */
+  initialSkill?: Skill | null;
 }) {
   const skillId = Number(id);
   const isMobile = deviceKind === "mobile";
-  const [skill, setSkill] = useState<Skill | null>(null);
-  const [skillLoading, setSkillLoading] = useState(true);
+  const [skill, setSkill] = useState<Skill | null>(initialSkill || null);
+  const [skillLoading, setSkillLoading] = useState(!initialSkill);
   const { user } = useAuthUser();
   // 按钮级别的请求状态，用于展示“正在处理”的过渡态。
   const [downloadPending, setDownloadPending] = useState(false);
@@ -271,6 +278,19 @@ export default function DetailPage({
   const [toastMessage, setToastMessage] = useState<string>("");
   const [toastVisible, setToastVisible] = useState(false);
   const toastTimerRef = useRef<number | null>(null);
+
+  /**
+   * 当路由切换带来新的初始数据时，立即同步到本地状态：
+   * - 避免客户端导航时短暂显示旧数据
+   * - 同步更新 loading 状态，确保首屏渲染稳定
+   */
+  useEffect(() => {
+    if (typeof initialSkill === "undefined") {
+      return;
+    }
+    setSkill(initialSkill);
+    setSkillLoading(!initialSkill);
+  }, [initialSkill, skillId]);
 
   const showToast = (message: string) => {
     setToastMessage(message);
@@ -471,7 +491,14 @@ export default function DetailPage({
   useEffect(() => {
     let cancelled = false;
     const fetchSkill = async () => {
-      setSkillLoading(true);
+      /**
+       * 若已有 SSR 数据，则后台刷新不触发骨架屏：
+       * - 保证首屏内容稳定
+       * - 仍然会在数据更新后无感刷新
+       */
+      if (!initialSkill) {
+        setSkillLoading(true);
+      }
       try {
         // 第一次请求走“快路径”：只拿缓存，保证页面立即可见。
         const res = await fetch(`/api/skills/${skillId}?refresh=0`, { cache: "no-store" });
@@ -504,7 +531,7 @@ export default function DetailPage({
     return () => {
       cancelled = true;
     };
-  }, [skillId]);
+  }, [skillId, initialSkill]);
 
   useEffect(() => {
     let cancelled = false;
