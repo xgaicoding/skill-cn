@@ -6,6 +6,7 @@ import "./mobile.css";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 import { getSiteUrl } from "@/lib/site";
+import { Analytics } from "@vercel/analytics/next";
 
 const siteUrl = getSiteUrl();
 
@@ -72,6 +73,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Suspense>
           {children}
           <AppFooter />
+          {/*
+            Vercel Web Analytics：
+            - 采集页面访问与基础性能指标
+            - 放在 RootLayout 内确保全站生效
+            - 组件本身不会改变布局或影响首屏内容渲染
+          */}
+          <Analytics />
         </div>
       </body>
     </html>
