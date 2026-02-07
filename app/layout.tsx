@@ -7,6 +7,7 @@ import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 import { getSiteUrl } from "@/lib/site";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const siteUrl = getSiteUrl();
 
@@ -80,6 +81,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             - 组件本身不会改变布局或影响首屏内容渲染
           */}
           <Analytics />
+          {/*
+            Vercel Speed Insights：
+            - 采集真实用户性能指标（如 LCP/INP/CLS）
+            - 与 Analytics 配合使用，定位体验瓶颈
+            - 放在 RootLayout 内确保全站生效
+          */}
+          <SpeedInsights />
         </div>
       </body>
     </html>
