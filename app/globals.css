@@ -262,7 +262,8 @@ body::after {
   height: calc(var(--sh-loading-size) / 5.3);
   border-radius: 999px;
   background: currentColor;
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.06));
+  /* 性能优化：用 box-shadow 替代 filter drop-shadow，减少每帧滤镜计算 */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   animation: sh-loading-dot 0.9s ease-in-out infinite;
   will-change: transform;
   transform: translateZ(0);
@@ -308,7 +309,8 @@ body::after {
     #000 calc(100% - var(--sh-loading-ring))
   );
   animation: sh-loading-spin 1.05s linear infinite;
-  filter: drop-shadow(0 10px 16px rgba(255, 107, 0, 0.12));
+  /* 性能优化：移除滤镜阴影，改为常规阴影降低 GPU 压力 */
+  box-shadow: 0 6px 14px rgba(255, 107, 0, 0.16);
   will-change: transform;
   transform: translateZ(0);
 }
@@ -322,7 +324,8 @@ body::after {
     rgba(255, 51, 102, 0.10) 72%,
     rgba(255, 255, 255, 0) 100%
   );
-  filter: blur(calc(var(--sh-loading-ring) * 1.4));
+  /* 性能优化：缩小 glow 模糊半径，减少滤镜处理成本 */
+  filter: blur(calc(var(--sh-loading-ring) * 0.9));
   animation: sh-loading-glow 1.35s ease-in-out infinite;
   will-change: transform, opacity;
 }
@@ -784,7 +787,8 @@ button[data-loading="true"] .btn__loading {
   width: min(90%, 1200px);
   z-index: 100;
   background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(20px) saturate(180%);
+  /* 性能优化：降低 blur 半径，减少 fixed + backdrop-filter 叠加造成的离屏渲染开销 */
+  backdrop-filter: blur(12px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: var(--radius-xl);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
@@ -1622,16 +1626,19 @@ button[data-loading="true"] .btn__loading {
 
 .glow {
   position: absolute;
-  width: 520px;
-  height: 520px;
+  /* 性能优化：缩小光晕尺寸，降低大面积滤镜带来的 GPU 压力 */
+  width: 440px;
+  height: 440px;
   border-radius: 50%;
-  filter: blur(70px);
-  opacity: 0.55;
-  /* GPU 合成层优化：发光层持续位移 + 透明度变化，提前提升为合成层 */
+  /* 性能优化：降低 blur 半径，减少实时滤镜成本 */
+  filter: blur(40px);
+  opacity: 0.5;
+  /* GPU 合成层优化：发光层持续位移时保持稳定合成，减少闪烁 */
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
-  animation: glowDrift 22s ease-in-out infinite alternate;
-  will-change: transform, opacity;
+  /* 性能优化：延长动画周期并仅保留 transform，减少合成与显存占用 */
+  animation: glowDrift 32s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .glow--pink {
@@ -1663,13 +1670,15 @@ button[data-loading="true"] .btn__loading {
   height: 7px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.55);
+  /* 性能优化：降低光点阴影强度，减少高频像素填充 */
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.45);
   opacity: 0.55;
   /* GPU 合成层优化：小粒子持续位移时减少闪烁与抖动 */
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
-  will-change: transform, opacity;
-  animation: sparkFloat 10s ease-in-out infinite;
+  /* 性能优化：仅保留 transform 合成层提示，避免过多 opacity 合成层 */
+  will-change: transform;
+  animation: sparkFloat 12s ease-in-out infinite;
 }
 
 .spark--one {
@@ -1695,30 +1704,21 @@ button[data-loading="true"] .btn__loading {
 @keyframes glowDrift {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.48;
-  }
-  45% {
-    transform: translate3d(-18px, 12px, 0) scale(1.04);
-    opacity: 0.65;
   }
   100% {
-    transform: translate3d(16px, -10px, 0) scale(0.98);
-    opacity: 0.54;
+    transform: translate3d(14px, -8px, 0) scale(0.98);
   }
 }
 
 @keyframes sparkFloat {
   0% {
-    transform: translate3d(0, 0, 0) scale(0.9);
-    opacity: 0.2;
+    transform: translate3d(0, 0, 0) scale(0.95);
   }
   50% {
-    transform: translate3d(10px, -16px, 0) scale(1.2);
-    opacity: 0.85;
+    transform: translate3d(8px, -12px, 0) scale(1.05);
   }
   100% {
-    transform: translate3d(-6px, 6px, 0) scale(0.95);
-    opacity: 0.35;
+    transform: translate3d(-4px, 4px, 0) scale(0.98);
   }
 }
 
@@ -3263,9 +3263,9 @@ button[data-loading="true"] .btn__loading {
   font-size: 13px;
   font-weight: 900;
   color: var(--text);
-  background: rgba(255, 255, 255, 0.44);
+  /* 性能优化：移除小按钮的 backdrop-filter，改为更实色背景减少离屏渲染 */
+  background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(255, 107, 0, 0.14);
-  backdrop-filter: blur(10px) saturate(160%);
   box-shadow: 0 18px 44px -38px rgba(50, 20, 0, 0.22);
   transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, color 180ms ease;
   white-space: nowrap;
@@ -3362,9 +3362,9 @@ button[data-loading="true"] .btn__loading {
   color: var(--text);
   font-size: 13px;
   font-weight: 900;
-  background: rgba(255, 255, 255, 0.44);
+  /* 性能优化：去掉 backdrop-filter，避免多按钮叠加造成 GPU 负担 */
+  background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(255, 107, 0, 0.14);
-  backdrop-filter: blur(10px) saturate(160%);
   box-shadow: 0 18px 44px -38px rgba(50, 20, 0, 0.22);
   transition: transform 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
   white-space: nowrap;
@@ -3638,8 +3638,8 @@ button[data-loading="true"] .btn__loading {
   position: relative;
   border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.82);
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px) saturate(160%);
+  /* 性能优化：卡片数量多时移除 backdrop-filter，避免大量离屏模糊合成 */
+  background: rgba(255, 255, 255, 0.86);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
   padding: 22px;
   display: flex;
@@ -3673,8 +3673,9 @@ button[data-loading="true"] .btn__loading {
   background-size: 160% 160%, 180% 180%, 160% 160%;
   background-position: 0% 0%, 100% 0%, 50% 100%;
   filter: saturate(1.12);
+  /* 性能优化：仅做 opacity 过渡，不提前创建多余合成层 */
   transition: opacity 520ms cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform, opacity;
+  will-change: auto;
 }
 
 .skill-card::after {

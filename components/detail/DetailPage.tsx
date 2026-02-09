@@ -1051,12 +1051,11 @@ export default function DetailPage({
       <BodyClass className="is-detail" />
       <section className="hero hero--detail" aria-labelledby="detail-title">
         <div className="hero__bg" aria-hidden="true">
-          <span className="glow glow--pink"></span>
-          <span className="glow glow--orange"></span>
-          <span className="glow glow--yellow"></span>
-          <span className="spark spark--one"></span>
-          <span className="spark spark--two"></span>
-          <span className="spark spark--three"></span>
+          {/*
+            性能优化（重要说明）：
+            - 详情页 Hero 移除 glow / spark 动画，减少 blur + transform 组合带来的 GPU 常驻负载
+            - 背景容器保留，避免影响视觉层级与后续样式扩展
+          */}
         </div>
 
         <div className="hero__inner hero__inner--detail">

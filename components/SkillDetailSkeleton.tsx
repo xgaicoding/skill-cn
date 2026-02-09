@@ -12,12 +12,11 @@ export const SkillDetailSkeleton = () => {
       {/* Hero 区占位：保持背景氛围，但内容使用骨架替代 */}
       <section className="hero hero--detail" aria-busy="true">
         <div className="hero__bg" aria-hidden="true">
-          <span className="glow glow--pink"></span>
-          <span className="glow glow--orange"></span>
-          <span className="glow glow--yellow"></span>
-          <span className="spark spark--one"></span>
-          <span className="spark spark--two"></span>
-          <span className="spark spark--three"></span>
+          {/*
+            性能优化（重要说明）：
+            - 骨架页同样移除 glow / spark，确保加载阶段不会触发额外 GPU 负担
+            - 保留 hero__bg 结构以维持整体布局与层级一致性
+          */}
         </div>
 
         <div className="hero__inner hero__inner--detail">

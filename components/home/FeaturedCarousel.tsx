@@ -64,12 +64,11 @@ function FeaturedCarousel({
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="hero__bg" aria-hidden="true">
-        <span className="glow glow--pink"></span>
-        <span className="glow glow--orange"></span>
-        <span className="glow glow--yellow"></span>
-        <span className="spark spark--one"></span>
-        <span className="spark spark--two"></span>
-        <span className="spark spark--three"></span>
+        {/*
+          性能优化（重要说明）：
+          - 直接移除 glow / spark 装饰动画，避免 blur + transform + opacity 组合导致 GPU 持续占用
+          - Hero 仍保留背景容器（hero__bg），以免影响布局与其他背景样式
+        */}
       </div>
 
       <div className="hero__inner">
