@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { BookOpen, Github, MessageCircle, PlusCircle, Sparkles, Users } from "lucide-react";
+import { BookOpen, ExternalLink, Github, MessageCircle, PlusCircle, Sparkles, Users } from "lucide-react";
 import {
   COMMUNITY_QR_BACKUP_URL,
   COMMUNITY_QR_URL,
   FEEDBACK_ISSUE_URL,
+  FRIEND_LINKS,
   OFFICIAL_DOCS_LINK,
   PRACTICE_ISSUE_URL,
   SKILL_ISSUE_URL,
@@ -25,6 +26,8 @@ export default function AppFooter() {
   const communityQrUrl = COMMUNITY_QR_URL;
   // 备用二维码地址：用于弹窗右侧展示。
   const communityQrBackupUrl = COMMUNITY_QR_BACKUP_URL;
+  // 移动端 Footer 需要保持“极简”，因此只展示第一条友链，避免占屏过大（桌面端完整展示）。
+  const mobileFriendLinks = FRIEND_LINKS.slice(0, 1);
 
   return (
     <footer className="footer" role="contentinfo">
@@ -41,6 +44,23 @@ export default function AppFooter() {
         <p className="footer__mobile-desc">
           连接优质 Skill 与场景落地，沉淀可复用的 AI 生产力模块，让每位开发者都能快速构建强大应用。
         </p>
+        {/* 友情链接：移动端仅露出一条，满足需求同时保持信息密度可控。 */}
+        {mobileFriendLinks.length > 0 ? (
+          <p className="footer__mobile-links">
+            友情链接：
+            {mobileFriendLinks.map((link) => (
+              <a
+                key={link.href}
+                className="footer__mobile-link"
+                href={link.href}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {link.label}
+              </a>
+            ))}
+          </p>
+        ) : null}
         <p className="footer__mobile-copy">
           <strong>© {currentYear} Skill Hub 中国</strong>
         </p>
@@ -185,6 +205,26 @@ export default function AppFooter() {
                 <br />
                 共建生态 · 版权保护
               </p>
+            </div>
+          </div>
+
+          {/* 友情链接：外部生态推荐入口 */}
+          <div className="footer__col">
+            <h3 className="footer__title">友情链接</h3>
+            <div className="footer__links">
+              {FRIEND_LINKS.map((link) => (
+                <a
+                  key={link.href}
+                  className="footer__link"
+                  href={link.href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={`${link.label}（新窗口打开）`}
+                >
+                  <ExternalLink className="footer__link-icon" aria-hidden="true" />
+                  {link.label}
+                </a>
+              ))}
             </div>
           </div>
         </div>

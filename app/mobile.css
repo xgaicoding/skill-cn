@@ -210,6 +210,23 @@
     margin: 0;
   }
 
+  .footer__mobile-links {
+    /*
+      移动端友情链接：
+      - 只展示一条，满足需求同时保持信息密度可控
+      - 链接颜色继承 Footer 文案色，避免默认蓝色破坏整体风格
+    */
+    margin: 10px 0 0;
+  }
+
+  .footer__mobile-link {
+    margin-left: 4px;
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 107, 0, 0.35);
+    text-underline-offset: 3px;
+  }
+
   .footer__mobile-copy {
     margin: 8px 0 0;
     color: rgba(26, 21, 16, 0.88);

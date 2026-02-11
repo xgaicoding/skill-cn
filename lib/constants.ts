@@ -37,3 +37,14 @@ export const COMMUNITY_QR_BACKUP_URL =
 // 官方文档入口：固定链接，避免环境变量缺失导致按钮不可用。
 export const OFFICIAL_DOCS_LINK =
   "https://my.feishu.cn/wiki/XKnEwisJbi8TLEkdW6wckqkQnoe?fromScene=spaceOverview";
+
+// Footer 友情链接：
+// - 用数组统一维护，避免在组件里散落硬编码
+// - 便于后续扩展更多友链（直接追加即可）
+// - 友链参数 `from=skillhub` 用于来源统计，不影响正常访问
+export const FRIEND_LINKS = [
+  {
+    label: "OpenClaw 101",
+    href: "https://openclaw101.dev/?from=skillhub",
+  },
+] as const;

@@ -6081,11 +6081,11 @@ body.is-detail::after {
 }
 
 .footer__grid {
-  /* 顶部信息区采用 4 列网格布局，左侧品牌区更宽。 */
+  /* 顶部信息区采用 5 列网格布局（品牌区 + 4 个信息分区），左侧品牌区更宽。 */
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1.3fr repeat(4, minmax(0, 1fr));
   gap: 36px;
 }
 
