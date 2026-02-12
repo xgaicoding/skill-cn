@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SKILL_ISSUE_URL, TAG_OPTIONS, SORT_OPTIONS, PAGE_SIZE } from "@/lib/constants";
 import type { Paginated, Practice, PracticeWithSkills, Skill } from "@/lib/types";
@@ -13,8 +13,10 @@ import EmptyState from "@/components/EmptyState";
 import ModeDock, { type HomeMode } from "@/components/home/ModeDock";
 import PracticeFeedCard from "@/components/home/PracticeFeedCard";
 import PracticeFeedCardSkeleton from "@/components/home/PracticeFeedCardSkeleton";
+import PracticeDiscoveryBanner from "@/components/home/PracticeDiscoveryBanner";
 import { Clock, Filter, FilterX, Flame, Plus, RefreshCcw, SearchX, Sparkles, TriangleAlert, X } from "lucide-react";
 import HomeMobileView from "@/components/home/mobile/HomeMobileView";
+import { trackEvent } from "@/lib/analytics";
 
 export type HomeInitialState = {
   q?: string;
@@ -520,9 +522,34 @@ export default function HomePage({
     );
   }
 
+  // 页面停留时长埋点
+  useEffect(() => {
+    const startTime = Date.now();
+    return () => {
+      const duration = Math.floor((Date.now() - startTime) / 1000);
+      // 只记录停留 > 3 秒的
+      if (duration > 3) {
+        trackEvent("page_view_duration", {
+          mode,
+          duration_seconds: duration,
+        });
+      }
+    };
+  }, [mode]);
+
   return (
     <>
       <FeaturedCarousel practices={featured} loading={featuredLoading} />
+      
+      {/* 实践模式引导 Banner（仅桌面端） */}
+      {!isMobile && (
+        <PracticeDiscoveryBanner
+          onTryNow={() => {
+            handleModeChange("practices");
+          }}
+        />
+      )}
+      
       <ModeDock mode={mode} onChange={handleModeChange} />
 
       <main className="page">
@@ -656,6 +683,13 @@ export default function HomePage({
           </section>
         ) : (
           <section className="practice-feed-grid" aria-label="实践文章列表" aria-busy={practiceLoading}>
+            {/* 实践模式价值主张 */}
+            <div className="practice-mode-header">
+              <p className="practice-mode-tagline">
+                💡 真实案例 · 实战方案 · 快速上手
+              </p>
+            </div>
+            
             {practiceLoading || !practiceHasLoaded ? (
               Array.from({ length: PAGE_SIZE }).map((_, index) => (
                 <PracticeFeedCardSkeleton key={`practice-skeleton-${index}`} />

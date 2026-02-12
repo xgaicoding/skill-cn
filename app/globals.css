@@ -6754,3 +6754,156 @@ body.is-detail::after {
     animation: none;
   }
 }
+
+/* ============================================
+   v1.5.6 实践模式可发现性优化
+   ============================================ */
+
+/* 实践模式引导 Banner */
+.practice-discovery-banner {
+  position: relative;
+  width: min(100%, var(--content-width));
+  margin: 24px auto 0;
+  padding: 0 var(--page-gutter);
+  opacity: 1;
+  transition: opacity 300ms ease-out;
+}
+
+.practice-discovery-banner[data-fade-out="true"] {
+  opacity: 0;
+}
+
+.practice-discovery-banner__content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, rgba(255, 204, 0, 0.08), rgba(255, 107, 0, 0.06));
+  border: 1px solid rgba(255, 107, 0, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.08);
+}
+
+.practice-discovery-banner__icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.practice-discovery-banner__icon .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.practice-discovery-banner__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.practice-discovery-banner__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.practice-discovery-banner__desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.practice-discovery-banner__cta {
+  flex-shrink: 0;
+}
+
+.practice-discovery-banner__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.practice-discovery-banner__close:hover {
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--text);
+}
+
+.practice-discovery-banner__close .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* 实践模式价值主张 */
+.practice-mode-header {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 8px 0 16px;
+}
+
+.practice-mode-tagline {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .practice-discovery-banner {
+    margin: 16px auto 0;
+  }
+
+  .practice-discovery-banner__content {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px 20px;
+    gap: 12px;
+  }
+
+  .practice-discovery-banner__icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .practice-discovery-banner__icon .icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .practice-discovery-banner__title {
+    font-size: 14px;
+  }
+
+  .practice-discovery-banner__desc {
+    font-size: 12px;
+  }
+
+  .practice-discovery-banner__cta {
+    width: 100%;
+  }
+
+  .practice-mode-header {
+    padding: 4px 0 12px;
+  }
+
+  .practice-mode-tagline {
+    font-size: 13px;
+  }
+}
