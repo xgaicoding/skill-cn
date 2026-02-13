@@ -8,16 +8,16 @@ import { trackEvent } from "@/lib/analytics";
  * 实践模式引导 Banner
  * ------------------------------------------------------------
  * 设计目标：
- * - 首次访问时显示，引导用户发现实践模式
- * - 常驻显示，直到用户点击"立即体验"
- * - 点击后切换到实践模式 + 记录 localStorage（下次不再显示）
+ * - 在 skill 模式下常驻显示，引导用户发现实践模式
+ * - 用户点击"立即体验"或切换到 practice 模式后，Banner 消失 + 记录 localStorage
+ * - 下次访问时不再显示（说明用户已经知道实践模式了）
  * 
  * 埋点：
  * - banner_show：Banner 显示时触发
  * - banner_click：点击"立即体验"时触发
  */
 
-const BANNER_SEEN_KEY = "skillhub_practice_banner_seen_v1";
+const BANNER_SEEN_KEY = "skillhub_practice_mode_discovered";
 
 interface PracticeDiscoveryBannerProps {
   onTryNow: () => void;
