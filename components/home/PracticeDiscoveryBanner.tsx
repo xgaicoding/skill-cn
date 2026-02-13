@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+import { STORAGE_KEYS } from "@/lib/storage-keys";
+import type { HomeMode } from "@/components/home/ModeDock";
 
 /**
  * 实践模式引导 Banner
@@ -17,19 +19,18 @@ import { trackEvent } from "@/lib/analytics";
  * - banner_click：点击"立即体验"时触发
  */
 
-const BANNER_SEEN_KEY = "skillhub_practice_mode_discovered";
-
 interface PracticeDiscoveryBannerProps {
+  mode: HomeMode;
   onTryNow: () => void;
 }
 
-export default function PracticeDiscoveryBanner({ onTryNow }: PracticeDiscoveryBannerProps) {
+export default function PracticeDiscoveryBanner({ mode, onTryNow }: PracticeDiscoveryBannerProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     // 检查是否已经看过 Banner
     try {
-      const hasSeen = localStorage.getItem(BANNER_SEEN_KEY) === "1";
+      const hasSeen = localStorage.getItem(STORAGE_KEYS.PRACTICE_MODE_DISCOVERED) === "1";
       if (hasSeen) {
         return;
       }
@@ -45,6 +46,13 @@ export default function PracticeDiscoveryBanner({ onTryNow }: PracticeDiscoveryB
     }
   }, []);
 
+  // 响应 mode 变化：切到 practice 模式时自动隐藏
+  useEffect(() => {
+    if (mode === "practices" && visible) {
+      setVisible(false);
+    }
+  }, [mode, visible]);
+
   const handleTryNow = () => {
     // 埋点：点击"立即体验"
     trackEvent("banner_click", {
@@ -55,7 +63,7 @@ export default function PracticeDiscoveryBanner({ onTryNow }: PracticeDiscoveryB
     // 关闭 Banner
     setVisible(false);
     try {
-      localStorage.setItem(BANNER_SEEN_KEY, "1");
+      localStorage.setItem(STORAGE_KEYS.PRACTICE_MODE_DISCOVERED, "1");
     } catch {
       // localStorage 不可用时，静默失败
     }

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SKILL_ISSUE_URL, TAG_OPTIONS, SORT_OPTIONS, PAGE_SIZE } from "@/lib/constants";
+import { STORAGE_KEYS } from "@/lib/storage-keys";
 import type { Paginated, Practice, PracticeWithSkills, Skill } from "@/lib/types";
 import type { DeviceKind } from "@/lib/device";
 import SkillCard from "@/components/home/SkillCard";
@@ -181,6 +182,26 @@ export default function HomePage({
     // PRD：切换模式时回到第一页，避免分页状态在两个模式间"串页"。
     setPage(1);
   }, [initial.mode]);
+
+  /**
+   * 统一记录"已发现实践模式"：
+   * - 覆盖通过 URL 直达 / 前进后退 / 点击切换三种入口
+   * - 避免在多个 handler 内重复写入（且 key 统一走常量）
+   */
+  const markPracticeModeDiscovered = () => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.PRACTICE_MODE_DISCOVERED, "1");
+    } catch {
+      // localStorage 不可用时，静默失败（保持 UI 逻辑不受影响）。
+    }
+  };
+
+  useEffect(() => {
+    // 只要进入 practices 模式就记录为"已发现"，保证直接访问链接也会被记录。
+    if (mode === "practices") {
+      markPracticeModeDiscovered();
+    }
+  }, [mode]);
 
   /**
    * URL 同步工具函数（避免散落在多个 handler 里重复拼接逻辑）
@@ -395,15 +416,6 @@ export default function HomePage({
     // PRD：切换模式时重置到顶部，避免用户"迷失在列表中间"。
     window.scrollTo({ top: 0 });
 
-    // 如果切换到 practice 模式，记录用户已发现实践模式
-    if (next === "practices") {
-      try {
-        localStorage.setItem("skillhub_practice_mode_discovered", "1");
-      } catch {
-        // localStorage 不可用时，静默失败
-      }
-    }
-
     // 同步 URL：mode=practices 可分享；skills 为默认值，URL 不写 mode 参数。
     const nextSearch = new URLSearchParams(searchParams?.toString() || "");
     if (next === "practices") {
@@ -553,6 +565,7 @@ export default function HomePage({
       {/* 实践模式引导 Banner（仅桌面端） */}
       {!isMobile && (
         <PracticeDiscoveryBanner
+          mode={mode}
           onTryNow={() => {
             handleModeChange("practices");
           }}
