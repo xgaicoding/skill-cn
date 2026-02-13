@@ -64,7 +64,11 @@ export async function trackEvent(
       return;
     }
 
-    await supabase.from("analytics_events").insert({
+    // 注意：当前 Supabase 客户端没有挂载 Database 类型定义，
+    // 导致 insert(...) 的参数类型无法正确推断，进而触发 TypeScript 报错。
+    // 这里将埋点 payload 显式断言为 any，避免类型检查阻断构建；
+    // 等未来补齐数据库类型（例如通过 Supabase 的类型生成工具）后，可移除该断言。
+    const payload = {
       event_name: eventName,
       properties: properties || {},
       session_id: getSessionId(),
@@ -72,7 +76,9 @@ export async function trackEvent(
       referrer: document.referrer || null,
       user_agent: navigator.userAgent,
       device_type: getDeviceType(),
-    });
+    } as any;
+
+    await supabase.from("analytics_events").insert(payload);
   } catch (error) {
     // 埋点失败不影响功能，静默处理
     console.error("Analytics error:", error);
