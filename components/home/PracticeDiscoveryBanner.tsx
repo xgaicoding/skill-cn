@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, X } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 /**
@@ -9,13 +9,12 @@ import { trackEvent } from "@/lib/analytics";
  * ------------------------------------------------------------
  * 设计目标：
  * - 首次访问时显示，引导用户发现实践模式
- * - 3 秒后自动淡出（用户可手动关闭）
- * - 关闭后不再显示（localStorage 记录）
+ * - 常驻显示，直到用户点击"立即体验"
+ * - 点击后切换到实践模式 + 记录 localStorage（下次不再显示）
  * 
  * 埋点：
  * - banner_show：Banner 显示时触发
  * - banner_click：点击"立即体验"时触发
- * - banner_close：点击关闭按钮时触发
  */
 
 const BANNER_SEEN_KEY = "skillhub_practice_banner_seen_v1";
@@ -26,7 +25,6 @@ interface PracticeDiscoveryBannerProps {
 
 export default function PracticeDiscoveryBanner({ onTryNow }: PracticeDiscoveryBannerProps) {
   const [visible, setVisible] = useState(false);
-  const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
     // 检查是否已经看过 Banner
@@ -41,41 +39,11 @@ export default function PracticeDiscoveryBanner({ onTryNow }: PracticeDiscoveryB
 
       // 埋点：Banner 显示
       trackEvent("banner_show", { type: "practice_discovery" });
-
-      // 3 秒后自动淡出
-      const fadeTimer = setTimeout(() => {
-        setFadeOut(true);
-      }, 3000);
-
-      // 淡出动画完成后隐藏
-      const hideTimer = setTimeout(() => {
-        handleClose();
-      }, 3300); // 3000ms + 300ms 淡出动画
-
-      return () => {
-        clearTimeout(fadeTimer);
-        clearTimeout(hideTimer);
-      };
     } catch {
       // localStorage 不可用时，不显示 Banner
       return;
     }
   }, []);
-
-  const handleClose = () => {
-    setVisible(false);
-    try {
-      localStorage.setItem(BANNER_SEEN_KEY, "1");
-    } catch {
-      // localStorage 不可用时，静默失败
-    }
-
-    // 埋点：Banner 关闭
-    trackEvent("banner_close", {
-      type: "practice_discovery",
-      trigger: fadeOut ? "auto" : "manual",
-    });
-  };
 
   const handleTryNow = () => {
     // 埋点：点击"立即体验"
@@ -103,7 +71,6 @@ export default function PracticeDiscoveryBanner({ onTryNow }: PracticeDiscoveryB
   return (
     <div
       className="practice-discovery-banner"
-      data-fade-out={fadeOut}
       role="banner"
       aria-label="实践模式引导"
     >
@@ -125,13 +92,6 @@ export default function PracticeDiscoveryBanner({ onTryNow }: PracticeDiscoveryB
           aria-label="立即体验实践模式"
         >
           立即体验
-        </button>
-        <button
-          className="practice-discovery-banner__close"
-          onClick={handleClose}
-          aria-label="关闭引导"
-        >
-          <X className="icon" aria-hidden="true" />
         </button>
       </div>
     </div>
