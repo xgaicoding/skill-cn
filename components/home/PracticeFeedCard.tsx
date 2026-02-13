@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { ExternalLink, Filter, CalendarDays, Eye } from "lucide-react";
 import type { PracticeWithSkills } from "@/lib/types";
 import { formatCompactNumber, formatDate } from "@/lib/format";
+import { trackEvent } from "@/lib/analytics";
 
 /**
  * 首页「实践模式」卡片
@@ -11,25 +12,25 @@ import { formatCompactNumber, formatDate } from "@/lib/format";
  * 设计目标（对齐 docs/1.1.0_article-mode/requirements.md）：
  * - 定高：同一行卡片 footer 基线对齐
  * - 标题：最多 2 行（1 行时不强行占 2 行高度）
- * - 摘要：固定 5 行高度；若超过 4 行，第 5 行做“纵向整体渐隐”；不展示 `...`
+ * - 摘要：固定 5 行高度；若超过 4 行，第 5 行做"纵向整体渐隐"；不展示 `...`
  * - 左上：channel·author（无边框容器）
  * - 右上：日历图标 + YYYY-MM-DD
  * - 左下：关联 skills（最多 3 个 +N，单行不折行，超出渐隐）
  * - 右下：眼睛图标 + 阅读量（口径与现有实践卡片一致）
- * - hover：底部上浮玻璃蒙层（不遮盖标题/摘要），提供“筛选相关 Skill / 跳转原文”
+ * - hover：底部上浮玻璃蒙层（不遮盖标题/摘要），提供"筛选相关 Skill / 跳转原文"
  *
  * 交互实现说明：
  * - PRD 最新口径：实践卡片本体不可点击（避免误触跳转）
  *   仅允许点击 hover 浮层中的两个操作按钮：
- *   1) “筛选相关 Skill”：新开一个首页「刷 Skill」模式 Tab，并筛出文章关联的所有 Skill 卡片
- *   2) “跳转原文”：新开原文链接
- * - 为避免“点击按钮后蒙层关不掉”（focus-within 导致），点击按钮时主动 blur 当前元素，
+ *   1) "筛选相关 Skill"：新开一个首页「刷 Skill」模式 Tab，并筛出文章关联的所有 Skill 卡片
+ *   2) "跳转原文"：新开原文链接
+ * - 为避免"点击按钮后蒙层关不掉"（focus-within 导致），点击按钮时主动 blur 当前元素，
  *   让蒙层在鼠标移出后能正常消失。
  */
 
 export default function PracticeFeedCard({ practice }: { practice: PracticeWithSkills }) {
   const title = practice.title || "-";
-  // 将后端可能传入的 "\\n" 字面量转为真实换行，再把换行折叠为空格，避免卡片里出现“\n”字符。
+  // 将后端可能传入的 "\\n" 字面量转为真实换行，再把换行折叠为空格，避免卡片里出现"\n"字符。
   const summaryText = useMemo(() => {
     const raw = practice.summary || "";
     return raw.replace(/\\n/g, "\n").replace(/\r?\n/g, " ").trim();
@@ -133,7 +134,14 @@ export default function PracticeFeedCard({ practice }: { practice: PracticeWithS
             event.preventDefault();
             event.stopPropagation();
 
-            // 修复“点击后蒙层关不掉”：按钮会获得焦点，导致 focus-within 持续为 true。
+            // 埋点：筛选相关 Skill
+            trackEvent("practice_card_click", {
+              practice_id: practice.id,
+              action: "filter_skills",
+              skill_count: relatedSkillIds.length,
+            });
+
+            // 修复"点击后蒙层关不掉"：按钮会获得焦点，导致 focus-within 持续为 true。
             // 这里主动 blur，让蒙层在鼠标移出后正常消失。
             (event.currentTarget as HTMLButtonElement).blur();
 
@@ -178,7 +186,14 @@ export default function PracticeFeedCard({ practice }: { practice: PracticeWithS
               event.preventDefault();
               return;
             }
-            // 同上：避免 focus-within 导致浮层“卡住不消失”。
+            
+            // 埋点：跳转原文
+            trackEvent("practice_card_click", {
+              practice_id: practice.id,
+              action: "view_original",
+            });
+            
+            // 同上：避免 focus-within 导致浮层"卡住不消失"。
             (event.currentTarget as HTMLAnchorElement).blur();
             trackClick();
           }}

@@ -2,18 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LayoutGrid, Newspaper } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 /**
  * 首页模式切换（右侧吸附 Mode Dock）
  * ------------------------------------------------------------
  * PRD 约束：
- * - 纵向二选一（避免传统 switch 的“表单感”）
- * - 默认只展示图标；hover/聚焦时“展开显示文案”，减少纯图标带来的认知成本
+ * - 纵向二选一（避免传统 switch 的"表单感"）
+ * - 默认只展示图标；hover/聚焦时"展开显示文案"，减少纯图标带来的认知成本
  * - URL 需体现 mode=practices（可分享/刷新保持）
  *
  * 说明：
- * - 该组件只负责“视觉与交互反馈”，不直接操作 URL；
+ * - 该组件只负责"视觉与交互反馈"，不直接操作 URL；
  * - 具体路由更新由父组件（HomePage）统一处理，避免状态分散。
+ * 
+ * v1.5.6 埋点：
+ * - mode_switch：切换模式时触发
  */
 
 export type HomeMode = "skills" | "practices";
@@ -25,12 +29,12 @@ type ModeDockProps = {
 
 export default function ModeDock({ mode, onChange }: ModeDockProps) {
   /**
-   * Dock 的“展开态”只用于信息表达（显示文案），不影响功能（点击图标也能切换）。
+   * Dock 的"展开态"只用于信息表达（显示文案），不影响功能（点击图标也能切换）。
    *
    * 为什么不用纯 CSS :hover / :focus-within？
-   * - :focus-within 在点击后会留下焦点，导致 Dock 可能“卡在展开态”
+   * - :focus-within 在点击后会留下焦点，导致 Dock 可能"卡在展开态"
    * - 这里用轻量 state 来做「hover 展开 + 延迟收起」与「键盘聚焦展开」，
-   *   交互更可控，也避免和实践卡片蒙层类似的“关不掉”问题。
+   *   交互更可控，也避免和实践卡片蒙层类似的"关不掉"问题。
    */
   const [expanded, setExpanded] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -106,18 +110,18 @@ export default function ModeDock({ mode, onChange }: ModeDockProps) {
     /**
      * 「首次进入首页」引导：先展开，再自动收起。
      * ------------------------------------------------------------
-     * 用户反馈：首次进入页面时，希望用户能“看见”这是一个可切换模式的控件，
-     * 但又不希望它一直占据视觉注意力，所以采用“短暂展开 → 自动收起”的方式。
+     * 用户反馈：首次进入页面时，希望用户能"看见"这是一个可切换模式的控件，
+     * 但又不希望它一直占据视觉注意力，所以采用"短暂展开 → 自动收起"的方式。
      *
      * 关键点：
-     * - 只在“用户第一次进入站点首页”触发（用 localStorage 记一次性标记）
+     * - 只在"用户第一次进入站点首页"触发（用 localStorage 记一次性标记）
      * - 用 closeTimerRef 复用现有 close 逻辑：如果用户在引导期间 hover/focus，
-     *   openDock() 会清掉 timer，避免出现“我正在操作却被强制收起”的割裂体验。
+     *   openDock() 会清掉 timer，避免出现"我正在操作却被强制收起"的割裂体验。
      */
     const INTRO_SEEN_KEY = "skillhub_mode_dock_intro_seen_v1";
 
     try {
-      // prefers-reduced-motion 用户不做“自动展开/收起”，避免造成不适。
+      // prefers-reduced-motion 用户不做"自动展开/收起"，避免造成不适。
       const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
       const hasSeen = window.localStorage.getItem(INTRO_SEEN_KEY) === "1";
 
@@ -149,7 +153,7 @@ export default function ModeDock({ mode, onChange }: ModeDockProps) {
      *
      * 实现要点：
      * - 用 localStorage 保存 top(px)，刷新后保持用户习惯
-     * - 首次无缓存时：用 viewport 高度 * 58% 作为“视觉重心”，再减去半个 Dock 高度
+     * - 首次无缓存时：用 viewport 高度 * 58% 作为"视觉重心"，再减去半个 Dock 高度
      *   （与 CSS 的 top:58% + translateY(-50%) 保持一致，避免首屏跳动）
      * - 监听 resize，确保 Dock 始终在可视区域内
      */
@@ -241,7 +245,7 @@ export default function ModeDock({ mode, onChange }: ModeDockProps) {
           return;
         }
 
-        // 记录 pointerId：用于在 window 级别的 pointermove/up 中只响应“本次按下”的那根指针，
+        // 记录 pointerId：用于在 window 级别的 pointermove/up 中只响应"本次按下"的那根指针，
         // 避免多指触控/其他指针事件干扰。
         pointerIdRef.current = event.pointerId;
 
@@ -262,10 +266,10 @@ export default function ModeDock({ mode, onChange }: ModeDockProps) {
          * 关键实现：用 window 级别的 pointermove/up 监听来做拖拽
          * ------------------------------------------------------------
          * 原因：
-         * - 如果用 setPointerCapture，会影响按钮 click（用户反馈“点不了了”）
+         * - 如果用 setPointerCapture，会影响按钮 click（用户反馈"点不了了"）
          * - 如果只监听组件自身的 onPointerMove，指针一旦移出 Dock 就收不到 move（拖拽不稳）
          *
-         * window 监听方案既能保证“拖拽稳定”，也不会破坏 button 的正常 click。
+         * window 监听方案既能保证"拖拽稳定"，也不会破坏 button 的正常 click。
          */
         cleanupDragListeners();
 
@@ -277,7 +281,7 @@ export default function ModeDock({ mode, onChange }: ModeDockProps) {
 
           const deltaY = moveEvent.clientY - startClientYRef.current;
 
-          // 移动超过阈值才认为是拖拽，避免“轻点一下”也被当作拖动导致按钮点不动。
+          // 移动超过阈值才认为是拖拽，避免"轻点一下"也被当作拖动导致按钮点不动。
           const DRAG_THRESHOLD = 6;
           if (!dragStartedRef.current && Math.abs(deltaY) >= DRAG_THRESHOLD) {
             dragStartedRef.current = true;
@@ -293,7 +297,7 @@ export default function ModeDock({ mode, onChange }: ModeDockProps) {
             return;
           }
 
-          // 仅沿 Y 轴移动；X 轴始终由 CSS right 固定，实现“吸附右侧”。
+          // 仅沿 Y 轴移动；X 轴始终由 CSS right 固定，实现"吸附右侧"。
           const rawTop = startTopRef.current + deltaY;
           const nextTop = clampDockTop(rawTop, dockHeightRef.current);
           setDockTopRaf(nextTop);
@@ -326,7 +330,7 @@ export default function ModeDock({ mode, onChange }: ModeDockProps) {
             const rawTop = startTopRef.current + deltaY;
             const finalTop = clampDockTop(rawTop, dockHeightRef.current);
 
-            // 结束时强制把位置同步到 state（避免 rAF 里残留的更新造成“回弹”）。
+            // 结束时强制把位置同步到 state（避免 rAF 里残留的更新造成"回弹"）。
             clearRaf();
             setDockTop(finalTop);
 
@@ -338,7 +342,7 @@ export default function ModeDock({ mode, onChange }: ModeDockProps) {
             }
 
             /**
-             * 阻止“拖拽后松手触发 click”：
+             * 阻止"拖拽后松手触发 click"：
              * - 浏览器可能在 pointerup 后补发 click（尤其当起点在 button 上时）
              * - 这里用一次性标记在同一事件循环内屏蔽按钮 onClick
              */
@@ -385,12 +389,17 @@ export default function ModeDock({ mode, onChange }: ModeDockProps) {
       <button
         type="button"
         className={`mode-dock__item ${mode === "practices" ? "is-active" : ""}`}
-        aria-label="切换到实践模式"
+        aria-label="切换到看案例"
         aria-pressed={mode === "practices"}
         onClick={() => {
           if (blockClickRef.current) {
             return;
           }
+          // 埋点：模式切换
+          trackEvent("mode_switch", {
+            from: mode,
+            to: "practices",
+          });
           // 点击后立即收起：减少视觉干扰，同时避免键盘焦点导致长期展开。
           setExpanded(false);
           onChange("practices");
@@ -399,18 +408,23 @@ export default function ModeDock({ mode, onChange }: ModeDockProps) {
         <span className="mode-dock__icon" aria-hidden="true">
           <Newspaper />
         </span>
-        <span className="mode-dock__label">实践模式</span>
+        <span className="mode-dock__label">看案例</span>
       </button>
 
       <button
         type="button"
         className={`mode-dock__item ${mode === "skills" ? "is-active" : ""}`}
-        aria-label="切换到刷 Skill"
+        aria-label="切换到找工具"
         aria-pressed={mode === "skills"}
         onClick={() => {
           if (blockClickRef.current) {
             return;
           }
+          // 埋点：模式切换
+          trackEvent("mode_switch", {
+            from: mode,
+            to: "skills",
+          });
           setExpanded(false);
           onChange("skills");
         }}
@@ -418,7 +432,7 @@ export default function ModeDock({ mode, onChange }: ModeDockProps) {
         <span className="mode-dock__icon" aria-hidden="true">
           <LayoutGrid />
         </span>
-        <span className="mode-dock__label">Skill 模式</span>
+        <span className="mode-dock__label">找工具</span>
       </button>
     </div>
   );

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SKILL_ISSUE_URL, TAG_OPTIONS, SORT_OPTIONS, PAGE_SIZE } from "@/lib/constants";
+import { STORAGE_KEYS } from "@/lib/storage-keys";
 import type { Paginated, Practice, PracticeWithSkills, Skill } from "@/lib/types";
 import type { DeviceKind } from "@/lib/device";
 import SkillCard from "@/components/home/SkillCard";
@@ -13,15 +14,17 @@ import EmptyState from "@/components/EmptyState";
 import ModeDock, { type HomeMode } from "@/components/home/ModeDock";
 import PracticeFeedCard from "@/components/home/PracticeFeedCard";
 import PracticeFeedCardSkeleton from "@/components/home/PracticeFeedCardSkeleton";
+import PracticeDiscoveryBanner from "@/components/home/PracticeDiscoveryBanner";
 import { Clock, Filter, FilterX, Flame, Plus, RefreshCcw, SearchX, Sparkles, TriangleAlert, X } from "lucide-react";
 import HomeMobileView from "@/components/home/mobile/HomeMobileView";
+import { trackEvent } from "@/lib/analytics";
 
 export type HomeInitialState = {
   q?: string;
   tag?: string;
   sort?: string;
   mode?: string;
-  // ids=1,2,3：用于“从实践卡片筛选相关 Skill”场景（仅展示指定 Skill 列表）
+  // ids=1,2,3：用于"从实践卡片筛选相关 Skill"场景（仅展示指定 Skill 列表）
   ids?: string;
 };
 
@@ -40,7 +43,7 @@ export default function HomePage({
   deviceKind?: DeviceKind;
   /**
    * 首页首屏 SSR 预取的 Skill 列表（仅默认首页注入）：
-   * - 允许为空数组（代表“确实没有数据”）
+   * - 允许为空数组（代表"确实没有数据"）
    * - undefined 表示未预取（仍走原有 CSR 拉取）
    */
   initialSkills?: Skill[];
@@ -62,41 +65,41 @@ export default function HomePage({
   const [tag, setTag] = useState(initial.tag || "全部");
   /**
    * 排序默认值（小优化）：
-   * - skills 模式：默认“最热”（heat）
-   * - practices 模式：默认“最新”（recent）
+   * - skills 模式：默认"最热"（heat）
+   * - practices 模式：默认"最新"（recent）
    *
    * 注意：
-   * - 如果 URL 明确带了 sort，则尊重 URL（例如用户主动切换到“最热”）
-   * - 如果 URL 没带 sort，则使用各自模式的默认值，避免用户感觉“怎么默认不是最新”
+   * - 如果 URL 明确带了 sort，则尊重 URL（例如用户主动切换到"最热"）
+   * - 如果 URL 没带 sort，则使用各自模式的默认值，避免用户感觉"怎么默认不是最新"
    */
   const defaultSortForInitialMode = initialMode === "practices" ? "recent" : "heat";
   const [sort, setSort] = useState(initial.sort || defaultSortForInitialMode);
   const [query, setQuery] = useState(initial.q || "");
-  // skills 列表的“指定 id 过滤”（例如从实践卡片点“筛选相关 Skill”进入）
+  // skills 列表的"指定 id 过滤"（例如从实践卡片点"筛选相关 Skill"进入）
   const [ids, setIds] = useState(initial.ids || "");
   const [page, setPage] = useState(1);
 
   /**
    * SSR 预取标记：
-   * - 只要 props 有传入（即使是空数组），就认为首屏已经“有结果”
+   * - 只要 props 有传入（即使是空数组），就认为首屏已经"有结果"
    * - 用于控制加载态与空状态的展示逻辑
    */
   const hasInitialSkills = typeof initialSkills !== "undefined";
 
   const [skills, setSkills] = useState<Skill[]>(initialSkills || []);
   const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
-  // 首屏默认视为加载中；若已 SSR 预取，则直接视为“已加载完成”。
+  // 首屏默认视为加载中；若已 SSR 预取，则直接视为"已加载完成"。
   const [loading, setLoading] = useState(!hasInitialSkills);
   // 标记是否完成过至少一次请求，用于控制空状态的显示时机。
   const [hasLoaded, setHasLoaded] = useState(hasInitialSkills);
-  // skills 请求错误信息（移动端需要“失败重试”，桌面端也可复用该口径）。
+  // skills 请求错误信息（移动端需要"失败重试"，桌面端也可复用该口径）。
   const [skillsError, setSkillsError] = useState<string | null>(null);
   // retry 触发器：递增即可强制重新请求（避免把 fetch 逻辑暴露到渲染层）。
   const [skillsReloadKey, setSkillsReloadKey] = useState(0);
 
   const [practices, setPractices] = useState<PracticeWithSkills[]>([]);
   const [practiceTotalPages, setPracticeTotalPages] = useState(1);
-  // 实践模式加载态：与 skills 类似，首屏默认视为加载中，避免“空态闪现”。
+  // 实践模式加载态：与 skills 类似，首屏默认视为加载中，避免"空态闪现"。
   const [practiceLoading, setPracticeLoading] = useState(true);
   const [practiceHasLoaded, setPracticeHasLoaded] = useState(false);
   const [practiceError, setPracticeError] = useState<string | null>(null);
@@ -104,14 +107,14 @@ export default function HomePage({
   const [practiceReloadKey, setPracticeReloadKey] = useState(0);
 
   const [featured, setFeatured] = useState<Practice[]>([]);
-  // Hero 推荐卡片加载状态：用于触发“骨架 -> 渐隐 -> 入场”过渡。
+  // Hero 推荐卡片加载状态：用于触发"骨架 -> 渐隐 -> 入场"过渡。
   const [featuredLoading, setFeaturedLoading] = useState(true);
 
   /**
-   * 解析 ids=1,2,3... 的数量（去重后），用于展示“关联技能筛选”Chip。
+   * 解析 ids=1,2,3... 的数量（去重后），用于展示"关联技能筛选"Chip。
    * 说明：
-   * - ids 由实践卡片“筛选相关 Skill”进入时写入 URL
-   * - 该筛选属于“特殊上下文”，需要显式提示用户当前处于“锁定集合”状态
+   * - ids 由实践卡片"筛选相关 Skill"进入时写入 URL
+   * - 该筛选属于"特殊上下文"，需要显式提示用户当前处于"锁定集合"状态
    */
   const idsCount = useMemo(() => {
     if (!ids) return 0;
@@ -127,7 +130,7 @@ export default function HomePage({
   /**
    * 默认首屏请求判断：
    * - 用于决定是否沿用 SSR 预取结果（避免内容 -> 骨架 的闪动）
-   * - 只覆盖“默认首页 + 第 1 页 + 最热排序”
+   * - 只覆盖"默认首页 + 第 1 页 + 最热排序"
    */
   const isDefaultSkillRequest = useMemo(() => {
     return (
@@ -142,10 +145,10 @@ export default function HomePage({
 
   /**
    * 首页空状态（暂无 Skill / 暂无结果）展示策略：
-   * - 如果用户做了筛选（搜索关键词 / 标签），但结果为空：提示“暂无匹配”，并给出“清空筛选”动作
-   * - 如果用户未筛选且仍为空：提示“暂无 Skill”，引导用户去提交（右上角 +Skill / Issue 链接）
+   * - 如果用户做了筛选（搜索关键词 / 标签），但结果为空：提示"暂无匹配"，并给出"清空筛选"动作
+   * - 如果用户未筛选且仍为空：提示"暂无 Skill"，引导用户去提交（右上角 +Skill / Issue 链接）
    */
-  // ids 仅在 skills 模式下生效：实践模式不应因为 URL 带了 ids 而误判“有筛选”。
+  // ids 仅在 skills 模式下生效：实践模式不应因为 URL 带了 ids 而误判"有筛选"。
   const hasFilters = Boolean(query) || (tag && tag !== "全部") || (mode === "skills" && Boolean(ids));
 
   useEffect(() => {
@@ -167,7 +170,7 @@ export default function HomePage({
   }, [initial.sort, initial.mode]);
 
   useEffect(() => {
-    // ids 变化代表“指定 Skill 集合”筛选变化，需要同步到 state 并回到第一页。
+    // ids 变化代表"指定 Skill 集合"筛选变化，需要同步到 state 并回到第一页。
     setIds(initial.ids || "");
     setPage(1);
   }, [initial.ids]);
@@ -176,15 +179,35 @@ export default function HomePage({
     // URL mode 变化（例如：分享链接 / 浏览器前进后退）时，客户端同步切换模式。
     const nextMode: HomeMode = initial.mode === "practices" ? "practices" : "skills";
     setMode(nextMode);
-    // PRD：切换模式时回到第一页，避免分页状态在两个模式间“串页”。
+    // PRD：切换模式时回到第一页，避免分页状态在两个模式间"串页"。
     setPage(1);
   }, [initial.mode]);
+
+  /**
+   * 统一记录"已发现实践模式"：
+   * - 覆盖通过 URL 直达 / 前进后退 / 点击切换三种入口
+   * - 避免在多个 handler 内重复写入（且 key 统一走常量）
+   */
+  const markPracticeModeDiscovered = () => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.PRACTICE_MODE_DISCOVERED, "1");
+    } catch {
+      // localStorage 不可用时，静默失败（保持 UI 逻辑不受影响）。
+    }
+  };
+
+  useEffect(() => {
+    // 只要进入 practices 模式就记录为"已发现"，保证直接访问链接也会被记录。
+    if (mode === "practices") {
+      markPracticeModeDiscovered();
+    }
+  }, [mode]);
 
   /**
    * URL 同步工具函数（避免散落在多个 handler 里重复拼接逻辑）
    * ------------------------------------------------------------
    * 设计目标：
-   * - 让筛选条（tag/sort/ids/mode）与 URL 保持一致，刷新/分享/回退都“可预期”
+   * - 让筛选条（tag/sort/ids/mode）与 URL 保持一致，刷新/分享/回退都"可预期"
    * - push 默认不滚动（保持用户当前视野稳定）
    */
   const pushSearchParams = (nextSearch: URLSearchParams, options?: { scroll?: boolean; replace?: boolean }) => {
@@ -205,7 +228,7 @@ export default function HomePage({
     if (tag && tag !== "全部") search.set("tag", tag);
     if (query) search.set("q", query);
     if (sort) search.set("sort", sort);
-    // ids 仅在 skills 模式下参与请求（实践列表不支持该参数，避免“看起来像筛选生效但其实没用”的错觉）。
+    // ids 仅在 skills 模式下参与请求（实践列表不支持该参数，避免"看起来像筛选生效但其实没用"的错觉）。
     if (mode === "skills" && ids) search.set("ids", ids);
     return search.toString();
   }, [page, tag, query, sort, ids, mode]);
@@ -216,7 +239,7 @@ export default function HomePage({
   useEffect(() => {
     let cancelled = false;
     const fetchFeatured = async () => {
-      // 保持首屏进入时的“骨架卡片”可见，直到数据到达。
+      // 保持首屏进入时的"骨架卡片"可见，直到数据到达。
       setFeaturedLoading(true);
       try {
         const res = await fetch("/api/practices/featured", { cache: "no-store" });
@@ -249,7 +272,7 @@ export default function HomePage({
     const fetchSkills = async () => {
       /**
        * 若首屏已由 SSR 预取填充，则不再触发骨架屏：
-       * - 避免 hydration 后“先显示内容 -> 又闪回加载态”的抖动
+       * - 避免 hydration 后"先显示内容 -> 又闪回加载态"的抖动
        */
       const shouldShowLoading = !(hasInitialSkills && isDefaultSkillRequest);
       if (shouldShowLoading) {
@@ -265,7 +288,7 @@ export default function HomePage({
         const payload = json as Paginated<Skill>;
         if (!cancelled) {
           const next = payload.data || [];
-          // 移动端无限滚动：第 2 页起做“追加”而非“整页替换”。
+          // 移动端无限滚动：第 2 页起做"追加"而非"整页替换"。
           if (isMobile && page > 1) {
             setSkills((prev) => {
               const map = new Map<number, Skill>();
@@ -317,7 +340,7 @@ export default function HomePage({
         const payload = json as Paginated<PracticeWithSkills>;
         if (!cancelled) {
           const next = payload.data || [];
-          // 移动端无限滚动：第 2 页起做“追加”而非“整页替换”。
+          // 移动端无限滚动：第 2 页起做"追加"而非"整页替换"。
           if (isMobile && page > 1) {
             setPractices((prev) => {
               const map = new Map<number, PracticeWithSkills>();
@@ -353,8 +376,8 @@ export default function HomePage({
   const handleTagChange = (next: string) => {
     /**
      * 方案 2A（用户确认）：
-     * - 如果当前处于 `ids` 的“关联技能锁定集合”筛选中
-     * - 用户点击任何分类标签（包括“全部”）都代表想回到“全站分类筛选”语义
+     * - 如果当前处于 `ids` 的"关联技能锁定集合"筛选中
+     * - 用户点击任何分类标签（包括"全部"）都代表想回到"全站分类筛选"语义
      * - 因此：先清掉 ids，再应用 tag
      *
      * 同时：把 tag 写回 URL，确保刷新/分享链接不会丢状态。
@@ -390,20 +413,20 @@ export default function HomePage({
       return;
     }
 
-    // PRD：切换模式时重置到顶部，避免用户“迷失在列表中间”。
+    // PRD：切换模式时重置到顶部，避免用户"迷失在列表中间"。
     window.scrollTo({ top: 0 });
 
     // 同步 URL：mode=practices 可分享；skills 为默认值，URL 不写 mode 参数。
     const nextSearch = new URLSearchParams(searchParams?.toString() || "");
     if (next === "practices") {
       nextSearch.set("mode", "practices");
-      // ids 仅对 skills 模式有意义：进入实践模式时清掉，避免用户后续切回 skills 时“突然被锁定集合”。
+      // ids 仅对 skills 模式有意义：进入实践模式时清掉，避免用户后续切回 skills 时"突然被锁定集合"。
       nextSearch.delete("ids");
       /**
-       * 小优化：实践模式默认展示“最新”
+       * 小优化：实践模式默认展示"最新"
        * ----------------------------------------------------------
        * 仅在 URL 没有显式 sort 时才使用默认值：
-       * - 这样不会打断用户已经做过的“最热/最新”选择
+       * - 这样不会打断用户已经做过的"最热/最新"选择
        * - 同时避免先以旧 sort 请求一次，再被 URL 同步 effect 改回默认造成重复请求/闪动
        */
       if (!nextSearch.get("sort")) {
@@ -411,7 +434,7 @@ export default function HomePage({
       }
     } else {
       nextSearch.delete("mode");
-      // 对称处理：skills 模式默认展示“最热”
+      // 对称处理：skills 模式默认展示"最热"
       if (!nextSearch.get("sort")) {
         setSort("heat");
       }
@@ -424,8 +447,8 @@ export default function HomePage({
 
   /**
    * 清空 ids（关联技能锁定）：
-   * - 显式 Chip 的“×”操作
-   * - 需要同步更新 URL，避免刷新/分享仍携带 ids 造成“幽灵筛选”
+   * - 显式 Chip 的"×"操作
+   * - 需要同步更新 URL，避免刷新/分享仍携带 ids 造成"幽灵筛选"
    */
   const handleClearIds = () => {
     if (!ids) return;
@@ -440,13 +463,13 @@ export default function HomePage({
   const listLoading = mode === "skills" ? loading : practiceLoading;
 
   /**
-   * “筛选相关 Skill”（移动端同页切换方案）
+   * "筛选相关 Skill"（移动端同页切换方案）
    * ------------------------------------------------------------
    * 需求：
    * - 在 skills 模式展示 ids 锁定集合（Chip 可清除）
-   * - 为避免“原筛选条件导致列表为空”让用户困惑：
-   *   这里构造一个“干净”的 URL（不带 q/tag/mode），只保留 ids + sort
-   *   行为与桌面端“新开 Tab”保持一致（只是打开方式不同）
+   * - 为避免"原筛选条件导致列表为空"让用户困惑：
+   *   这里构造一个"干净"的 URL（不带 q/tag/mode），只保留 ids + sort
+   *   行为与桌面端"新开 Tab"保持一致（只是打开方式不同）
    */
   const handleFilterSkillsByIds = (skillIds: number[]) => {
     if (!skillIds.length) return;
@@ -462,7 +485,7 @@ export default function HomePage({
 
     pushSearchParams(next, { scroll: true });
 
-    // 同步本地 state：避免“URL 已变但 UI 还停留在旧模式/旧筛选”的短暂割裂。
+    // 同步本地 state：避免"URL 已变但 UI 还停留在旧模式/旧筛选"的短暂割裂。
     setMode("skills");
     setIds(skillIds.join(","));
     setTag("全部");
@@ -471,12 +494,12 @@ export default function HomePage({
   };
 
   const handleMobileLoadMore = () => {
-    // 由视图层判定 hasMore，这里只做“安全递增”。
+    // 由视图层判定 hasMore，这里只做"安全递增"。
     setPage((prev) => prev + 1);
   };
 
   const handleMobileRetry = () => {
-    // retry 只需要触发一次“重新请求”，无需额外修改筛选条件。
+    // retry 只需要触发一次"重新请求"，无需额外修改筛选条件。
     if (mode === "skills") {
       setSkillsReloadKey((key) => key + 1);
       return;
@@ -520,9 +543,35 @@ export default function HomePage({
     );
   }
 
+  // 页面停留时长埋点
+  useEffect(() => {
+    const startTime = Date.now();
+    return () => {
+      const duration = Math.floor((Date.now() - startTime) / 1000);
+      // 只记录停留 > 3 秒的
+      if (duration > 3) {
+        trackEvent("page_view_duration", {
+          mode,
+          duration_seconds: duration,
+        });
+      }
+    };
+  }, [mode]);
+
   return (
     <>
       <FeaturedCarousel practices={featured} loading={featuredLoading} />
+
+      {/* 实践模式引导 Banner（仅桌面端） */}
+      {!isMobile && (
+        <PracticeDiscoveryBanner
+          mode={mode}
+          onTryNow={() => {
+            handleModeChange("practices");
+          }}
+        />
+      )}
+
       <ModeDock mode={mode} onChange={handleModeChange} />
 
       <main className="page">
@@ -535,7 +584,7 @@ export default function HomePage({
                   type="button"
                   className={`segmented__item ${item === tag ? "is-active" : ""}`}
                   onClick={() => handleTagChange(item)}
-                  // data-loading 用于触发按钮“过渡态”视觉反馈（见 app/globals.css）。
+                  // data-loading 用于触发按钮"过渡态"视觉反馈（见 app/globals.css）。
                   data-loading={listLoading && item === tag}
                   aria-busy={listLoading && item === tag}
                   disabled={listLoading}
@@ -545,7 +594,7 @@ export default function HomePage({
               ))}
             </nav>
 
-            {/* 仅 skills 模式下展示“关联技能锁定”Chip，避免实践模式出现“看不懂的筛选条件”。 */}
+            {/* 仅 skills 模式下展示"关联技能锁定"Chip，避免实践模式出现"看不懂的筛选条件"。 */}
             {mode === "skills" && idsCount > 0 ? (
               <button
                 className="filter-chip"
@@ -589,7 +638,7 @@ export default function HomePage({
         {mode === "skills" ? (
           <section className="skill-grid" aria-label="Skill 列表" aria-busy={loading}>
             {loading || !hasLoaded ? (
-              // 加载态：骨架屏替代空白 + 文案，避免“暂无 Skill”闪现。
+              // 加载态：骨架屏替代空白 + 文案，避免"暂无 Skill"闪现。
               Array.from({ length: PAGE_SIZE }).map((_, index) => (
                 <SkillCardSkeleton key={`skill-skeleton-${index}`} />
               ))
@@ -623,7 +672,7 @@ export default function HomePage({
                   hasFilters ? (
                     /**
                      * 使用原生 <a> 直接回到首页：
-                     * - 可以“一次性”清掉 URL query（q/tag/sort 等）
+                     * - 可以"一次性"清掉 URL query（q/tag/sort 等）
                      * - 同时把本地 state（tag/sort/page）恢复为默认值
                      * - 避免额外引入 router 逻辑，让空态交互保持极简
                      */
@@ -634,11 +683,11 @@ export default function HomePage({
                   ) : (
                     /**
                      * 当前没有任何 Skill：引导用户去提交
-                     * - 使用外链（Issue 表单）与 Header 的“+Skill”入口一致
+                     * - 使用外链（Issue 表单）与 Header 的"+Skill"入口一致
                      */
                     <a
                       className="btn btn--primary btn--sm"
-                      // 指向创建 Skill 的 Issue 表单，与右上角“+ Skill”入口保持一致。
+                      // 指向创建 Skill 的 Issue 表单，与右上角"+ Skill"入口保持一致。
                       href={SKILL_ISSUE_URL}
                       target="_blank"
                       rel="noreferrer noopener"
