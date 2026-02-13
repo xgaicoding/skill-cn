@@ -90,6 +90,9 @@ export default function PracticeDiscoveryBanner({ mode, onTryNow }: PracticeDisc
           <h2 className="practice-discovery-banner__title">
             发现实践案例，看看别人怎么用
           </h2>
+          <p className="practice-discovery-banner__description">
+            真实案例 + 实战方案，帮你快速上手新工具
+          </p>
         </div>
         <button
           className="btn btn--primary btn--sm practice-discovery-banner__cta"

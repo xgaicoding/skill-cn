@@ -705,13 +705,6 @@ export default function HomePage({
           </section>
         ) : (
           <section className="practice-feed-grid" aria-label="实践文章列表" aria-busy={practiceLoading}>
-            {/* 实践模式价值主张 */}
-            <div className="practice-mode-header">
-              <p className="practice-mode-tagline">
-                💡 真实案例 · 实战方案 · 快速上手
-              </p>
-            </div>
-
             {practiceLoading || !practiceHasLoaded ? (
               Array.from({ length: PAGE_SIZE }).map((_, index) => (
                 <PracticeFeedCardSkeleton key={`practice-skeleton-${index}`} />
