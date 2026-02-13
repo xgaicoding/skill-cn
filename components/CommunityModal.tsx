@@ -98,7 +98,7 @@ export default function CommunityModal({
             <Users className="icon" aria-hidden="true" />
             交流群
           </span>
-          <h2 id="community-modal-title">加入 Skill Hub 交流群</h2>
+          <h2 id="community-modal-title">加入 AI 生产力 交流群</h2>
           <p className="community-modal__desc" id="community-modal-desc">
             扫描二维码加入交流，获取最新 Skill 精选与实践分享！
           </p>
@@ -125,7 +125,7 @@ export default function CommunityModal({
         </div>
 
         <div className="community-modal__topics" aria-label="群内交流话题">
-          <span className="community-modal__topic">精选 Skill 速递</span>
+          <span className="community-modal__topic">AI释放生产力</span>
           <span className="community-modal__topic">实战落地经验</span>
           <span className="community-modal__topic">新工具速览</span>
         </div>
