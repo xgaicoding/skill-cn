@@ -100,7 +100,7 @@ export default function CommunityModal({
           </span>
           <h2 id="community-modal-title">加入 AI 生产力 交流群</h2>
           <p className="community-modal__desc" id="community-modal-desc">
-            扫描二维码加入交流，获取最新 Skill 精选与实践分享！
+            扫描二维码加入交流，用 AI 释放你的生产力！
           </p>
         </div>
 
