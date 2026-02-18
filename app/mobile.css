@@ -498,25 +498,47 @@
   /* WeeklyStatsBar（移动端） */
   .weekly-stats-bar.weekly-stats-bar--mobile {
     width: 100%;
-    margin: 2px 0 10px;
+    margin: 4px 0 12px;
     padding: 0;
   }
 
   .weekly-stats-bar--mobile .weekly-stats-bar__inner {
-    min-height: 46px;
-    border-radius: 14px;
-    padding: 10px 12px;
-    gap: 6px;
+    min-height: 56px;
+    border-radius: 16px;
+    padding: 12px 14px 12px 12px;
+    gap: 8px;
+  }
+
+  /*
+    移动端左侧锚点略收窄：
+    - 保持视觉识别
+    - 避免在窄屏里抢占过多内容宽度
+  */
+  .weekly-stats-bar--mobile .weekly-stats-bar__inner::before {
+    width: 4px;
   }
 
   .weekly-stats-bar--mobile .weekly-stats-bar__new-link,
-  .weekly-stats-bar--mobile .weekly-stats-bar__text,
+  .weekly-stats-bar--mobile .weekly-stats-bar__text {
+    font-size: 14px;
+  }
+
   .weekly-stats-bar--mobile .weekly-stats-bar__meta {
     font-size: 13px;
   }
 
-  .weekly-stats-bar--mobile .weekly-stats-bar__new-link strong {
+  .weekly-stats-bar--mobile .weekly-stats-bar__new-prefix,
+  .weekly-stats-bar--mobile .weekly-stats-bar__new-suffix {
     font-size: 14px;
+  }
+
+  .weekly-stats-bar--mobile .weekly-stats-bar__new-count {
+    font-size: 21px;
+  }
+
+  .weekly-stats-bar--mobile .weekly-stats-bar__icon {
+    width: 16px;
+    height: 16px;
   }
 
   /* NEW 角标（移动端尺寸） */

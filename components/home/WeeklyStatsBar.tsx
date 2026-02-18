@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Sparkles } from "lucide-react";
 import type { WeeklyStats } from "@/lib/types";
 
 type WeeklyStatsBarProps = {
@@ -81,10 +82,16 @@ export default function WeeklyStatsBar({ onOpenWeeklyPractices, className }: Wee
               onClick={onOpenWeeklyPractices}
               aria-label={`查看本周上新，共 ${newCount} 篇`}
             >
-              <span className="weekly-stats-bar__icon" aria-hidden="true">
-                🆕
-              </span>
-              本周上新 <strong>{newCount}</strong> 篇实践
+              {/*
+                使用 Lucide Sparkles 替代 emoji：
+                - 与站内图标体系保持一致（统一 SVG 视觉语言）
+                - 通过 CSS 统一控制橙色主视觉与 hover 反馈
+              */}
+              <Sparkles className="weekly-stats-bar__icon" aria-hidden="true" />
+              <span className="weekly-stats-bar__new-prefix">本周上新</span>
+              {/* 数字单独拆分为独立节点，方便放大并做主色高亮，拉开信息层级。 */}
+              <strong className="weekly-stats-bar__new-count">{newCount}</strong>
+              <span className="weekly-stats-bar__new-suffix">篇实践</span>
             </button>
             <span className="weekly-stats-bar__divider" aria-hidden="true">
               ·
