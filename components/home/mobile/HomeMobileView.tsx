@@ -19,10 +19,11 @@ import {
   X,
 } from "lucide-react";
 
-import { PAGE_SIZE, SORT_OPTIONS, TAG_OPTIONS } from "@/lib/constants";
+import { NEW_BADGE_DAYS, SORT_OPTIONS, TAG_OPTIONS } from "@/lib/constants";
 import type { Practice, PracticeWithSkills, Skill } from "@/lib/types";
-import { formatCompactNumber, formatDate, formatHeat } from "@/lib/format";
+import { formatCompactNumber, formatDate, formatHeat, isWithinDays } from "@/lib/format";
 import type { HomeMode } from "@/components/home/ModeDock";
+import WeeklyStatsBar from "@/components/home/WeeklyStatsBar";
 
 /**
  * HomeMobileView
@@ -151,6 +152,7 @@ export type HomeMobileViewProps = {
   onLoadMore: () => void;
   onRetry: () => void;
   onFilterSkillsByIds: (skillIds: number[]) => void;
+  onOpenWeeklyPractices: () => void;
 };
 
 function mergeIdsFromPractice(practice: PracticeWithSkills): number[] {
@@ -468,6 +470,7 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
     onLoadMore,
     onRetry,
     onFilterSkillsByIds,
+    onOpenWeeklyPractices,
   } = props;
 
   const current = mode === "skills" ? skills : practices;
@@ -696,6 +699,8 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
                 const channel = p.channel?.trim();
                 const author = p.author_name?.trim();
                 const sourceText = channel && author ? `${channel}·${author}` : channel || author || "-";
+                // 最近 7 天内更新的实践显示 NEW 角标（前端实时计算，7 天后自动消失）。
+                const showNewBadge = isWithinDays(p.updated_at, NEW_BADGE_DAYS);
 
                 return (
                   <SwiperSlide key={`practice-${p.id}-${index}`}>
@@ -713,6 +718,11 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
                         trackClick(p.id);
                       }}
                     >
+                      {showNewBadge ? (
+                        <span className="new-badge m-new-badge m-new-badge--hero" aria-label="最近 7 天上新">
+                          NEW
+                        </span>
+                      ) : null}
                       <div className="m-hero-practice__title">{title}</div>
                       <div className="m-hero-practice__summary">{summary}</div>
                       <div className="m-hero-practice__meta" aria-label="来源与日期">
@@ -726,6 +736,12 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
             )}
           </Swiper>
         </section>
+
+        {/* v1.5.7：移动端周统计条（位于 Hero 下方、Toolbar 上方） */}
+        <WeeklyStatsBar
+          className="weekly-stats-bar--mobile"
+          onOpenWeeklyPractices={onOpenWeeklyPractices}
+        />
 
         {/* Toolbar：吸顶筛选条 */}
         <section className="m-toolbar" aria-label="筛选与排序" data-has-ids={mode === "skills" && idsCount > 0 ? "true" : "false"}>
@@ -852,6 +868,8 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
                 const author = practice.author_name?.trim();
                 // 需求：实践 mode 卡片作者处仅展示作者名（不展示渠道名）
                 const sourceText = author || "-";
+                // 最近 7 天内更新的实践显示 NEW 角标（前端实时计算，7 天后自动消失）。
+                const showNewBadge = isWithinDays(practice.updated_at, NEW_BADGE_DAYS);
 
                 return (
                   <button
@@ -861,6 +879,11 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
                     aria-label={`查看实践操作：${title}`}
                     onClick={() => openSheetForPractice(practice)}
                   >
+                    {showNewBadge ? (
+                      <span className="new-badge m-new-badge m-new-badge--card" aria-label="最近 7 天上新">
+                        NEW
+                      </span>
+                    ) : null}
                     <div className="m-practice__title">{title}</div>
                     <div className="m-practice__summary" aria-label="文章简介（最多 5 行，末行渐隐）">
                       <span className="m-practice__summary-text">{summaryText}</span>

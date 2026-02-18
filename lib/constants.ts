@@ -5,6 +5,8 @@ export const SORT_OPTIONS = [
 ] as const;
 
 export const PAGE_SIZE = 12;
+// “上新”角标的展示窗口（天）：最近 N 天内更新的实践会显示 NEW 标签。
+export const NEW_BADGE_DAYS = 7;
 // Hero 推荐实践数量上限：
 // - Swiper 的 cards 效果会给每个 slide 计算 3D transform/叠牌阴影
 // - 卡片数量过多时会显著增加合成与绘制负担，导致首屏卡顿

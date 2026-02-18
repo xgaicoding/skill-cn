@@ -2,7 +2,8 @@
 
 import { memo, useMemo, type CSSProperties } from "react";
 import { Practice } from "@/lib/types";
-import { FEATURED_PRACTICE_LIMIT } from "@/lib/constants";
+import { FEATURED_PRACTICE_LIMIT, NEW_BADGE_DAYS } from "@/lib/constants";
+import { isWithinDays } from "@/lib/format";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectCards } from "swiper/modules";
 
@@ -150,6 +151,11 @@ function FeaturedCarousel({
                         className="featured-card"
                         style={{ "--accent": ACCENTS[index % ACCENTS.length] } as CSSProperties}
                       >
+                        {isWithinDays(practice.updated_at, NEW_BADGE_DAYS) ? (
+                          <span className="new-badge featured-card__new-badge" aria-label="最近 7 天上新">
+                            NEW
+                          </span>
+                        ) : null}
                         <div className="featured-card__top">
                           <span className="featured-card__skill-name" title={practice.skill_name || "精选 Skill"}>
                             {practice.skill_name || "精选 Skill"}

@@ -80,3 +80,16 @@ export type Paginated<T> = {
   total: number;
   totalPages: number;
 };
+
+/**
+ * WeeklyStats：
+ * - 首页“本周上新”数据条使用的统计结构
+ * - weekStart/weekEnd 使用 YYYY-MM-DD（按 UTC+8 口径输出）
+ */
+export type WeeklyStats = {
+  newPracticesThisWeek: number;
+  totalPractices: number;
+  totalSkills: number;
+  weekStart: string;
+  weekEnd: string;
+};

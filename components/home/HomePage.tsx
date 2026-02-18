@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SKILL_ISSUE_URL, TAG_OPTIONS, SORT_OPTIONS, PAGE_SIZE } from "@/lib/constants";
 import { STORAGE_KEYS } from "@/lib/storage-keys";
@@ -14,7 +14,7 @@ import EmptyState from "@/components/EmptyState";
 import ModeDock, { type HomeMode } from "@/components/home/ModeDock";
 import PracticeFeedCard from "@/components/home/PracticeFeedCard";
 import PracticeFeedCardSkeleton from "@/components/home/PracticeFeedCardSkeleton";
-import PracticeDiscoveryBanner from "@/components/home/PracticeDiscoveryBanner";
+import WeeklyStatsBar from "@/components/home/WeeklyStatsBar";
 import { Clock, Filter, FilterX, Flame, Plus, RefreshCcw, SearchX, Sparkles, TriangleAlert, X } from "lucide-react";
 import HomeMobileView from "@/components/home/mobile/HomeMobileView";
 import { trackEvent } from "@/lib/analytics";
@@ -446,6 +446,29 @@ export default function HomePage({
   };
 
   /**
+   * WeeklyStatsBar 快捷入口：
+   * - 强制切换到实践模式
+   * - 强制切换为“最新”排序（recent）
+   * - 保留现有搜索/分类上下文，仅清理 skills 专属 ids 参数
+   */
+  const handleOpenWeeklyPractices = () => {
+    // 与模式切换保持一致：先回到顶部，避免用户在列表中段切换后迷失。
+    window.scrollTo({ top: 0 });
+
+    const nextSearch = new URLSearchParams(searchParams?.toString() || "");
+    nextSearch.set("mode", "practices");
+    nextSearch.set("sort", "recent");
+    nextSearch.delete("ids");
+
+    pushSearchParams(nextSearch, { scroll: true });
+
+    // 同步本地状态，避免 URL 变化到 effect 同步之间出现短暂 UI 延迟。
+    setMode("practices");
+    setSort("recent");
+    setPage(1);
+  };
+
+  /**
    * 清空 ids（关联技能锁定）：
    * - 显式 Chip 的"×"操作
    * - 需要同步更新 URL，避免刷新/分享仍携带 ids 造成"幽灵筛选"
@@ -539,6 +562,7 @@ export default function HomePage({
         onLoadMore={handleMobileLoadMore}
         onRetry={handleMobileRetry}
         onFilterSkillsByIds={handleFilterSkillsByIds}
+        onOpenWeeklyPractices={handleOpenWeeklyPractices}
       />
     );
   }
@@ -562,14 +586,9 @@ export default function HomePage({
     <>
       <FeaturedCarousel practices={featured} loading={featuredLoading} />
 
-      {/* 实践模式引导 Banner（仅桌面端） */}
+      {/* v1.5.7：动态周统计条（桌面端） */}
       {!isMobile && (
-        <PracticeDiscoveryBanner
-          mode={mode}
-          onTryNow={() => {
-            handleModeChange("practices");
-          }}
-        />
+        <WeeklyStatsBar onOpenWeeklyPractices={handleOpenWeeklyPractices} />
       )}
 
       <ModeDock mode={mode} onChange={handleModeChange} />

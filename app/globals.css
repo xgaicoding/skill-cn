@@ -2453,6 +2453,43 @@ button[data-loading="true"] .btn__loading {
   font-weight: 700;
 }
 
+/*
+  NEW 角标（桌面默认样式）
+  ------------------------------------------------------------
+  设计口径：
+  - 亮绿色底 + 小圆角
+  - 仅使用 transform/opacity 过渡，不引入高成本滤镜动画
+*/
+.new-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(13, 148, 66, 0.52);
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.96), rgba(34, 197, 94, 0.98));
+  color: #f4fff7;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  line-height: 1;
+  box-shadow: 0 14px 30px -20px rgba(22, 163, 74, 0.64), 0 0 0 1px rgba(255, 255, 255, 0.32) inset;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Hero 推荐卡片：角标略微内收，避免与高亮边框冲突。 */
+.featured-card__new-badge {
+  top: 14px;
+  right: 14px;
+}
+
 .deck {
   width: min(100%, 720px);
   padding: 0;
@@ -3869,6 +3906,12 @@ button[data-loading="true"] .btn__loading {
   flex-direction: column;
   gap: 10px;
   height: 100%;
+}
+
+/* 实践列表卡片：角标贴右上角，层级高于内容与浮层渐变。 */
+.practice-card__new-badge {
+  top: 14px;
+  right: 14px;
 }
 
 .practice-card--feed .practice-card__top {
@@ -6756,8 +6799,79 @@ body.is-detail::after {
 }
 
 /* ============================================
-   v1.5.6 实践模式可发现性优化
+   v1.5.7 周统计条 + v1.5.6 历史样式
    ============================================ */
+
+/* WeeklyStatsBar（桌面） */
+.weekly-stats-bar {
+  width: min(100%, var(--content-width));
+  margin: 24px auto 0;
+  padding: 0 var(--page-gutter);
+}
+
+.weekly-stats-bar__inner {
+  min-height: 52px;
+  border-radius: 16px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  text-align: center;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(191, 219, 254, 0.4) 0%, rgba(191, 219, 254, 0) 64%),
+    radial-gradient(120% 140% at 100% 100%, rgba(216, 180, 254, 0.3) 0%, rgba(216, 180, 254, 0) 68%),
+    linear-gradient(135deg, rgba(236, 246, 255, 0.92), rgba(245, 241, 255, 0.9));
+  border: 1px solid rgba(124, 150, 255, 0.24);
+  color: rgba(48, 62, 112, 0.92);
+  box-shadow: 0 20px 38px -34px rgba(79, 90, 170, 0.32);
+}
+
+.weekly-stats-bar__new-link {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.12px;
+  cursor: pointer;
+  transform: translate3d(0, 0, 0);
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.weekly-stats-bar__new-link strong {
+  color: rgba(18, 115, 67, 0.98);
+  font-size: 16px;
+}
+
+.weekly-stats-bar__icon {
+  line-height: 1;
+}
+
+.weekly-stats-bar__text,
+.weekly-stats-bar__meta {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.weekly-stats-bar__divider {
+  color: rgba(93, 110, 173, 0.56);
+  font-weight: 700;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .weekly-stats-bar__new-link:hover {
+    color: rgba(35, 79, 187, 0.98);
+    transform: translate3d(0, -1px, 0);
+  }
+}
 
 /* 实践模式引导 Banner */
 .practice-discovery-banner {

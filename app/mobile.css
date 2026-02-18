@@ -495,6 +495,49 @@
     background: rgba(255, 107, 0, 0.72);
   }
 
+  /* WeeklyStatsBar（移动端） */
+  .weekly-stats-bar.weekly-stats-bar--mobile {
+    width: 100%;
+    margin: 2px 0 10px;
+    padding: 0;
+  }
+
+  .weekly-stats-bar--mobile .weekly-stats-bar__inner {
+    min-height: 46px;
+    border-radius: 14px;
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .weekly-stats-bar--mobile .weekly-stats-bar__new-link,
+  .weekly-stats-bar--mobile .weekly-stats-bar__text,
+  .weekly-stats-bar--mobile .weekly-stats-bar__meta {
+    font-size: 13px;
+  }
+
+  .weekly-stats-bar--mobile .weekly-stats-bar__new-link strong {
+    font-size: 14px;
+  }
+
+  /* NEW 角标（移动端尺寸） */
+  .m-new-badge {
+    min-width: 40px;
+    height: 22px;
+    padding: 0 8px;
+    font-size: 10px;
+    letter-spacing: 0.28px;
+  }
+
+  .m-new-badge--hero {
+    top: 10px;
+    right: 10px;
+  }
+
+  .m-new-badge--card {
+    top: 10px;
+    right: 10px;
+  }
+
   /* Toolbar */
   .m-toolbar {
     position: sticky;
@@ -757,6 +800,7 @@
   .m-card--practice {
     height: var(--h-practice-card);
     text-align: left;
+    position: relative;
   }
 
   .m-practice__title {

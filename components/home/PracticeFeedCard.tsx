@@ -3,7 +3,8 @@
 import { useMemo } from "react";
 import { ExternalLink, Filter, CalendarDays, Eye } from "lucide-react";
 import type { PracticeWithSkills } from "@/lib/types";
-import { formatCompactNumber, formatDate } from "@/lib/format";
+import { formatCompactNumber, formatDate, isWithinDays } from "@/lib/format";
+import { NEW_BADGE_DAYS } from "@/lib/constants";
 import { trackEvent } from "@/lib/analytics";
 
 /**
@@ -47,6 +48,8 @@ export default function PracticeFeedCard({ practice }: { practice: PracticeWithS
   const totalSkillCount = Array.isArray(practice.skill_ids) ? practice.skill_ids.length : practice.skills.length;
   const displaySkills = practice.skills.slice(0, 3);
   const moreCount = Math.max(totalSkillCount - 3, 0);
+  // 最近 7 天内更新的实践显示 NEW 角标（前端实时计算，7 天后自动消失）。
+  const showNewBadge = useMemo(() => isWithinDays(practice.updated_at, NEW_BADGE_DAYS), [practice.updated_at]);
 
   /**
    * 文章关联的所有 Skill ID：
@@ -83,6 +86,11 @@ export default function PracticeFeedCard({ practice }: { practice: PracticeWithS
 
   return (
     <article className="practice-card practice-card--feed">
+      {showNewBadge ? (
+        <span className="new-badge practice-card__new-badge" aria-label="最近 7 天上新">
+          NEW
+        </span>
+      ) : null}
       <div className="practice-card__content">
         <div className="practice-card__top">
           <span className="practice-card__source" title={sourceText}>
