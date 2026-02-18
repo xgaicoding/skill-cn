@@ -69,7 +69,7 @@ html {
   height: 100%;
   /*
     兜底禁止根节点横向滚动：
-    - 一些第三方组件（如轮播）在特定样式组合下可能把页面“撑宽”
+    - 一些第三方组件（如轮播）在特定样式组合下可能把页面"撑宽"
     - body 的 overflow-x:hidden 在部分浏览器/场景下不够稳，这里与 body 同步兜底
   */
   overflow-x: hidden;
@@ -474,7 +474,7 @@ button:disabled {
     transparent 100%
   );
   opacity: 0;
-  /* 扫光仅在按钮内部滑动，避免因 tooltip 允许溢出而出现“跑偏” */
+  /* 扫光仅在按钮内部滑动，避免因 tooltip 允许溢出而出现"跑偏" */
   transform: translate3d(-30%, 0, 0);
   /* 默认不播放扫光，避免持续动效干扰；仅在 hover 时触发 */
   animation: none;
@@ -504,7 +504,7 @@ button:disabled {
   filter: brightness(1.02);
 }
 
-/* Hover 时启用扫光轮播，形成“可操作”的反馈节奏。 */
+/* Hover 时启用扫光轮播，形成"可操作"的反馈节奏。 */
 .btn--download:hover::before {
   animation: downloadSweep 1.4s ease-in-out infinite;
 }
@@ -537,7 +537,7 @@ button:disabled {
 /*
   按钮触发接口时的过渡态：
   - 使用 data-loading 控制
-  - 扫光 + dots 的组合让“处理中”更直观
+  - 扫光 + dots 的组合让"处理中"更直观
   - 动画基于 transform/opacity，避免重排
 */
 @keyframes sh-button-sheen {
@@ -590,7 +590,7 @@ button[data-loading="true"]::after {
   z-index: 1;
 }
 
-/* Loading 容器默认“折叠”，避免占位导致按钮视觉偏移。 */
+/* Loading 容器默认"折叠"，避免占位导致按钮视觉偏移。 */
 .btn__loading {
   --btn-loading-width: 22px;
   --btn-loading-height: 12px;
@@ -886,7 +886,7 @@ button[data-loading="true"] .btn__loading {
   outline: none;
 }
 
-/* 搜索框去掉浏览器自带的清除按钮（“x”），避免和定制化视觉冲突 */
+/* 搜索框去掉浏览器自带的清除按钮（"x"），避免和定制化视觉冲突 */
 .search input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
   appearance: none;
@@ -1122,10 +1122,10 @@ button[data-loading="true"] .btn__loading {
 }
 
 /*
-  Header 右侧 Auth 区（“+ Skill / 登录 / 用户菜单”）：
+  Header 右侧 Auth 区（"+ Skill / 登录 / 用户菜单"）：
   - 这里必须显式用 inline-flex + gap 控制按钮间距
   - 否则 React/HTML 的空白文本节点、以及不同浏览器对 inline 元素的间距处理，
-    可能导致“+ Skill”和“登录”之间的视觉间隔不一致（用户验收反馈）
+    可能导致"+ Skill"和"登录"之间的视觉间隔不一致（用户验收反馈）
   - gap 数值与 nav-actions__links 对齐，保证右侧按钮节奏统一
 */
 .nav-actions__auth {
@@ -1175,7 +1175,7 @@ button[data-loading="true"] .btn__loading {
   border: 0;
   padding: 0;
   cursor: default;
-  /* 遮罩略加深：减少底层元素“穿透感” */
+  /* 遮罩略加深：减少底层元素"穿透感" */
   background: rgba(26, 21, 16, 0.42);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
@@ -1195,7 +1195,7 @@ button[data-loading="true"] .btn__loading {
   border-radius: 22px;
   background: #ffffff;
   border: 1px solid rgba(255, 107, 0, 0.14);
-  /* 卡片阴影更轻，避免“浮层过重”的视觉问题 */
+  /* 卡片阴影更轻，避免"浮层过重"的视觉问题 */
   box-shadow:
     0 18px 40px -28px rgba(255, 107, 0, 0.35),
     0 16px 32px -24px rgba(0, 0, 0, 0.2),
@@ -1209,7 +1209,7 @@ button[data-loading="true"] .btn__loading {
   pointer-events: auto;
 }
 
-/* 顶部氛围光移除，避免顶部偏灰导致的视觉“脏”感 */
+/* 顶部氛围光移除，避免顶部偏灰导致的视觉"脏"感 */
 /* 说明：保留占位注释便于后续回滚或再引入氛围层。 */
 
 .community-modal__close {
@@ -1811,7 +1811,7 @@ button[data-loading="true"] .btn__loading {
     var(--brand-aura-size) var(--brand-aura-size), var(--brand-aura-size) var(--brand-aura-size),
     var(--brand-aura-size) var(--brand-aura-size), var(--brand-aura-size) var(--brand-aura-size), 100% 100%;
   background-position: -40% 30%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
-  /* 频闪优化：仅保留“高光层”位移动画，其它层保持静止，减少合成抖动。 */
+  /* 频闪优化：仅保留"高光层"位移动画，其它层保持静止，减少合成抖动。 */
   animation: brandAura var(--brand-aura-speed) linear infinite;
   /* 性能提示：告知浏览器仅跟踪背景位置变化，避免无关层的重复重绘。 */
   will-change: background-position, transform;
@@ -1868,7 +1868,7 @@ button[data-loading="true"] .btn__loading {
 /* Hero 主 Slogan 重点词样式：仅用颜色与字重强调，保持轻量与高级感。 */
 .hero-copy__slogan-emphasis {
   font-weight: 900;
-  /* 参考“Skill Hub 中国”渐变文字：弱化光晕、保留质感。 */
+  /* 参考"Skill Hub 中国"渐变文字：弱化光晕、保留质感。 */
   color: var(--primary-strong);
   background-image: linear-gradient(
     110deg,
@@ -1957,7 +1957,7 @@ button[data-loading="true"] .btn__loading {
   align-self: center;
   margin-top: clamp(6px, 1.6vw, 18px);
   margin-right: clamp(0px, 1.2vw, 16px);
-  /* 留出底部空间给“承托”光晕，提升稳定感 */
+  /* 留出底部空间给"承托"光晕，提升稳定感 */
   padding: var(--hero-pad-top) var(--hero-pad-x) var(--hero-pad-bottom);
   /* 固定展示区尺寸，避免加载前后出现高度塌陷 */
   width: calc(var(--hero-card-w) + var(--hero-pad-x) * 2);
@@ -2158,7 +2158,7 @@ button[data-loading="true"] .btn__loading {
   left: 50%;
   bottom: 4px;
   transform: translateX(-50%);
-  /* 底部“承托”投影，让卡牌组落在视觉基座上 */
+  /* 底部"承托"投影，让卡牌组落在视觉基座上 */
   width: clamp(220px, 24vw, 320px);
   height: clamp(26px, 3.2vw, 40px);
   background: radial-gradient(ellipse at center, rgba(255, 120, 0, 0.32), rgba(255, 255, 255, 0) 70%);
@@ -2200,9 +2200,9 @@ button[data-loading="true"] .btn__loading {
   /*
     关键交互光标提示
     ------------------------------------------------------------
-    Swiper 开启 grabCursor 后，容器区域会呈现 “grab” 光标（暗示可拖拽）。
+    Swiper 开启 grabCursor 后，容器区域会呈现 "grab" 光标（暗示可拖拽）。
     但本项目的每张卡片本身也是可点击链接（打开实践来源）。
-    为了让用户在 hover 到卡片上时能明确感知“可点击”，
+    为了让用户在 hover 到卡片上时能明确感知"可点击"，
     这里给链接本身显式设置 cursor: pointer，覆盖从父级继承的光标。
   */
   cursor: pointer;
@@ -2309,7 +2309,7 @@ button[data-loading="true"] .btn__loading {
 /*
   Hero 推荐卡片 hover 交互
   ------------------------------------------------------------
-  目标：在不破坏 Swiper 卡片堆叠的前提下，做“整体提亮 + 轻微放大”。
+  目标：在不破坏 Swiper 卡片堆叠的前提下，做"整体提亮 + 轻微放大"。
   - 只做轻微 scale，不做位移，避免打乱卡片堆叠节奏
   - 只用 opacity/颜色/transform 过渡，避免重度滤镜动画
 */
@@ -2317,7 +2317,7 @@ button[data-loading="true"] .btn__loading {
   .featured-card-link:hover .featured-card,
   .featured-card-link:focus-visible .featured-card {
     /*
-      Hero 推荐卡片 hover：轻微放大 + 整体提亮，强调“可点击感”。
+      Hero 推荐卡片 hover：轻微放大 + 整体提亮，强调"可点击感"。
       通过提高白底占比 + 边框亮度来提升可感知性，同时避免过度上浮。
     */
     --card-tint-strength: 22%;
@@ -2458,8 +2458,7 @@ button[data-loading="true"] .btn__loading {
   ------------------------------------------------------------
   设计口径：
   - 亮绿色底 + 小圆角
-  - 仅使用 transform/opacity 动画，不引入高成本滤镜动画
-  - 微弱呼吸感，帮助用户快速识别“最近上新”
+  - 静态展示，不加动画，保持克制
 */
 .new-badge {
   position: absolute;
@@ -2482,39 +2481,13 @@ button[data-loading="true"] .btn__loading {
   line-height: 1;
   box-shadow: 0 14px 30px -20px rgba(22, 163, 74, 0.64), 0 0 0 1px rgba(255, 255, 255, 0.32) inset;
   pointer-events: none;
-  /* GPU 合成层：保证 opacity 动画稳定，避免滚动场景掉帧。 */
   transform: translate3d(0, 0, 0);
-  will-change: opacity, transform;
-  animation: new-badge-pulse 1.8s ease-in-out infinite;
-}
-
-/*
-  NEW 角标呼吸动效：
-  - 只动画 opacity，避免 layout shift
-  - 振幅控制在 1 -> 0.78，保持“有感知但不过度抢眼”
-*/
-@keyframes new-badge-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.78;
-  }
 }
 
 /* Hero 推荐卡片：角标略微内收，避免与高亮边框冲突。 */
 .featured-card__new-badge {
   top: 14px;
   right: 14px;
-}
-
-/* 尊重系统“减少动态效果”偏好，关闭 NEW 角标呼吸动画。 */
-@media (prefers-reduced-motion: reduce) {
-  .new-badge {
-    animation: none;
-    opacity: 1;
-  }
 }
 
 .deck {
@@ -3237,7 +3210,7 @@ button[data-loading="true"] .btn__loading {
   - 左侧：分类标签（segmented）+ 关联技能 Chip（可清除）
   - 右侧：排序切换（sort-switch）
   说明：
-  - 保持现有筛选条视觉风格不变，只新增一个“可见可清除”的 Chip，避免 ids 隐式筛选让用户迷惑
+  - 保持现有筛选条视觉风格不变，只新增一个"可见可清除"的 Chip，避免 ids 隐式筛选让用户迷惑
 */
 .toolbar__left {
   display: flex;
@@ -3256,8 +3229,8 @@ button[data-loading="true"] .btn__loading {
   关联技能筛选 Chip（ids=1,2,3...）
   ------------------------------------------------------------
   场景：
-  - 用户从实践卡片点击“筛选相关 Skill”进入 skills 模式时，会携带 ids 参数
-  - 该筛选会“锁定”在一个子集内，如果不提示用户，分类筛选会表现得像“失效”
+  - 用户从实践卡片点击"筛选相关 Skill"进入 skills 模式时，会携带 ids 参数
+  - 该筛选会"锁定"在一个子集内，如果不提示用户，分类筛选会表现得像"失效"
   交互（方案 2A）：
   - Chip 显示当前锁定数量，并提供一键清除
   - 用户点击任意分类标签时，会自动清除 ids 并执行分类筛选（逻辑在 HomePage.tsx）
@@ -3440,7 +3413,7 @@ button[data-loading="true"] .btn__loading {
 }
 
 .sort-switch__btn:hover {
-  /* Hover 只做高亮与阴影变化，不上浮，保持“最热/最新”切换的稳定性 */
+  /* Hover 只做高亮与阴影变化，不上浮，保持"最热/最新"切换的稳定性 */
   transform: none;
   background: rgba(255, 255, 255, 0.76);
   box-shadow: 0 26px 64px -52px rgba(255, 107, 0, 0.55), 0 18px 44px -40px rgba(50, 20, 0, 0.22);
@@ -3448,7 +3421,7 @@ button[data-loading="true"] .btn__loading {
 }
 
 .sort-switch__btn.is-active {
-  /* 选中态改为橙色纯色底：减轻渐变视觉负担，保持“排序”语义更克制 */
+  /* 选中态改为橙色纯色底：减轻渐变视觉负担，保持"排序"语义更克制 */
   background: var(--primary);
   color: #fff;
   border-color: rgba(255, 107, 0, 0.4);
@@ -3465,7 +3438,7 @@ button[data-loading="true"] .btn__loading {
 */
 .mode-dock {
   --thumb-y: 0px; /* 0：实践模式；50px：刷 Skill（44px 按钮 + 6px 间距） */
-  /* 默认“胶囊”圆角；展开态会改为更克制的圆角（避免外观过于“玩具感”） */
+  /* 默认"胶囊"圆角；展开态会改为更克制的圆角（避免外观过于"玩具感"） */
   --dock-item-radius: 999px;
   position: fixed;
   /*
@@ -3481,7 +3454,7 @@ button[data-loading="true"] .btn__loading {
   /* 允许 pointer 事件顺畅拖拽（移动端避免触发页面滚动手势） */
   touch-action: none;
   /*
-    Dock 的“展开”采用宽度过渡：
+    Dock 的"展开"采用宽度过渡：
     - Dock 为 fixed 且体积很小，宽度变化对整体布局影响极低
     - 文案出现/位移仍使用 transform/opacity（GPU 合成友好）
   */
@@ -3493,17 +3466,17 @@ button[data-loading="true"] .btn__loading {
   border-radius: 999px;
   /*
     外层容器（Dock 轨道）视觉目标：
-    - 比 header 更“弱”，避免像一个独立卡片抢视觉
+    - 比 header 更"弱"，避免像一个独立卡片抢视觉
     - 仍保留玻璃拟态质感（与站点整体统一）
     - 强表达交给「thumb 选中态」，容器只做承托
   */
   /*
-    用户确认：Mode Dock 改为「最简单的纯色」风格（参考排序按钮“最热”）。
+    用户确认：Mode Dock 改为「最简单的纯色」风格（参考排序按钮"最热"）。
     ------------------------------------------------------------
     设计策略：
     - 收起态：保留轻量轨道做承托（白色纯色 + 轻描边 + 轻阴影）
     - 活跃态：由 thumb（滑块）用纯色主色橙来表达
-    - Hover：用“扫光（shine）”增加精致感，不引入复杂渐变/液态玻璃折射
+    - Hover：用"扫光（shine）"增加精致感，不引入复杂渐变/液态玻璃折射
   */
   background: rgba(255, 255, 255, 0.86);
   border: 1px solid rgba(255, 107, 0, 0.16);
@@ -3520,7 +3493,7 @@ button[data-loading="true"] .btn__loading {
   --thumb-y: 50px;
 }
 
-/* 拖拽中：用 grabbing 提示“正在拖动” */
+/* 拖拽中：用 grabbing 提示"正在拖动" */
 .mode-dock[data-dragging="true"] {
   cursor: grabbing;
 }
@@ -3528,11 +3501,11 @@ button[data-loading="true"] .btn__loading {
 /* 展开态：展示文字（由 React 的 data-expanded 驱动） */
 .mode-dock[data-expanded="true"] {
   width: 168px;
-  /* 展开态：把 999px 的“胶囊”圆角收敛为圆角矩形，更像“工具 Dock/控件”，更高级 */
+  /* 展开态：把 999px 的"胶囊"圆角收敛为圆角矩形，更像"工具 Dock/控件"，更高级 */
   --dock-item-radius: 18px;
   /*
     展开态的视觉策略：
-    - 外层轨道尽量“隐身”（不再显示大块圆角容器），避免像一个独立卡片抢戏
+    - 外层轨道尽量"隐身"（不再显示大块圆角容器），避免像一个独立卡片抢戏
     - 视觉承托交给每一行的按钮（以及选中的 thumb）
     这样整体更「液态玻璃」，也更贴合站点轻盈的玻璃拟态风格。
   */
@@ -3557,7 +3530,7 @@ button[data-loading="true"] .btn__loading {
   /*
     活跃态（thumb）=「纯色主色」
     ------------------------------------------------------------
-    参考“最热”按钮的视觉：纯色 + 轻描边 + 轻阴影。
+    参考"最热"按钮的视觉：纯色 + 轻描边 + 轻阴影。
   */
   background: var(--primary);
   border: 1px solid rgba(255, 107, 0, 0.4);
@@ -3569,12 +3542,12 @@ button[data-loading="true"] .btn__loading {
 }
 
 .mode-dock__thumb::before {
-  /* 纯色方案下不需要“体积光”叠加；扫光由按钮伪元素统一负责。 */
+  /* 纯色方案下不需要"体积光"叠加；扫光由按钮伪元素统一负责。 */
   content: none;
 }
 
 .mode-dock__thumb::after {
-  /* 纯色方案下不需要“体积光”叠加；扫光由按钮伪元素统一负责。 */
+  /* 纯色方案下不需要"体积光"叠加；扫光由按钮伪元素统一负责。 */
   content: none;
 }
 
@@ -3605,9 +3578,9 @@ button[data-loading="true"] .btn__loading {
   /*
     展开态每一行按钮独立承托（轻玻璃）：
     - 外层容器被弱化后，需要给未选中项一个很轻的底，保证可读性
-    - 动画保持 transform/opacity，不使用 scale 避免“抖动”
+    - 动画保持 transform/opacity，不使用 scale 避免"抖动"
   */
-  /* 展开态的未选中项：纯色白底 + 轻描边（与“最热/最新”按钮同一设计语言） */
+  /* 展开态的未选中项：纯色白底 + 轻描边（与"最热/最新"按钮同一设计语言） */
   background: rgba(255, 255, 255, 0.76);
   border-color: rgba(255, 107, 0, 0.14);
   backdrop-filter: none;
@@ -3616,7 +3589,7 @@ button[data-loading="true"] .btn__loading {
 
 .mode-dock[data-expanded="true"] .mode-dock__item.is-active {
   /*
-    选中态由 thumb 负责“强表达”：
+    选中态由 thumb 负责"强表达"：
     - 这里把按钮自己的背景/描边收起来，避免与 thumb 的玻璃边框叠加显脏
   */
   background: transparent;
@@ -3638,7 +3611,7 @@ button[data-loading="true"] .btn__loading {
   height: 20px;
 }
 
-/* 展开态文案：在 Dock 内部显示，不再使用“外飘 tooltip 气泡” */
+/* 展开态文案：在 Dock 内部显示，不再使用"外飘 tooltip 气泡" */
 .mode-dock__label {
   display: inline-block;
   overflow: hidden;
@@ -3667,7 +3640,7 @@ button[data-loading="true"] .btn__loading {
 
 @media (hover: hover) and (pointer: fine) {
   .mode-dock__item:not(.is-active):hover {
-    /* Hover：轻微提亮未选中项，不上浮太多，避免“漂” */
+    /* Hover：轻微提亮未选中项，不上浮太多，避免"漂" */
     transform: none;
     background: rgba(255, 255, 255, 0.88);
     border-color: rgba(255, 107, 0, 0.22);
@@ -3725,10 +3698,10 @@ button[data-loading="true"] .btn__loading {
   /*
     hover 金色流光底层（仅 hover 时出现）
     ------------------------------------------------------------
-    用户反馈：hover 时“色团”需要更金、更有流动感。
-    这里放一层“金色柔光云团”，只在 hover 时开启动画：
+    用户反馈：hover 时"色团"需要更金、更有流动感。
+    这里放一层"金色柔光云团"，只在 hover 时开启动画：
     - 用 transform 做位移/缩放/轻微旋转，避免重度滤镜动画带来卡顿
-    - 颜色向金黄偏移，强调“温暖金属质感”
+    - 颜色向金黄偏移，强调"温暖金属质感"
   */
   background:
     radial-gradient(120% 85% at 12% 6%, rgba(255, 244, 190, 0.62) 0%, rgba(255, 244, 190, 0) 62%),
@@ -3752,8 +3725,8 @@ button[data-loading="true"] .btn__loading {
   /*
     Hover 高光层（skill/practice 通用）
     ------------------------------------------------------------
-    用户反馈：卡片 hover 应该“整体提亮”（背景/边框/质感），而不是出现变暗/蒙灰。
-    这里用一层「白色高光 + 暖色反光」的叠加层来做“被光照到”的感觉：
+    用户反馈：卡片 hover 应该"整体提亮"（背景/边框/质感），而不是出现变暗/蒙灰。
+    这里用一层「白色高光 + 暖色反光」的叠加层来做"被光照到"的感觉：
     - 白色高光：提升亮度（不会让卡片变脏）
     - 暖色反光：保持站点 orange/yellow 的温暖调性
     - 仅控制 opacity 过渡，避免位移/滤镜动画导致性能问题
@@ -3794,7 +3767,7 @@ button[data-loading="true"] .btn__loading {
   justify-content: flex-end;
 }
 
-/* Skill 卡片内的统计信息改为“无背景文本”，避免胶囊容器包裹 */
+/* Skill 卡片内的统计信息改为"无背景文本"，避免胶囊容器包裹 */
 .skill-card .stat {
   background: transparent;
   border: none;
@@ -3802,7 +3775,7 @@ button[data-loading="true"] .btn__loading {
   box-shadow: none;
 }
 
-/* Skill 卡片内的“热度”视觉强化：强调火焰感与数值存在感，但不引入胶囊背景 */
+/* Skill 卡片内的"热度"视觉强化：强调火焰感与数值存在感，但不引入胶囊背景 */
 .skill-card .stat--heat {
   position: relative;
   color: var(--primary-strong);
@@ -3915,7 +3888,7 @@ button[data-loading="true"] .btn__loading {
   /*
     背景色抽成变量，便于：
     - hover 态同步变白（与站点卡片 hover 统一）
-    - 摘要“第 5 行渐隐”的兜底渐变使用同底色，避免出现“色块感”
+    - 摘要"第 5 行渐隐"的兜底渐变使用同底色，避免出现"色块感"
   */
   --card-surface: rgba(255, 255, 255, 0.7);
   background: var(--card-surface);
@@ -4014,9 +3987,9 @@ button[data-loading="true"] .btn__loading {
   margin: 0;
   position: relative;
   /*
-    footer 基线固定，但标题 1 行时 summary 不要“空出第二行标题”：
+    footer 基线固定，但标题 1 行时 summary 不要"空出第二行标题"：
     - summary 本身作为 flex:1 吸收富余高度（保证 footer 对齐）
-    - “最多 5 行 + 第 5 行渐隐”的约束交给内部 summary-text（避免 line-clamp 自带的 ...）
+    - "最多 5 行 + 第 5 行渐隐"的约束交给内部 summary-text（避免 line-clamp 自带的 ...）
   */
   flex: 1 1 auto;
   overflow: hidden;
@@ -4044,7 +4017,7 @@ button[data-loading="true"] .btn__loading {
   );
 }
 
-/* 渐隐兜底：不支持 mask 时，用叠加蒙层模拟“第 5 行向下淡出” */
+/* 渐隐兜底：不支持 mask 时，用叠加蒙层模拟"第 5 行向下淡出" */
 .practice-card--feed .practice-card__summary-text::after {
   content: "";
   position: absolute;
@@ -4070,7 +4043,7 @@ button[data-loading="true"] .btn__loading {
   /*
     这里不要用 space-between：
     - space-between 会让「skills 组」按内容宽度收缩，导致右侧出现大块空白
-    - 进而让 skills 的渐隐 mask 提前命中（看起来像“没超出也在渐隐”）
+    - 进而让 skills 的渐隐 mask 提前命中（看起来像"没超出也在渐隐"）
     改为 flex-start + 让右侧阅读量用 margin-left:auto 顶到最右，保证：
     - skills 占满蓝框区域（尽可能展示完整）
     - 只有真正靠近右侧（接近阅读量区域）时才开始渐隐
@@ -4088,7 +4061,7 @@ button[data-loading="true"] .btn__loading {
   align-items: center;
   min-width: 0;
   /*
-    关键：skills 组要“占满可用宽度”，否则 mask 会按“内容宽度”计算，
+    关键：skills 组要"占满可用宽度"，否则 mask 会按"内容宽度"计算，
     造成单个 skill 也出现不必要的渐隐。
   */
   flex: 1 1 auto;
@@ -4105,7 +4078,7 @@ button[data-loading="true"] .btn__loading {
   flex: 1 1 auto;
   /*
     单行截断渐隐：避免硬切边
-    - 使用固定像素的“渐隐宽度”，让渐隐只发生在最右侧靠近阅读量区域的位置
+    - 使用固定像素的"渐隐宽度"，让渐隐只发生在最右侧靠近阅读量区域的位置
     - 满足设计预期：蓝框区域不渐隐，只有接近（溢出到）右侧区域时才渐隐
   */
   mask-image: linear-gradient(to right, #000 0%, #000 calc(100% - 24px), transparent 100%);
@@ -4325,14 +4298,14 @@ button[data-loading="true"] .btn__loading {
   卡片 Hover 交互统一（SkillCard / PracticeCard）
   ------------------------------------------------------------
   目标：
-  - hover 时卡片“整体提亮”（背景更亮、边框更亮、阴影更干净）
+  - hover 时卡片"整体提亮"（背景更亮、边框更亮、阴影更干净）
   - Skill 与 Practice 的 hover 行为保持一致，减少视觉割裂
   - 仅在支持 hover 的设备启用（避免移动端 tap 后出现 sticky hover）
 */
 @media (hover: hover) and (pointer: fine) {
   .skill-card:hover,
   .practice-card:hover {
-    /* Hover 统一为“白色高亮”：不位移、不加阴影、取消暖色背景 */
+    /* Hover 统一为"白色高亮"：不位移、不加阴影、取消暖色背景 */
     transform: none;
     background: #fff;
     border-color: rgba(255, 255, 255, 0.98);
@@ -4368,7 +4341,7 @@ button[data-loading="true"] .btn__loading {
   flex-wrap: wrap;
 }
 
-/* 分页按钮轻量化：参考“细边框 + 白底”的轻设计，避免厚重渐变与阴影 */
+/* 分页按钮轻量化：参考"细边框 + 白底"的轻设计，避免厚重渐变与阴影 */
 .pagination__btn {
   min-width: 36px;
   height: 36px;
@@ -4394,7 +4367,7 @@ button[data-loading="true"] .btn__loading {
   color: var(--primary-strong);
 }
 
-/* 详情页分页按钮同步轻量化，避免“厚重按钮”割裂 */
+/* 详情页分页按钮同步轻量化，避免"厚重按钮"割裂 */
 .page-btn {
   min-width: 36px;
   height: 36px;
@@ -4444,7 +4417,7 @@ button[data-loading="true"] .btn__loading {
   margin-bottom: 16px;
 }
 
-/* 详情页“热度”数值需要更醒目：仅在面包屑区域提升字号，避免影响其它统计信息与卡片展示 */
+/* 详情页"热度"数值需要更醒目：仅在面包屑区域提升字号，避免影响其它统计信息与卡片展示 */
 .detail-crumbs .stat--heat {
   font-size: 14px;
 }
@@ -4494,13 +4467,13 @@ button[data-loading="true"] .btn__loading {
   background: rgba(255, 204, 0, 0.14);
   border-color: rgba(255, 204, 0, 0.28);
   color: rgba(124, 94, 77, 0.92);
-  /* 技能包标签内包含问号按钮：稍微加大子元素间距，减少“挤在一起”的拥挤感 */
+  /* 技能包标签内包含问号按钮：稍微加大子元素间距，减少"挤在一起"的拥挤感 */
   gap: 8px;
 }
 
 /*
   技能包问号提示（仅桌面端 hover/聚焦展示）：
-  - 需求：问号“包含在技能包 label 内”，因此问号按钮作为 tag 的子元素渲染
+  - 需求：问号"包含在技能包 label 内"，因此问号按钮作为 tag 的子元素渲染
   - 气泡位置：右上（相对问号按钮向上弹出，并向右展开），减少遮挡标题/副标题的概率
   - 动效：仅使用 transform/opacity，避免触发布局，滚动/hover 更稳定
 */
@@ -4508,13 +4481,13 @@ button[data-loading="true"] .btn__loading {
   position: relative;
   /*
     需求：问号 icon 不需要外层容器
-    - 去掉圆形背景/描边，让它更像标签的一部分，而不是一个“额外按钮”
+    - 去掉圆形背景/描边，让它更像标签的一部分，而不是一个"额外按钮"
     - 仍保留 button 语义：可聚焦，支持键盘触达（focus-visible）
   */
   border: 0;
   background: transparent;
   padding: 0;
-  color: rgba(255, 204, 0, 0.92); /* 与标签背景同一色相（更“融入”技能包标签） */
+  color: rgba(255, 204, 0, 0.92); /* 与标签背景同一色相（更"融入"技能包标签） */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4548,12 +4521,12 @@ button[data-loading="true"] .btn__loading {
   /*
     右上气泡定位：
     - 以问号 icon 的右侧为锚点（right），让气泡主体向左展开
-    - 目的：把气泡挪到“问号左上方”的空白区域（用户标注红框），避免压住右侧的其它标签（如“生产力”）
+    - 目的：把气泡挪到"问号左上方"的空白区域（用户标注红框），避免压住右侧的其它标签（如"生产力"）
   */
   right: -6px;
   bottom: calc(100% + 10px);
   /*
-    文案较短时，tooltip 不需要“强行撑宽”：
+    文案较短时，tooltip 不需要"强行撑宽"：
     - 之前的 min-width 会导致两侧留出过多空白（用户反馈红框）
     - 改为内容自适应宽度，同时保留 max-width 作为兜底，避免未来文案变长时撑爆
   */
@@ -4578,7 +4551,7 @@ button[data-loading="true"] .btn__loading {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  /* 气泡从下往上“弹出”一点点，视觉更自然 */
+  /* 气泡从下往上"弹出"一点点，视觉更自然 */
   transform: translate3d(0, 6px, 0);
   transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
   will-change: transform, opacity;
@@ -4664,7 +4637,7 @@ button[data-loading="true"] .btn__loading {
 }
 
 /* Star / Update 保持一致风格 */
-/* Star / Update 也采用“无框”样式：去容器，仅保留文字与图标 */
+/* Star / Update 也采用"无框"样式：去容器，仅保留文字与图标 */
 .detail-hero__stats .stat {
   background: transparent;
   border: none;
@@ -4880,7 +4853,7 @@ button[data-loading="true"] .btn__loading {
   gap: 10px;
 }
 
-/* 带问号的按钮：让问号贴右侧，形成“内嵌说明”布局。 */
+/* 带问号的按钮：让问号贴右侧，形成"内嵌说明"布局。 */
 .detail-panel__download-btn--with-help {
   justify-content: flex-start;
 }
@@ -4965,7 +4938,7 @@ button[data-loading="true"] .btn__loading {
 
 /* v1.4.0：详情页 npx 命令框（仅 PC）
    - 展示位置：下载区域上方（与 ZIP 下载并行，不互斥）
-   - 视觉：不额外展示“npx 下载”等标题，仅展示命令 + 复制图标
+   - 视觉：不额外展示"npx 下载"等标题，仅展示命令 + 复制图标
    - 性能：hover/pressed 仅使用 transform/opacity（GPU 友好） */
 .detail-panel__npx {
   display: flex;
@@ -4986,7 +4959,7 @@ button[data-loading="true"] .btn__loading {
   overflow: hidden;
 }
 
-/* 右侧渐隐：提示“命令可横向滚动/可复制”，与站内其他渐隐语义一致 */
+/* 右侧渐隐：提示"命令可横向滚动/可复制"，与站内其他渐隐语义一致 */
 .detail-panel__npx-scroll::after {
   content: "";
   position: absolute;
@@ -5127,7 +5100,7 @@ button[data-loading="true"] .btn__loading {
   /*
     Detail 页内容区需要与 Hero 的左右 gutter 对齐：
     - Hero 使用 `padding: ... var(--page-gutter) ...`（避免内容贴边）
-    - 如果详情页主体不加左右 padding，实践卡片网格会显得“过宽/不对齐”（用户验收反馈）
+    - 如果详情页主体不加左右 padding，实践卡片网格会显得"过宽/不对齐"（用户验收反馈）
     - 只改 detail 页，避免影响首页等其它页面的排版
   */
   padding: 56px var(--page-gutter) 24px;
@@ -5206,7 +5179,7 @@ button[data-loading="true"] .btn__loading {
   transform: translateZ(0);
 }
 
-/* 骨架模式：弱化视觉与动效，避免把“占位”误认成可点击入口 */
+/* 骨架模式：弱化视觉与动效，避免把"占位"误认成可点击入口 */
 .practice-cta--skeleton {
   min-height: 78px;
   background: rgba(255, 255, 255, 0.7);
@@ -5222,7 +5195,7 @@ button[data-loading="true"] .btn__loading {
   display: none;
 }
 
-/* 整条可点击时的交互反馈：轻微抬升 + 投影增强，强调“可行动”。 */
+/* 整条可点击时的交互反馈：轻微抬升 + 投影增强，强调"可行动"。 */
 .practice-cta--interactive {
   cursor: pointer;
   text-align: left;
@@ -5268,11 +5241,11 @@ button[data-loading="true"] .btn__loading {
   will-change: transform, opacity;
 }
 
-/* 光晕扫过层：用于“扫光”入场与 hover 提示，增强动效记忆点。 */
+/* 光晕扫过层：用于"扫光"入场与 hover 提示，增强动效记忆点。 */
 .practice-cta__sweep {
   position: absolute;
   inset: -40% -30%;
-  /* 收窄高光带并强化亮度，让扫光更“强”且更有质感 */
+  /* 收窄高光带并强化亮度，让扫光更"强"且更有质感 */
   background: linear-gradient(
     120deg,
     transparent 0%,
@@ -5301,7 +5274,7 @@ button[data-loading="true"] .btn__loading {
   flex: 1 1 auto;
   min-width: 0;
   z-index: 1;
-  /* 文案分层入场，营造“从内容到行动”的阅读节奏 */
+  /* 文案分层入场，营造"从内容到行动"的阅读节奏 */
   animation: practiceCtaRise 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 90ms;
   will-change: transform, opacity;
@@ -5335,7 +5308,7 @@ button[data-loading="true"] .btn__loading {
   line-height: 1.4;
 }
 
-/* CTA 视觉胶囊：承载“行动感”，但真正点击由整条引导条承接。 */
+/* CTA 视觉胶囊：承载"行动感"，但真正点击由整条引导条承接。 */
 .practice-cta__cta {
   position: relative;
   display: inline-flex;
@@ -5350,13 +5323,13 @@ button[data-loading="true"] .btn__loading {
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.2px;
-  /* 空心状态投影更轻：避免再加“实心”错觉 */
+  /* 空心状态投影更轻：避免再加"实心"错觉 */
   box-shadow: 0 8px 16px -18px rgba(255, 107, 0, 0.25);
   transition: box-shadow 180ms ease, filter 180ms ease, border-color 180ms ease, color 180ms ease;
   overflow: hidden;
   z-index: 1;
   flex-shrink: 0;
-  /* CTA 稍后入场，形成“先理解，再行动”的节奏 */
+  /* CTA 稍后入场，形成"先理解，再行动"的节奏 */
   animation: practiceCtaRise 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 160ms;
   will-change: transform, opacity;
@@ -5369,7 +5342,7 @@ button[data-loading="true"] .btn__loading {
 }
 
 .practice-cta__cta::after {
-  /* 空心风格不使用内部扫光，避免出现“有底色”的错觉 */
+  /* 空心风格不使用内部扫光，避免出现"有底色"的错觉 */
   content: none;
 }
 
@@ -5679,7 +5652,7 @@ body.is-detail::after {
 /*
   SKILL.md 背景更清淡
   ------------------------------------------------------------
-  目标：保持“白色为主”的阅读感，金色只做点缀。
+  目标：保持"白色为主"的阅读感，金色只做点缀。
   - 提高底色白度
   - 降低暖色光晕的强度
 */
@@ -5790,8 +5763,8 @@ body.is-detail::after {
   Skill 详情页（桌面端）实践列表：无限滚动辅助样式
   ------------------------------------------------------------------
   需求：
-  - 详情页下方实践卡片从“分页”改为“触底加载”
-  - 需要一个“哨兵元素”给 IntersectionObserver/scroll fallback 使用
+  - 详情页下方实践卡片从"分页"改为"触底加载"
+  - 需要一个"哨兵元素"给 IntersectionObserver/scroll fallback 使用
   - 需要底部状态区展示：加载中 / 已到底 / 重试 / 手动加载更多（兜底）
 */
 .practice-sentinel {
@@ -5853,7 +5826,7 @@ body.is-detail::after {
   background-size: 160% 160%, 180% 180%;
   background-position: 0% 0%, 50% 100%;
   filter: saturate(1.12);
-  /* 默认不显色：与首页 Skill 卡片的“白底玻璃感”对齐 */
+  /* 默认不显色：与首页 Skill 卡片的"白底玻璃感"对齐 */
   opacity: 0;
   transition: opacity 520ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
@@ -5870,8 +5843,8 @@ body.is-detail::after {
   /*
     hover 高光层（与 SkillCard 保持一致）
     ------------------------------------------------------------
-    - 让 PracticeCard hover 时同样呈现“提亮”的玻璃反光
-    - 不依赖暗色描边/阴影来制造对比，避免出现“hover 反而变暗”的观感
+    - 让 PracticeCard hover 时同样呈现"提亮"的玻璃反光
+    - 不依赖暗色描边/阴影来制造对比，避免出现"hover 反而变暗"的观感
   */
   background:
     radial-gradient(120% 85% at 18% 8%, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0) 62%),
@@ -6106,7 +6079,7 @@ body.is-detail::after {
 /* ---------- Footer ---------- */
 .footer {
   /*
-    页脚整体区域：做成全宽“底部版心带”，而不是卡片。
+    页脚整体区域：做成全宽"底部版心带"，而不是卡片。
     通过浅色背景 + 顶部分隔线营造典型 Footer 的收尾感。
   */
   width: 100%;
@@ -6124,7 +6097,7 @@ body.is-detail::after {
 }
 
 .footer::before {
-  /* 页脚顶部细分隔线，避免“卡片边框感”，只做轻量分区 */
+  /* 页脚顶部细分隔线，避免"卡片边框感"，只做轻量分区 */
   content: "";
   position: absolute;
   top: 0;
@@ -6421,7 +6394,7 @@ body.is-detail::after {
   z-index: 1;
   margin: 28px 0 0;
   padding-top: 20px;
-  /* 分隔线使用柔和渐变替代边框线，强调“尾部信息区” */
+  /* 分隔线使用柔和渐变替代边框线，强调"尾部信息区" */
   border-top: none;
   background-image: linear-gradient(
     90deg,
@@ -6598,8 +6571,8 @@ body.is-detail::after {
     EmptyState（空状态提示卡）
     ------------------------------------------------------------
     参考 skillhub 的空态设计（图标 + 标题 + 描述 + 行动）：
-    - 去掉“虚线框/白底块”的突兀感，改为更轻盈的玻璃态
-    - 在列表网格中自动横跨所有列，避免只占一格导致“像坏掉的卡片”
+    - 去掉"虚线框/白底块"的突兀感，改为更轻盈的玻璃态
+    - 在列表网格中自动横跨所有列，避免只占一格导致"像坏掉的卡片"
     - 背景叠一层暖色渐变雾化，和页面极光氛围自然融合
   */
   grid-column: 1 / -1;
@@ -6632,7 +6605,7 @@ body.is-detail::after {
 }
 
 .empty-state::before {
-  /* 暖色“雾化底光”：仅用 blur + opacity，避免重排；不做动画，保证性能稳定 */
+  /* 暖色"雾化底光"：仅用 blur + opacity，避免重排；不做动画，保证性能稳定 */
   content: "";
   position: absolute;
   inset: -40%;
@@ -6829,124 +6802,93 @@ body.is-detail::after {
    v1.5.7 周统计条 + v1.5.6 历史样式
    ============================================ */
 
-/* WeeklyStatsBar（桌面） */
+/*
+  WeeklyStatsBar（桌面）
+  ------------------------------------------------------------
+  设计原则：融入页面，像一行编辑推荐语，不是促销 Banner。
+  用站点暖色体系（--bg / --surface / --primary），不引入冷色。
+*/
 .weekly-stats-bar {
   width: min(100%, var(--content-width));
-  margin: 26px auto 0;
+  margin: 20px auto 0;
   padding: 0 var(--page-gutter);
 }
 
 .weekly-stats-bar__inner {
-  position: relative;
-  overflow: hidden;
-  min-height: 62px;
-  border-radius: 18px;
-  padding: 15px 22px 15px 20px;
+  min-height: 44px;
+  border-radius: 12px;
+  padding: 10px 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   text-align: center;
-  /*
-    渐变整体加深 + 提升饱和度：
-    - 提高在白底页面中的存在感
-    - 暖橙 + 冷紫蓝的混合，既呼应主色，也保持层次
-  */
-  background:
-    radial-gradient(138% 152% at 0% 0%, rgba(255, 180, 116, 0.42) 0%, rgba(255, 180, 116, 0) 63%),
-    radial-gradient(128% 148% at 100% 100%, rgba(124, 150, 255, 0.34) 0%, rgba(124, 150, 255, 0) 70%),
-    linear-gradient(130deg, rgba(255, 241, 229, 0.97) 0%, rgba(255, 233, 244, 0.95) 48%, rgba(229, 241, 255, 0.95) 100%);
-  border: 1px solid rgba(255, 107, 0, 0.24);
-  color: rgba(63, 53, 86, 0.94);
-  box-shadow: 0 24px 42px -32px rgba(106, 84, 156, 0.34), 0 9px 20px -16px rgba(255, 107, 0, 0.3);
+  /* 半透明白底 + 微暖边框，和页面 --bg: #fff1e6 融合 */
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
 }
 
-/*
-  左侧视觉锚点：
-  - 通过窄色条明确“信息入口”
-  - 宽度固定，不参与布局变化，保证稳定渲染
-*/
-.weekly-stats-bar__inner::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 5px;
-  background: linear-gradient(180deg, rgba(255, 162, 71, 0.98), rgba(255, 107, 0, 1));
-}
-
+/* 可点击的"本周上新"按钮 */
 .weekly-stats-bar__new-link {
   border: none;
   background: transparent;
-  padding: 6px 10px 6px 6px;
+  padding: 0;
   margin: 0;
   font: inherit;
-  color: rgba(73, 42, 22, 0.98);
+  color: var(--text);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 900;
-  letter-spacing: 0.16px;
-  line-height: 1;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
   cursor: pointer;
-  transform: translate3d(0, 0, 0);
-  transition: color 220ms ease, transform 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
+  transition: color 180ms ease;
 }
 
 .weekly-stats-bar__new-link:focus-visible {
-  outline: 2px solid rgba(255, 107, 0, 0.52);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
+/* Sparkles icon：小巧，主色点缀 */
 .weekly-stats-bar__icon {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
-  color: #ff6b00;
+  color: var(--primary);
 }
 
-.weekly-stats-bar__new-prefix,
-.weekly-stats-bar__new-suffix {
-  font-size: 16px;
-  font-weight: 880;
-  color: rgba(69, 47, 31, 0.95);
-}
-
-.weekly-stats-bar__new-count {
-  color: #ff6b00;
-  font-size: 26px;
-  font-weight: 950;
-  line-height: 1;
-  letter-spacing: -0.2px;
+/* 数字用主色轻微强调，不夸张放大 */
+.weekly-stats-bar__new-link strong {
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 900;
 }
 
 .weekly-stats-bar__text {
-  font-size: 16px;
-  font-weight: 880;
-  color: rgba(67, 55, 97, 0.94);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
 }
 
 .weekly-stats-bar__meta {
-  font-size: 15px;
-  font-weight: 760;
-  color: rgba(77, 84, 122, 0.9);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
 }
 
 .weekly-stats-bar__divider {
-  color: rgba(97, 92, 130, 0.48);
-  font-weight: 760;
+  color: var(--muted-2);
+  font-weight: 700;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .weekly-stats-bar__new-link:hover {
-    color: rgba(255, 107, 0, 1);
-    background: rgba(255, 255, 255, 0.52);
-    box-shadow: 0 10px 18px -14px rgba(255, 107, 0, 0.56);
-    transform: translate3d(0, -2px, 0);
+    color: var(--primary);
   }
 }
 

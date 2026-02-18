@@ -495,50 +495,33 @@
     background: rgba(255, 107, 0, 0.72);
   }
 
-  /* WeeklyStatsBar（移动端） */
+  /* WeeklyStatsBar（移动端）：缩小间距和字号 */
   .weekly-stats-bar.weekly-stats-bar--mobile {
     width: 100%;
-    margin: 4px 0 12px;
+    margin: 4px 0 10px;
     padding: 0;
   }
 
   .weekly-stats-bar--mobile .weekly-stats-bar__inner {
-    min-height: 56px;
-    border-radius: 16px;
-    padding: 12px 14px 12px 12px;
-    gap: 8px;
-  }
-
-  /*
-    移动端左侧锚点略收窄：
-    - 保持视觉识别
-    - 避免在窄屏里抢占过多内容宽度
-  */
-  .weekly-stats-bar--mobile .weekly-stats-bar__inner::before {
-    width: 4px;
+    min-height: 38px;
+    border-radius: 10px;
+    padding: 8px 14px;
+    gap: 6px;
   }
 
   .weekly-stats-bar--mobile .weekly-stats-bar__new-link,
-  .weekly-stats-bar--mobile .weekly-stats-bar__text {
-    font-size: 14px;
-  }
-
+  .weekly-stats-bar--mobile .weekly-stats-bar__text,
   .weekly-stats-bar--mobile .weekly-stats-bar__meta {
     font-size: 13px;
   }
 
-  .weekly-stats-bar--mobile .weekly-stats-bar__new-prefix,
-  .weekly-stats-bar--mobile .weekly-stats-bar__new-suffix {
+  .weekly-stats-bar--mobile .weekly-stats-bar__new-link strong {
     font-size: 14px;
   }
 
-  .weekly-stats-bar--mobile .weekly-stats-bar__new-count {
-    font-size: 21px;
-  }
-
   .weekly-stats-bar--mobile .weekly-stats-bar__icon {
-    width: 16px;
-    height: 16px;
+    width: 13px;
+    height: 13px;
   }
 
   /* NEW 角标（移动端尺寸） */
