@@ -84,42 +84,66 @@ async function checkPracticeExistsByTitle(title) {
 
 // ============ 掘金搜索 API ============
 async function searchJuejin(keyword, limit = 10) {
-  const res = await fetch("https://api.juejin.cn/search_api/v1/search", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: JUEJIN_COOKIE,
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-    },
-    body: JSON.stringify({
-      search_type: 2, // 文章
-      key_word: keyword,
-      sort_type: 0, // 综合排序
-      cursor: "0",
-      limit,
-    }),
+  // 用 Chrome 渲染网页搜索（比 API 召回率高很多，能搜到老文章）
+  const puppeteer = require(path.join(ROOT_DIR, "node_modules/puppeteer-core"));
+  const browser = await puppeteer.launch({
+    executablePath: "/usr/bin/google-chrome",
+    headless: "new",
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--single-process", "--disable-extensions"],
   });
 
-  if (!res.ok) throw new Error(`掘金搜索 API 失败: ${res.status}`);
-  const data = await res.json();
-  if (data.err_no !== 0) throw new Error(`掘金搜索错误: ${data.err_msg}`);
+  try {
+    const page = await browser.newPage();
+    await page.setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    );
+    if (JUEJIN_COOKIE) {
+      const cookies = JUEJIN_COOKIE.split(";").map((c) => {
+        const [name, ...rest] = c.trim().split("=");
+        return { name: name.trim(), value: rest.join("=").trim(), domain: ".juejin.cn" };
+      }).filter((c) => c.name && c.value);
+      await page.setCookie(...cookies);
+    }
 
-  return (data.data || []).map((item) => {
-    const rm = item.result_model || {};
-    const ai = rm.article_info || {};
-    const author = rm.author_user_info || {};
-    return {
-      article_id: ai.article_id,
-      title: ai.title || "",
-      brief: ai.brief_content || "",
-      author: author.user_name || "",
-      view_count: ai.view_count || 0,
-      digg_count: ai.digg_count || 0,
-      comment_count: ai.comment_count || 0,
-      ctime: ai.ctime || "",
-      url: `https://juejin.cn/post/${ai.article_id}`,
-    };
-  });
+    const searchUrl = `https://juejin.cn/search?query=${encodeURIComponent(keyword)}&type=0`;
+    await page.goto(searchUrl, { waitUntil: "networkidle2", timeout: 30000 });
+    await new Promise((r) => setTimeout(r, 2000));
+
+    // 提取搜索结果中的文章链接和标题
+    const results = await page.evaluate(() => {
+      const links = document.querySelectorAll('a[href*="/post/"]');
+      const seen = new Set();
+      const out = [];
+      links.forEach((el) => {
+        const href = el.href || "";
+        const match = href.match(/\/post\/(\d+)/);
+        if (!match) return;
+        const articleId = match[1];
+        if (seen.has(articleId)) return;
+        seen.add(articleId);
+        // 尝试获取标题
+        const titleEl = el.querySelector(".title") || el.querySelector("h2") || el;
+        const title = (titleEl.innerText || "").trim().split("\n")[0].trim();
+        if (!title || title.length < 5) return;
+        out.push({ article_id: articleId, title });
+      });
+      return out;
+    });
+
+    return results.slice(0, limit).map((r) => ({
+      article_id: r.article_id,
+      title: r.title,
+      brief: "",
+      author: "",
+      view_count: 0,
+      digg_count: 0,
+      comment_count: 0,
+      ctime: "",
+      url: `https://juejin.cn/post/${r.article_id}`,
+    }));
+  } finally {
+    await browser.close();
+  }
 }
 
 // ============ Chrome 渲染获取全文 ============
@@ -309,18 +333,19 @@ function matchSkills(extractedNames, dbSkills) {
 
 // ============ 生成搜索关键词 ============
 function generateSearchKeywords(skills) {
-  // 直接用 Skill 英文名搜索，不加后缀（掘金搜索会把中文后缀当主关键词）
+  // 用 Skill 名称生成自然语言搜索词（网页搜索比 API 更适合自然语言）
   const keywords = new Set();
+  const SKIP_KEYWORDS = ["pdf", "xlsx", "rag", "ppt", "milvus", "vue", "react", "supabase", "wordpress", "three.js", "obsidian", "excalidraw", "seo"];
   for (const skill of skills) {
     const name = skill.name
       .replace(/-best-practices$/i, "")
       .replace(/-skill$/i, "")
       .replace(/-skills$/i, "")
       .replace(/-pro$/i, "");
-    // 跳过太短、太通用、或纯技术词（搜出来的都是技术教程而非 Agent Skill 实践）
-    const SKIP_KEYWORDS = ["pdf", "xlsx", "rag", "ppt", "milvus", "vue", "react", "supabase", "wordpress", "three.js", "obsidian", "excalidraw", "seo"];
     if (name.length >= 3 && !SKIP_KEYWORDS.includes(name.toLowerCase())) {
-      keywords.add(name);
+      // 把连字符替换成空格，更适合网页搜索
+      const searchName = name.replace(/-/g, " ");
+      keywords.add(searchName + " skill");
     }
   }
   return [...keywords];
