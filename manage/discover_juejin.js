@@ -81,19 +81,35 @@ async function checkPracticeExistsByTitle(title) {
   return Array.isArray(data) && data.length > 0;
 }
 
-// ============ 掘金搜索 API ============
-async function searchJuejin(keyword, limit = 10, retries = 2) {
-  // 用 Chrome 渲染网页搜索（比 API 召回率高很多，能搜到老文章）
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const puppeteer = require(path.join(ROOT_DIR, "node_modules/puppeteer-core"));
-    const browser = await puppeteer.launch({
-      executablePath: "/usr/bin/google-chrome",
-      headless: "new",
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--single-process", "--disable-extensions"],
-    });
+// ============ 全局 Browser 实例（复用，避免 OOM）============
+const puppeteer = require(path.join(ROOT_DIR, "node_modules/puppeteer-core"));
+let _browser = null;
 
+async function getBrowser() {
+  if (_browser && _browser.isConnected()) return _browser;
+  _browser = await puppeteer.launch({
+    executablePath: "/usr/bin/google-chrome",
+    headless: "new",
+    args: [
+      "--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu",
+      "--disable-dev-shm-usage", "--single-process", "--disable-extensions",
+      "--js-flags=--max-old-space-size=256",
+    ],
+  });
+  return _browser;
+}
+
+async function closeBrowser() {
+  if (_browser) { try { await _browser.close(); } catch {} _browser = null; }
+}
+
+// ============ 掘金搜索 ============
+async function searchJuejin(keyword, limit = 10, retries = 2) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    let page = null;
     try {
-      const page = await browser.newPage();
+      const browser = await getBrowser();
+      page = await browser.newPage();
       await page.setUserAgent(
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
       );
@@ -102,64 +118,59 @@ async function searchJuejin(keyword, limit = 10, retries = 2) {
       await page.goto(searchUrl, { waitUntil: "networkidle2", timeout: 30000 });
       await new Promise((r) => setTimeout(r, 2000));
 
-    // 提取搜索结果中的文章链接和标题
-    const results = await page.evaluate(() => {
-      const links = document.querySelectorAll('a[href*="/post/"]');
-      const seen = new Set();
-      const out = [];
-      links.forEach((el) => {
-        const href = el.href || "";
-        const match = href.match(/\/post\/(\d+)/);
-        if (!match) return;
-        const articleId = match[1];
-        if (seen.has(articleId)) return;
-        seen.add(articleId);
-        // 尝试获取标题
-        const titleEl = el.querySelector(".title") || el.querySelector("h2") || el;
-        const title = (titleEl.innerText || "").trim().split("\n")[0].trim();
-        if (!title || title.length < 5) return;
-        out.push({ article_id: articleId, title });
+      const results = await page.evaluate(() => {
+        const links = document.querySelectorAll('a[href*="/post/"]');
+        const seen = new Set();
+        const out = [];
+        links.forEach((el) => {
+          const href = el.href || "";
+          const match = href.match(/\/post\/(\d+)/);
+          if (!match) return;
+          const articleId = match[1];
+          if (seen.has(articleId)) return;
+          seen.add(articleId);
+          const titleEl = el.querySelector(".title") || el.querySelector("h2") || el;
+          const title = (titleEl.innerText || "").trim().split("\n")[0].trim();
+          if (!title || title.length < 5) return;
+          out.push({ article_id: articleId, title });
+        });
+        return out;
       });
-      return out;
-    });
 
-    return results.slice(0, limit).map((r) => ({
-      article_id: r.article_id,
-      title: r.title,
-      brief: "",
-      author: "",
-      view_count: 0,
-      digg_count: 0,
-      comment_count: 0,
-      ctime: "",
-      url: `https://juejin.cn/post/${r.article_id}`,
-    }));
+      await page.close();
+      return results.slice(0, limit).map((r) => ({
+        article_id: r.article_id,
+        title: r.title,
+        brief: "",
+        author: "",
+        view_count: 0,
+        digg_count: 0,
+        comment_count: 0,
+        ctime: "",
+        url: `https://juejin.cn/post/${r.article_id}`,
+      }));
     } catch (err) {
-      await browser.close();
+      if (page) try { await page.close(); } catch {}
       if (attempt < retries) {
         console.log(`   ⚠️ 搜索 "${keyword}" 超时，重试 (${attempt + 1}/${retries})...`);
+        // 超时可能是 browser 挂了，重启
+        await closeBrowser();
         await new Promise((r) => setTimeout(r, 2000));
         continue;
       }
       throw err;
     }
-  } // end for retries
+  }
   return [];
 }
 
 // ============ Chrome 渲染获取全文 ============
 
 async function fetchArticleContent(url) {
-  // 每次新建 browser，用完即关，避免长时间运行 OOM
-  const puppeteer = require(path.join(ROOT_DIR, "node_modules/puppeteer-core"));
-  const browser = await puppeteer.launch({
-    executablePath: "/usr/bin/google-chrome",
-    headless: "new",
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--single-process", "--disable-extensions"],
-  });
-
+  let page = null;
   try {
-    const page = await browser.newPage();
+    const browser = await getBrowser();
+    page = await browser.newPage();
     await page.setUserAgent(
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     );
@@ -182,9 +193,11 @@ async function fetchArticleContent(url) {
       return articleEl?.innerText?.trim() || "";
     });
 
+    await page.close();
     return result;
-  } finally {
-    await browser.close();
+  } catch (err) {
+    if (page) try { await page.close(); } catch {}
+    throw err;
   }
 }
 
@@ -387,7 +400,16 @@ async function main() {
     console.log("\n🔍 搜索掘金文章...");
     const allCandidates = new Map(); // article_id -> article info，去重
 
-    for (const kw of keywords) {
+    for (let kwIdx = 0; kwIdx < keywords.length; kwIdx++) {
+      const kw = keywords[kwIdx];
+
+      // 每 10 个关键词重启 Browser 释放内存
+      if (kwIdx > 0 && kwIdx % 10 === 0) {
+        await closeBrowser();
+        console.log(`   🔄 重启 Browser（已搜索 ${kwIdx} 个关键词，释放内存）`);
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+
       try {
         const results = await searchJuejin(kw, perKeywordLimit);
         for (const r of results) {
@@ -440,6 +462,13 @@ async function main() {
     for (let i = 0; i < candidates.length; i++) {
       const article = candidates[i];
       const progress = `[${i + 1}/${candidates.length}]`;
+
+      // 每 10 篇重启 Browser 释放内存
+      if (i > 0 && i % 10 === 0) {
+        await closeBrowser();
+        console.log(`   🔄 重启 Browser（已处理 ${i} 篇，释放内存）`);
+        await new Promise((r) => setTimeout(r, 1000));
+      }
 
       try {
         // 快速预筛：用 title + brief 检查是否可能包含已有 Skill 关键词
@@ -602,9 +631,11 @@ async function main() {
     }
   } catch (err) {
     console.error(`\n❌ 失败: ${err.message}`);
-    
+    await closeBrowser();
     process.exit(1);
   }
+
+  await closeBrowser();
 }
 
 main();
