@@ -174,13 +174,19 @@ function buildJudgePrompt(skillNames) {
 **重要约束：只识别以下 Skill 列表中的工具，不在列表中的工具一律忽略**：
 ${skillList}
 
+**关键区分：Agent Skill 实践 vs 技术本身的应用**
+- Agent Skill 是指在 AI Agent（如 Claude Code、Cursor 等）中以"Skill/插件/技能包"形式使用的工具
+- 如果文章只是在用某个技术本身（如直接用 RAG 框架搭系统、直接用 Milvus 做向量检索、直接用 Supabase 建数据库、直接用 Vue/React 写前端），这不算 Agent Skill 实践，即使技术名称出现在上述列表中
+- 只有当文章明确是在 AI Agent 环境中调用/使用了上述 Skill（如通过 Claude Code 的 Skill 机制、通过 Agent 的工具调用等），才算实践文章
+
 **好文章（收录）**：
-- 用上述列表中的某个 Skill 做了一个项目/解决了一个问题
+- 在 AI Agent 中使用上述列表中的某个 Skill 做了一个项目/解决了一个问题
 - 有操作步骤、代码、截图、踩坑记录
 - 最终有可见的产出
 
 **差文章（不收录）**：
 - 文章中没有使用上述列表中的任何 Skill
+- 只是用某个技术本身做开发（如用 RAG 搭系统、用 Milvus 做检索），而非通过 Agent Skill 机制调用
 - 单纯介绍/推荐工具，无具体落地场景
 - 工具对比评测，但没有实际项目产出
 - 纯概念科普、新闻资讯
@@ -311,8 +317,9 @@ function generateSearchKeywords(skills) {
       .replace(/-skill$/i, "")
       .replace(/-skills$/i, "")
       .replace(/-pro$/i, "");
-    // 跳过太短或太通用的关键词
-    if (name.length >= 3 && !["pdf", "xlsx", "rag", "ppt"].includes(name.toLowerCase())) {
+    // 跳过太短、太通用、或纯技术词（搜出来的都是技术教程而非 Agent Skill 实践）
+    const SKIP_KEYWORDS = ["pdf", "xlsx", "rag", "ppt", "milvus", "vue", "react", "supabase", "wordpress", "three.js", "obsidian", "excalidraw", "seo"];
+    if (name.length >= 3 && !SKIP_KEYWORDS.includes(name.toLowerCase())) {
       keywords.add(name);
     }
   }
