@@ -434,6 +434,7 @@ async function main() {
 
         if (judgment.is_practice && judgment.confidence >= 0.6) {
           console.log(`✅ 实践文章 (${(judgment.confidence * 100).toFixed(0)}%) — ${judgment.scene || ""}`);
+          console.log(`   → ${article.url}`);
           passed.push(article);
         } else {
           console.log(`❌ 非实践 — ${judgment.reason || ""}`);
