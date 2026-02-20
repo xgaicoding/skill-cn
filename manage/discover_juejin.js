@@ -429,9 +429,14 @@ async function main() {
     const passed = [];
     const failed = [];
 
-    // 预计算 skill 名单（只算一次）
+    // 预计算 skill 关键词（拆成子词，任一子词命中即可）
     const skillNames = dbSkills.map((s) => s.name);
-    const skillCores = dbSkills.map((s) => s.name.toLowerCase().replace(/-best-practices|-skill|-skills|-pro/gi, "").replace(/[-_]/g, ""));
+    const skillSubwords = dbSkills.flatMap((s) => {
+      const parts = s.name.toLowerCase().split(/[-_]/);
+      // 返回长度>=3的子词（去掉太短的如 "ui"）
+      return parts.filter((p) => p.length >= 3);
+    });
+    const skillSubwordsUnique = [...new Set(skillSubwords)];
 
     for (let i = 0; i < candidates.length; i++) {
       const article = candidates[i];
@@ -440,7 +445,7 @@ async function main() {
       try {
         // 快速预筛：用 title + brief 检查是否可能包含已有 Skill 关键词
         const textToCheck = (article.title + " " + article.brief).toLowerCase();
-        const maybeRelevant = skillCores.some((core) => core.length >= 3 && textToCheck.includes(core));
+        const maybeRelevant = skillSubwordsUnique.some((word) => word.length >= 3 && textToCheck.includes(word));
         if (!maybeRelevant) {
           // 标题和摘要里完全没有任何 Skill 关键词，大概率不相关，跳过 Chrome 渲染
           process.stdout.write(`${progress} ${article.title.slice(0, 50)}... `);
