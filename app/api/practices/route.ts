@@ -59,6 +59,13 @@ export async function GET(request: Request) {
     const tag = searchParams.get("tag");
     const q = searchParams.get("q");
     const sort = searchParams.get("sort") || "heat";
+    /**
+     * 时间窗口筛选（v1.5.7 KPI 导航）：
+     * - 仅支持 window=7d（近 7 天）
+     * - 其它值统一忽略，避免出现不可预期的“半支持”状态
+     */
+    const windowFilter = searchParams.get("window");
+    const resolvedWindow = windowFilter === "7d" ? "7d" : null;
 
     const supabase = getSupabaseServerClient();
 
@@ -118,6 +125,12 @@ export async function GET(request: Request) {
     // 分类筛选：skill_ids 与该分类下的 skill.id 有交集即可命中。
     if (tagSkillIds) {
       query = query.overlaps("skill_ids", tagSkillIds);
+    }
+
+    // KPI「本周上新」入口：按 updated_at 限制到最近 7 天。
+    if (resolvedWindow === "7d") {
+      const sevenDaysAgoIso = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      query = query.gte("updated_at", sevenDaysAgoIso);
     }
 
     // 排序规则（PRD）：
@@ -232,6 +245,9 @@ export async function GET(request: Request) {
       size,
       total,
       totalPages,
+      meta: {
+        window: resolvedWindow,
+      },
     });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Unknown error" }, { status: 500 });

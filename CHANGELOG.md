@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.7] - 2026-02-20
+- 首页首屏（仅 PC）重构为「更新看板」：左侧保留原品牌区并新增 4 项 KPI（本周上新、案例数量、精选 Skill、下载总量），右侧合并为「每周精选/热门榜单」双 Tab。
+- 榜单交互升级：统一卡片样式、每页 3 条轮播、Tab 下划线高亮、热门榜单移除排名展示；并补齐不满 3 条场景的稳定布局。
+- 首页导流增强：KPI 卡片支持点击跳转并联动筛选（`mode=practices`、`window=7d` 等），点击后自动滚动到 `#skill-list`。
+- 数据能力补齐：新增 `/api/home/metrics` 与 `/api/practices/hot`，并为 `/api/practices` 增加 `window=7d` 口径，支撑首屏真实数据展示。
+- 体验细节优化：首屏 loading 优化（骨架/扫光与定高一致性）、数字千分位展示与自增动画、Hover 统一为轻量高亮反馈。
+- SEO 并行优化：首页看板首屏内容改为 SSR 可抓取，完善首页/详情 metadata（含 OG/Twitter）、补充全站与详情结构化数据（Organization/WebSite/SoftwareApplication/BreadcrumbList），并增强 `robots.txt`（Host）与 `sitemap.xml`（首页 `lastModified`）。
+
 ## [1.5.6] - 2026-02-13
 - 实践模式可发现性优化：首页引导 Banner、埋点追踪、数据验证
 

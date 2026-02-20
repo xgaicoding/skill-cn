@@ -23,11 +23,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .select("id, updated_at")
     .eq("is_listed", true);
 
+  /**
+   * 首页 lastModified 的估算口径：
+   * - 取 practices 最新更新时间（若查询失败则回退到当前时间）
+   * - 这样搜索引擎能更快感知“首页内容有更新”
+   */
+  const { data: latestPracticeRows } = await supabase
+    .from("practices")
+    .select("updated_at")
+    .eq("is_listed", true)
+    .order("updated_at", { ascending: false })
+    .limit(1);
+  const homepageLastModified = latestPracticeRows?.[0]?.updated_at
+    ? new Date(latestPracticeRows[0].updated_at)
+    : new Date();
+
   const entries: MetadataRoute.Sitemap = [
     {
       url: new URL("/", siteUrl).toString(),
       changeFrequency: "daily",
       priority: 1.0,
+      lastModified: homepageLastModified,
     },
   ];
 
