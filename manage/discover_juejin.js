@@ -123,34 +123,22 @@ async function searchJuejin(keyword, limit = 10) {
 }
 
 // ============ Chrome 渲染获取全文 ============
-let _browser = null;
-
-async function getBrowser() {
-  if (_browser) return _browser;
-  const puppeteer = require(path.join(ROOT_DIR, "node_modules/puppeteer-core"));
-  _browser = await puppeteer.launch({
-    executablePath: "/usr/bin/google-chrome",
-    headless: "new",
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
-  });
-  return _browser;
-}
-
-async function closeBrowser() {
-  if (_browser) {
-    await _browser.close();
-    _browser = null;
-  }
-}
 
 async function fetchArticleContent(url) {
-  const browser = await getBrowser();
-  const page = await browser.newPage();
-  await page.setUserAgent(
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-  );
+  // 每次新建 browser，用完即关，避免长时间运行 OOM
+  const puppeteer = require(path.join(ROOT_DIR, "node_modules/puppeteer-core"));
+  const browser = await puppeteer.launch({
+    executablePath: "/usr/bin/google-chrome",
+    headless: "new",
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--single-process", "--disable-extensions"],
+  });
 
   try {
+    const page = await browser.newPage();
+    await page.setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    );
+
     await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
     await page
       .waitForSelector("article, .article-content, #article-root", { timeout: 10000 })
@@ -171,7 +159,7 @@ async function fetchArticleContent(url) {
 
     return result;
   } finally {
-    await page.close();
+    await browser.close();
   }
 }
 
@@ -400,7 +388,7 @@ async function main() {
 
     if (candidates.length === 0) {
       console.log("\n✅ 没有新的候选文章，全部已收录或不符合条件。");
-      await closeBrowser();
+      
       process.exit(0);
     }
 
@@ -409,11 +397,26 @@ async function main() {
     const passed = [];
     const failed = [];
 
+    // 预计算 skill 名单（只算一次）
+    const skillNames = dbSkills.map((s) => s.name);
+    const skillCores = dbSkills.map((s) => s.name.toLowerCase().replace(/-best-practices|-skill|-skills|-pro/gi, "").replace(/[-_]/g, ""));
+
     for (let i = 0; i < candidates.length; i++) {
       const article = candidates[i];
       const progress = `[${i + 1}/${candidates.length}]`;
 
       try {
+        // 快速预筛：用 title + brief 检查是否可能包含已有 Skill 关键词
+        const textToCheck = (article.title + " " + article.brief).toLowerCase();
+        const maybeRelevant = skillCores.some((core) => core.length >= 3 && textToCheck.includes(core));
+        if (!maybeRelevant) {
+          // 标题和摘要里完全没有任何 Skill 关键词，大概率不相关，跳过 Chrome 渲染
+          process.stdout.write(`${progress} ${article.title.slice(0, 50)}... `);
+          console.log("⏭️ 预筛跳过（标题/摘要无 Skill 关键词）");
+          failed.push({ ...article, reason: "预筛：无 Skill 关键词" });
+          continue;
+        }
+
         process.stdout.write(`${progress} ${article.title.slice(0, 50)}... `);
 
         // Chrome 抓全文
@@ -425,7 +428,6 @@ async function main() {
         }
 
         // AI 判断（传入 skills 表名单，只识别已有 Skill）
-        const skillNames = dbSkills.map((s) => s.name);
         const judgment = await judgeArticle(article.title, content, skillNames);
         article._content = content;
         article._judgment = judgment;
@@ -446,7 +448,7 @@ async function main() {
       }
     }
 
-    await closeBrowser();
+    
 
     // 5. 输出汇总
     console.log("\n" + "=".repeat(60));
@@ -537,7 +539,7 @@ async function main() {
     }
   } catch (err) {
     console.error(`\n❌ 失败: ${err.message}`);
-    await closeBrowser();
+    
     process.exit(1);
   }
 }
