@@ -333,9 +333,10 @@ function matchSkills(extractedNames, dbSkills) {
 
 // ============ 生成搜索关键词 ============
 function generateSearchKeywords(skills) {
-  // 用 Skill 名称生成自然语言搜索词（网页搜索比 API 更适合自然语言）
+  // 用 Skill 名称 + "skill" 后缀生成搜索词，网页搜索召回率高
   const keywords = new Set();
-  const SKIP_KEYWORDS = ["pdf", "xlsx", "rag", "ppt", "milvus", "vue", "react", "supabase", "wordpress", "three.js", "obsidian", "excalidraw", "seo"];
+  // 只跳过太短或太通用不适合搜索的词
+  const SKIP_KEYWORDS = ["pdf", "xlsx", "ppt", "find", "trending"];
   for (const skill of skills) {
     const name = skill.name
       .replace(/-best-practices$/i, "")
