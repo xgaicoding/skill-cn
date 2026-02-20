@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skill Hub 中国 · v1.5.7 Banner Mockup（布局参考实现）</title>
+    <meta name="description" content="v1.5.7 首页 Banner 静态 Mockup：左侧品牌+关键数据，右侧每周精选/热门榜单 Tab + 3 条轮播。" />
+
+    <!--
+      字体说明（尽可能贴近主站真实效果）：
+      - 线上站点使用 Fredoka（标题）+ Nunito（正文）+ Noto Sans SC（中文兜底）\n
+      - Mockup 直接通过 Google Fonts 引入，便于快速预览\n
+      注意：生产环境建议使用 Next.js 字体优化，减少阻塞渲染\n
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap"
+    />
+
+    <style>
+      /*
+        ==================================================
+        1) 设计变量（对齐主站风格）
+        ==================================================
+        说明：
+        - 直接沿用主站 app/globals.css 的核心 tokens\n
+        - 让 Mockup 视觉更接近上线效果，减少“设计稿 vs 线上”落差\n
+      */
+      :root {
+        --font-heading: "Fredoka", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+          "Noto Sans CJK SC", sans-serif;
+        --font-body: "Nunito", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+          "Noto Sans CJK SC", sans-serif;
+
+        --bg: #fff1e6;
+        --surface: rgba(255, 255, 255, 0.78);
+        --surface-strong: rgba(255, 255, 255, 0.92);
+        --surface-solid: #ffffff;
+
+        --text: #1a1510;
+        --muted: #7c5e4d;
+        --muted-2: rgba(124, 94, 77, 0.7);
+
+        --primary: #ff6b00;
+        --primary-strong: #e65200;
+        --secondary: #ff3366;
+        --accent: #ffcc00;
+        --success: #22c55e;
+        --purple: #8b5cf6;
+
+        /*
+          兼容主站变量别名：
+          - 主站部分组件使用 --color-* 命名
+          - Mockup 补齐别名，便于直接复用主站 CSS 片段而无需大量改写
+        */
+        --color-primary: var(--primary);
+        --color-primary-strong: var(--primary-strong);
+        --color-secondary: var(--secondary);
+        --color-text: var(--text);
+        --color-text-muted: var(--muted);
+
+        --border: rgba(255, 107, 0, 0.16);
+        --border-strong: rgba(255, 107, 0, 0.22);
+
+        --shadow-soft: 0 30px 60px -15px rgba(255, 107, 0, 0.22), 0 10px 20px -8px rgba(255, 51, 102, 0.12);
+        --shadow-card: 0 22px 60px -30px rgba(50, 20, 0, 0.18), 0 0 0 1px rgba(255, 107, 0, 0.08) inset;
+        --shadow-float: 0 40px 90px -30px rgba(50, 20, 0, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.55) inset;
+
+        --radius-sm: 12px;
+        --radius-md: 18px;
+        --radius-lg: 28px;
+        --radius-xl: 44px;
+
+        --content-width: 1260px;
+        --page-gutter: 28px;
+
+        /* Header 尺寸变量：用于首屏排布（保证 Banner 严格一屏） */
+        --header-top: 24px;
+        --header-max-width: 1200px;
+
+        /* 首屏默认避让：JS 会根据 header 实际高度进行精确修正 */
+        --hero-padding-top: 124px;
+      }
+
+      /*
+        ==================================================
+        2) Reset / 基础重置
+        ==================================================
+        说明：
+        - 统一盒模型，避免边框引起的尺寸偏差\n
+        - body 去 margin，避免首屏出现 1px 溢出\n
+      */
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        height: 100%;
+        overflow-x: hidden;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100%;
+        font-family: var(--font-body);
+        color: var(--text);
+        background-color: var(--bg);
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        position: relative;
+        isolation: isolate;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        border: 0;
+        background: none;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      :focus-visible {
+        outline: 3px solid rgba(255, 107, 0, 0.55);
+        outline-offset: 4px;
+      }
+
+      /*
+        ==================================================
+        3) 主站 Aurora 背景（高拟真）
+        ==================================================
+        性能注意：
+        - 背景动画只做 transform + background-position\n
+        - 通过 translate3d / will-change 提前进入合成层，降低偶发闪烁\n
+        - reduced-motion 下会禁用动画，照顾易眩晕用户\n
+      */
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        inset: -26vh -18vw 0;
+        pointer-events: none;
+        z-index: 0;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        contain: paint;
+        will-change: transform, opacity, filter, background-position;
+      }
+
+      body::before {
+        opacity: 0.72;
+        mix-blend-mode: screen;
+        filter: blur(72px) saturate(140%);
+        background-image:
+          radial-gradient(60% 52% at 16% 0%, rgba(255, 204, 0, 0.2) 0%, transparent 62%),
+          radial-gradient(56% 46% at 62% -6%, rgba(255, 107, 0, 0.22) 0%, transparent 58%),
+          radial-gradient(48% 44% at 88% 10%, rgba(255, 51, 102, 0.2) 0%, transparent 60%),
+          radial-gradient(46% 40% at 44% 12%, rgba(255, 255, 255, 0.12) 0%, transparent 66%);
+        mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+        -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+        animation: auroraHaze 26s ease-in-out infinite alternate;
+      }
+
+      body::after {
+        opacity: 0.4;
+        mix-blend-mode: screen;
+        filter: blur(26px) saturate(170%) contrast(108%);
+        background-image:
+          linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.18) 36%,
+            rgba(255, 255, 255, 0) 78%
+          ),
+          repeating-linear-gradient(
+            90deg,
+            rgba(255, 107, 0, 0) 0%,
+            rgba(255, 107, 0, 0) 8%,
+            rgba(255, 107, 0, 0.12) 10%,
+            rgba(255, 107, 0, 0) 14%,
+            rgba(255, 204, 0, 0.12) 16%,
+            rgba(255, 204, 0, 0) 22%
+          ),
+          repeating-linear-gradient(
+            120deg,
+            rgba(255, 51, 102, 0) 0%,
+            rgba(255, 51, 102, 0) 16%,
+            rgba(255, 51, 102, 0.12) 20%,
+            rgba(255, 51, 102, 0) 28%,
+            rgba(255, 107, 0, 0.1) 32%,
+            rgba(255, 107, 0, 0) 42%
+          );
+        background-size: 200% 200%, 280% 180%, 240% 160%;
+        background-position: 30% 0%, 0% 0%, 12% 0%;
+        mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0) 100%);
+        -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0) 100%);
+        animation: auroraCurtain 18s ease-in-out infinite;
+      }
+
+      @keyframes auroraHaze {
+        0% {
+          transform: translate3d(-3%, -2%, 0) rotate(-2deg) scale(1.05);
+          opacity: 0.62;
+        }
+        55% {
+          transform: translate3d(2%, 1%, 0) rotate(1.1deg) scale(1.09);
+          opacity: 0.78;
+        }
+        100% {
+          transform: translate3d(-1%, 3%, 0) rotate(2.2deg) scale(1.06);
+          opacity: 0.68;
+        }
+      }
+
+      @keyframes auroraCurtain {
+        0% {
+          transform: translate3d(0, 0, 0) skewX(-10deg) rotate(-0.8deg) scale(1.06);
+          background-position: 20% 0%, 0% 0%, 10% 0%;
+        }
+        50% {
+          transform: translate3d(-2%, 1%, 0) skewX(-6deg) rotate(0.6deg) scale(1.09);
+          background-position: 38% 10%, 82% 26%, 24% 20%;
+        }
+        100% {
+          transform: translate3d(2%, -1%, 0) skewX(-12deg) rotate(1.1deg) scale(1.06);
+          background-position: 12% 0%, 12% 30%, 72% 18%;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        body::before,
+        body::after {
+          animation: none;
+        }
+      }
+
+      /*
+        ==================================================
+        4) Floating Header（对齐主站视觉）
+        ==================================================
+        说明：
+        - 复用主站的“悬浮玻璃态 Header”视觉\n
+        - fixed + backdrop-filter 有一定开销：这里降低 blur，并且动效只做 transform/opacity\n
+        - reduced-motion 下禁用 Logo hover 动画\n
+      */
+      .app-header {
+        position: fixed;
+        top: var(--header-top);
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(90%, var(--header-max-width));
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.7);
+        /* 性能优化：降低 blur 半径，减少 fixed + backdrop-filter 叠加造成的离屏渲染开销 */
+        backdrop-filter: blur(12px) saturate(160%);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: var(--radius-xl);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+      }
+
+      .app-header__inner {
+        width: 100%;
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+
+      .logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 22px;
+        color: var(--color-text);
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .logo-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #ff7a2b, #ff4d6a);
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 14px 26px -12px rgba(255, 94, 98, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+        transform: translateZ(0);
+        will-change: transform;
+      }
+
+      .logo-icon svg {
+        width: 30px;
+        height: 30px;
+        position: relative;
+      }
+
+      .logo:hover .logo-icon svg {
+        animation: logoFanSpin 0.2s linear infinite;
+        transform-origin: center;
+      }
+
+      @keyframes logoFanSpin {
+        0% {
+          transform: rotate(0deg) scale(1.06);
+        }
+        100% {
+          transform: rotate(360deg) scale(1.06);
+        }
+      }
+
+      .logo-text {
+        letter-spacing: -0.5px;
+      }
+
+      .search {
+        flex: 0 1 520px;
+        width: 100%;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 999px;
+        padding: 6px 6px 6px 14px;
+        border: 1px solid rgba(255, 107, 0, 0.2);
+        transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .search:focus-within {
+        background: #ffffff;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.1);
+      }
+
+      .search__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-muted);
+        pointer-events: none;
+      }
+
+      .search:focus-within .search__icon {
+        color: var(--color-primary-strong);
+      }
+
+      .search__icon svg {
+        width: 18px;
+        height: 18px;
+        opacity: 0.88;
+      }
+
+      .search input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--color-text);
+        padding: 8px 0;
+        outline: none;
+      }
+
+      .search input[type="search"]::-webkit-search-cancel-button {
+        -webkit-appearance: none;
+        appearance: none;
+        display: none;
+      }
+
+      .search input::placeholder {
+        color: var(--color-text-muted);
+        opacity: 0.7;
+      }
+
+      .search button {
+        /* 搜索按钮改为无边框风格：去掉描边，仅保留柔和底色与投影层级 */
+        padding: 10px 24px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.96);
+        color: var(--primary-strong);
+        border: none;
+        font-weight: 900;
+        font-size: 14px;
+        letter-spacing: 0.4px;
+        box-shadow: 0 10px 22px -18px rgba(255, 107, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+        /*
+          交互规则（按用户反馈）：
+          - 取消 hover 上浮/阴影变化\n
+          - hover 仅保留“边框高亮”（这里用 outline 模拟，不影响布局）\n
+        */
+        transition: outline-color 180ms ease-out, outline-offset 180ms ease-out;
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+      }
+
+      .search button:hover {
+        outline-color: rgba(255, 107, 0, 0.42);
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+
+      .action-chip {
+        height: 40px;
+        padding: 0 14px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(255, 107, 0, 0.18);
+        color: var(--text);
+        font-weight: 900;
+        letter-spacing: 0.1px;
+        box-shadow: 0 10px 26px -20px rgba(50, 20, 0, 0.18);
+        /*
+          交互规则（按用户反馈）：
+          - 取消 hover 上浮/阴影变化\n
+          - hover 只做边框高亮\n
+        */
+        transition: border-color 180ms ease-out;
+      }
+
+      .action-chip svg {
+        width: 18px;
+        height: 18px;
+        opacity: 0.86;
+      }
+
+      .action-chip:hover {
+        border-color: rgba(255, 107, 0, 0.28);
+      }
+
+      .action-chip--primary {
+        background: rgba(255, 255, 255, 0.92);
+        border-color: rgba(26, 21, 16, 0.08);
+      }
+
+      .user-chip {
+        width: 44px;
+        height: 44px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(26, 21, 16, 0.08);
+        background: linear-gradient(135deg, rgba(255, 107, 0, 0.25), rgba(255, 51, 102, 0.18));
+        box-shadow: 0 10px 26px -20px rgba(50, 20, 0, 0.22);
+        overflow: hidden;
+      }
+
+      .user-chip__avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.35));
+        border: 1px solid rgba(255, 255, 255, 0.7);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .logo:hover .logo-icon svg {
+          animation: none !important;
+        }
+      }
+
+      /*
+        ==================================================
+        5) 首屏 Banner（严格一屏）
+        ==================================================
+        说明：
+        - Banner 固定为 100vh/100dvh\n
+        - 下面内容仅用于验证“首屏不露出第二屏”，不做重点设计\n
+      */
+      .hero {
+        position: relative;
+        z-index: 1;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      @supports (height: 100dvh) {
+        .hero {
+          height: 100dvh;
+        }
+      }
+
+      .hero__inner {
+        height: 100%;
+        width: min(var(--content-width), calc(100% - var(--page-gutter) * 2));
+        margin: 0 auto;
+        /*
+          顶部留白说明：
+          - 页面有 fixed 的 Floating Header，因此首屏内容需要“让开”Header\n
+          - padding-top 略大于 Header 的 top+高度，避免标题被遮挡\n
+        */
+        /*
+          通过 CSS 变量支持“动态避让 Header”：
+          - 默认使用 clamp 做响应式\n
+          - JS 会根据 header 实际高度写入 --hero-padding-top，避免遮挡\n
+        */
+        padding-top: var(--hero-padding-top, clamp(118px, 12vh, 150px));
+        padding-bottom: clamp(18px, 4vh, 30px);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        min-height: 0;
+      }
+
+      /*
+        两列布局：
+        - 左侧：logo+slogan+关键数据\n
+        - 右侧：每周精选/热门榜单（Tab + 轮播，每组 3 条）\n
+      */
+      .hero__layout {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        gap: 32px;
+        /*
+          高度对齐（按用户反馈）：
+          - 需要让「左侧(logo+slogan+KPI)」与「右侧榜单卡片」整体高度同高\n
+          - 但又不能让右侧榜单被强制拉到整屏高度（会出现底部大段空白）\n
+          因此这里采用“行轨道不拉伸 + 两列内容拉伸到同一行高”的组合：\n
+          1) align-content: start 让网格行轨道按内容自然高度排布（不会填满容器高度）\n
+          2) align-items: stretch 让两列区域在同一行轨道内高度一致（实现左右同高）\n
+        */
+        align-content: start;
+        align-items: stretch;
+      }
+
+      .hero-left {
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        /*
+          左侧整体节奏收敛一点：
+          - 减少品牌区与 KPI 的间距\n
+          - 让左侧总高度更容易与右侧榜单内容对齐\n
+        */
+        gap: 14px;
+      }
+
+      .hero-right {
+        min-height: 0;
+        /*
+          让右侧「榜单卡片」可以占满右列高度（实现左右同高）：
+          - .hero__layout 里我们让两列拉伸到同一行高\n
+          - 这里把 .hero-right 设为 flex 容器，让 .board 可以用 height:100% 贴合父级\n
+        */
+        display: flex;
+        /*
+          关键：允许右侧内容在 flex 容器内“收缩”\n
+          - flex 子项默认 min-width:auto，会被内容撑宽导致溢出（你截图里右侧被截断就是这个原因）\n
+          - 设为 0 可以让 .board 按列宽收缩，不再超出首屏布局\n
+        */
+        min-width: 0;
+      }
+
+      /*
+        ==================================================
+        6) 左侧：品牌区 + 关键数据
+        ==================================================
+      */
+      /*
+        Logo + Slogan（保持线上样式，不做自定义变体）：
+        - 直接复用主站 app/globals.css 中 hero-copy 的字体、渐变与强调规则\n
+        - 这样可以最大化保证“视觉稿 ≈ 线上效果”，减少二次调整成本\n
+      */
+      .hero-copy {
+        position: relative;
+        max-width: 760px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+      }
+
+      .hero-copy > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero-copy__title {
+        display: grid;
+        gap: 18px;
+        font-family: var(--font-heading);
+        line-height: 1.08;
+        margin: 0;
+      }
+
+      .hero-copy__brand {
+        --brand-aura-size: 150%;
+        --brand-aura-speed: 9s;
+        --brand-aura-1: rgba(255, 204, 0, 0.9);
+        --brand-aura-2: rgba(255, 107, 0, 0.86);
+        --brand-aura-3: rgba(255, 51, 102, 0.26);
+        --brand-aura-4: rgba(255, 255, 255, 0.44);
+
+        display: inline-block;
+        font-size: clamp(54px, 5.2vw, 84px);
+        font-weight: 900;
+        letter-spacing: -2px;
+        background-image:
+          linear-gradient(115deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.46) 14%, rgba(255, 255, 255, 0) 30%),
+          radial-gradient(at 62% 9%, var(--brand-aura-1) 0px, transparent 44%),
+          radial-gradient(at 69% 60%, var(--brand-aura-2) 0px, transparent 48%),
+          radial-gradient(at 24% 89%, var(--brand-aura-3) 0px, transparent 52%),
+          radial-gradient(at 51% 77%, var(--brand-aura-4) 0px, transparent 58%),
+          radial-gradient(at 78% 92%, var(--brand-aura-1) 0px, transparent 50%),
+          linear-gradient(135deg, var(--primary-strong) 0%, var(--primary) 56%, var(--accent) 120%);
+        background-blend-mode: screen, screen, screen, screen, screen, screen, normal;
+        background-size:
+          240% 180%,
+          var(--brand-aura-size) var(--brand-aura-size),
+          var(--brand-aura-size) var(--brand-aura-size),
+          var(--brand-aura-size) var(--brand-aura-size),
+          var(--brand-aura-size) var(--brand-aura-size),
+          var(--brand-aura-size) var(--brand-aura-size),
+          100% 100%;
+        background-position: -40% 30%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+        /* 频闪优化：仅保留“高光层”位移动画，其它层保持静止，减少合成抖动。 */
+        animation: brandAura var(--brand-aura-speed) linear infinite;
+        will-change: background-position, transform;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        text-shadow: 0 0 0.32ch rgba(255, 107, 0, 0.14), 0 0 0.9ch rgba(255, 204, 0, 0.1);
+        filter: saturate(1.16) contrast(1.05) drop-shadow(0 10px 18px rgba(255, 107, 0, 0.08));
+      }
+
+      @keyframes brandAura {
+        0% {
+          /* 只移动第一层线性高光，其余 6 层保持固定位置，减少每帧重绘量。 */
+          background-position: -40% 30%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+        }
+        50% {
+          /* 高光从左上扫到右下，其他层不动，避免整组渐变同步位移。 */
+          background-position: 140% 70%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+        }
+        100% {
+          background-position: -40% 30%, 50% 50%, 30% 120%, 110% 0%, 10% 20%, 0% 80%, 50% 50%;
+        }
+      }
+
+      .hero-copy__slogan {
+        font-family: var(--font-body);
+        font-size: clamp(20px, 2.2vw, 28px);
+        font-weight: 850;
+        color: rgba(26, 21, 16, 0.96);
+        line-height: 1.45;
+        letter-spacing: -0.45px;
+        max-width: 34ch;
+      }
+
+      .hero-copy__slogan-emphasis {
+        font-weight: 900;
+        color: var(--primary-strong);
+        background-image: linear-gradient(
+          110deg,
+          var(--primary-strong) 0%,
+          var(--primary) 46%,
+          var(--accent) 78%,
+          var(--secondary) 120%
+        );
+        background-size: 160% 160%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 0.28em rgba(255, 107, 0, 0.14), 0 0 0.6em rgba(255, 204, 0, 0.12);
+        filter: saturate(1.16) contrast(1.05) drop-shadow(0 10px 18px rgba(255, 107, 0, 0.08));
+      }
+
+      .hero__subtitle {
+        font-size: 18px;
+        color: var(--color-text-muted);
+        font-weight: 500;
+        margin: 16px 0 0;
+        line-height: 1.6;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .hero-copy__brand {
+          animation: none;
+        }
+      }
+
+      /*
+        KPI 卡片（2x2）：
+        - 四项指标：案例数量 / 本周上新 / 精选 Skill / 下载总量\n
+        - 参考用户给的视觉风格：更清爽、更大气、更少噪音\n
+        - 注意：这里不展示“趋势百分比/环形进度”等容易被误读为真实衍生数据的元素\n
+          如果未来要展示趋势，必须保证数据口径真实可追溯（本 Mockup 先不做）\n
+      */
+      .kpi-grid {
+        /* 由父容器（.hero-left）的 gap 控制上下节奏，这里不额外叠加 margin，避免首屏偏高 */
+        margin-top: 0;
+        /*
+          关键：把 KPI 推到左侧区域的底部\n
+          - 当左右两列被拉成同高时，左侧通常会比右侧“内容略少”\n
+          - 用 margin-top:auto 吃掉剩余空间，让品牌区更靠上、KPI 更靠下\n
+          - 视觉上更接近你给的参考：上方是品牌心智，下方是数据看板\n
+        */
+        margin-top: auto;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        max-width: 720px;
+      }
+
+      .kpi {
+        position: relative;
+        /* 建立独立层叠上下文：确保装饰光斑永远在内容后面 */
+        isolation: isolate;
+        /* 每张卡片自己带一套 accent，方便做“同款不同色”的克制区分 */
+        --kpi-accent: rgba(255, 107, 0, 1);
+        --kpi-accent-soft: rgba(255, 107, 0, 0.14);
+
+        /*
+          关键：收敛 KPI 卡高度（解决“左侧整体高度超出右侧榜单”的问题）\n
+          - 保持信息层级（数值 > 标签 > 图形装饰）\n
+          - 缩小 padding/min-height，提升信息密度\n
+        */
+        min-height: 100px;
+        padding: 12px 12px;
+        border-radius: 22px;
+        /*
+          视觉提亮（按用户反馈：数据区域整体更亮）：
+          - 背景白度更高，减少“灰蒙”\n
+          - 阴影更轻、更干净（不强调浮层厚重感）\n
+        */
+        /*
+          视觉提亮（按用户反馈：数据区域整体更亮）：
+          - 边框回归“更中性”的浅描边（更接近你给的参考）\n
+          - 背景白度更高，减少灰雾感\n
+          - 阴影更轻，避免厚重悬浮感\n
+        */
+        border: 1px solid rgba(26, 21, 16, 0.06);
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 18px 46px -46px rgba(50, 20, 0, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.78) inset;
+        overflow: hidden;
+
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        /*
+          细节抠图：去掉左上角图标后，这里用更紧凑的间距\n
+          - 只保留「文案（标签）」+「数字（主信息）」的二级层级\n
+          - 让卡片更“清爽大气”，减少不必要的视觉噪声\n
+        */
+        gap: 6px;
+        /*
+          交互规则（按用户反馈）：
+          - 取消 hover 上浮/阴影变化\n
+          - hover 只保留边框高亮\n
+        */
+        transition: border-color 180ms ease-out;
+      }
+
+      .kpi:hover {
+        border-color: rgba(255, 107, 0, 0.22);
+      }
+
+      /*
+        右上角装饰光斑（非数据）：
+        - 仅用于填充留白，让卡片更“高级”\n
+        - 不使用柱状/折线等明确“数据视觉”形态，避免误解为真实统计\n
+      */
+      .kpi::after {
+        content: "";
+        position: absolute;
+        right: -56px;
+        top: -56px;
+        width: 200px;
+        height: 200px;
+        border-radius: 999px;
+        opacity: 0.6;
+        background: radial-gradient(circle at 30% 30%, var(--kpi-accent-soft), transparent 62%);
+        z-index: 0;
+        transform: translateZ(0);
+        pointer-events: none;
+      }
+
+      .kpi__content {
+        position: relative;
+        z-index: 2;
+        /* 文案在上、数字在下：更符合“标签 → 主指标”的阅读顺序 */
+        display: grid;
+        gap: 6px;
+      }
+
+      /*
+        KPI 右侧装饰区（填充留白，增强“数据卡片”观感）：
+        - 仅做装饰，不展示任何“衍生数值”（例如 +12%、85%）\n
+        - 避免被误读为真实统计口径（真实数据只展示卡片左侧主数值）\n
+      */
+      .kpi__decor {
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+        width: 108px;
+        height: 62px;
+        z-index: 1;
+        opacity: 0.92;
+        color: var(--kpi-accent);
+        pointer-events: none;
+        transform: translate3d(0, 0, 0);
+        will-change: transform;
+      }
+
+      .kpi__decor svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .kpi__value {
+        font-family: var(--font-heading);
+        font-size: 32px;
+        font-weight: 900;
+        line-height: 1.02;
+        letter-spacing: -0.6px;
+      }
+
+      /*
+        KPI 辅助说明（用于优化“数字下方留白”）：
+        - 不新增“衍生数值”（避免被误读为真实统计）\n
+        - 只补充口径/时间窗/更新节奏等文字信息\n
+        - 视觉上形成「标签(彩色) → 数字(主) → 说明(弱)」的三段层级\n
+      */
+      .kpi__hint {
+        font-size: 11px;
+        font-weight: 850;
+        line-height: 1.2;
+        letter-spacing: 0.01em;
+        color: rgba(26, 21, 16, 0.54);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 2px;
+      }
+
+      .kpi__hint::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--kpi-accent);
+        opacity: 0.28;
+        box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.55);
+      }
+
+      .kpi__label {
+        /*
+          文案放在数字上方（按用户反馈）：
+          - 文案颜色跟随卡片 accent，强化“同卡同色”的系统感\n
+          - 这里不使用过亮纯色，避免抢主数字信息\n
+        */
+        margin-top: 0;
+        font-size: 12px;
+        font-weight: 900;
+        line-height: 1.15;
+        letter-spacing: 0.02em;
+        color: var(--kpi-accent);
+        opacity: 0.84;
+      }
+
+      @media (max-width: 1120px) {
+        /* 中屏再收一点 KPI 尺寸，避免两列在常见 13/14 寸笔记本上“顶满首屏”。 */
+        .kpi {
+          min-height: 96px;
+          padding: 10px 10px;
+        }
+
+        .kpi__value {
+          font-size: 30px;
+        }
+
+        .kpi__decor {
+          width: 100px;
+          height: 58px;
+        }
+      }
+
+      /*
+        KPI 色彩微差（贴近参考图不同卡片的“轻彩底”）：\n
+        - 只做非常克制的背景 tint，避免抢正文。\n
+      */
+      .kpi--cases {
+        --kpi-accent: rgba(255, 107, 0, 1);
+        --kpi-accent-soft: rgba(255, 107, 0, 0.14);
+        /* 提亮：更高白度底 + 更轻的 tint */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 107, 0, 0.06));
+      }
+
+      .kpi--weekly {
+        --kpi-accent: rgba(34, 197, 94, 1);
+        --kpi-accent-soft: rgba(34, 197, 94, 0.16);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(34, 197, 94, 0.06));
+      }
+
+      .kpi--featured {
+        --kpi-accent: rgba(255, 204, 0, 1);
+        --kpi-accent-soft: rgba(255, 204, 0, 0.18);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 204, 0, 0.07));
+      }
+
+      .kpi--downloads {
+        --kpi-accent: rgba(139, 92, 246, 1);
+        --kpi-accent-soft: rgba(139, 92, 246, 0.16);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(139, 92, 246, 0.06));
+      }
+
+      /*
+        ==================================================
+        7) 右侧：榜单模块（Tab + 轮播）
+        ==================================================
+        交互定义：
+        - Tab：每周精选 / 热门榜单\n
+        - 轮播：每页 3 条，左右切换\n
+        - 指示器：展示当前页（dots）\n
+      */
+      .board {
+        /*
+          右侧模块质感（按用户反馈）：
+          - 整体阴影淡化\n
+          - 边框参考你给的对照图：更“干净的描边”，少厚重投影\n
+          - 颜色统一用品牌橙（但强度克制，避免喧宾夺主）\n
+        */
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid rgba(255, 107, 0, 0.16);
+        border-radius: 26px;
+        box-shadow: 0 18px 56px -54px rgba(50, 20, 0, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.76) inset;
+        padding: 16px 16px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 0;
+        /*
+          右侧榜单卡片占满右列高度（与左侧同高）：
+          - 父级 .hero-right 为 flex 容器\n
+          - 这里用 height:100% 让卡片填充右列\n
+          - 避免出现“右列高度对齐了，但卡片本身没对齐”的视觉落差\n
+        */
+        height: 100%;
+        /*
+          约束宽度（修复右侧模块横向溢出）：
+          - 让榜单卡片严格贴合右列宽度，不再被内容撑破\n
+        */
+        width: 100%;
+        min-width: 0;
+      }
+
+      .board__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        /*
+          轻分隔线：让“Tab/控制区”和“列表”分层更清晰\n
+          - 使用橙色轻描边，呼应整体边框风格\n
+        */
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 107, 0, 0.1);
+      }
+
+      .board__tabs {
+        display: inline-flex;
+        /* 轻量 Tab：拉开一点间距，避免“胶囊按钮”那种厚重感 */
+        gap: 22px;
+        align-items: flex-end;
+        /*
+          按用户反馈：去掉 Tab 外层“套娃容器”\n
+          - 不再额外画背景/边框\n
+          - 每个 Tab 自己负责 pill 形态与状态\n
+        */
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+        border: none;
+      }
+
+      .board-tab {
+        /*
+          Tab 视觉（按用户反馈：active 下划线）：
+          - 取消“胶囊底色/厚重边框”\n
+          - active 用下划线强调（类似导航栏当前页）\n
+          - hover 仅做“下划线轻高亮”（符合“只保留边框高亮”原则）\n
+        */
+        height: 44px;
+        padding: 0 2px 6px;
+        border-radius: 0;
+        background: transparent;
+        border: none;
+        color: rgba(26, 21, 16, 0.62);
+        font-size: 15px;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        /* icon 会被移除，这里保留小 gap 也不会产生额外空隙 */
+        gap: 8px;
+        position: relative;
+        transition: color 180ms ease-out;
+      }
+
+      .board-tab::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 3px;
+        border-radius: 999px;
+        /* 默认隐藏，下划线只在 hover/active 出现 */
+        /* 下划线使用纯品牌橙（按用户反馈） */
+        background: var(--primary);
+        opacity: 0;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 180ms ease-out, opacity 180ms ease-out;
+      }
+
+      .board-tab[data-active="true"] {
+        /* active 文字纯橙高亮（按用户反馈） */
+        color: var(--primary);
+      }
+
+      .board-tab:hover {
+        /* hover 只做“下划线轻高亮”，不做上浮/阴影/文字变色 */
+      }
+
+      .board-tab:hover::after {
+        opacity: 0.24;
+        transform: scaleX(1);
+      }
+
+      .board-tab[data-active="true"]::after {
+        opacity: 1;
+        transform: scaleX(1);
+        background: var(--primary);
+      }
+
+      .board__controls {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .dot {
+        width: 20px;
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(26, 21, 16, 0.08);
+        transition: background-color 180ms ease-out, width 180ms ease-out;
+      }
+
+      .dot[data-active="true"] {
+        width: 28px;
+        background: rgba(255, 107, 0, 0.72);
+      }
+
+      .nav-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        border: 1px solid rgba(26, 21, 16, 0.08);
+        background: rgba(255, 255, 255, 0.86);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 12px 18px -18px rgba(50, 20, 0, 0.22);
+        /*
+          交互规则（按用户反馈）：
+          - 取消 hover 上浮/阴影变化\n
+          - hover 仅保留边框高亮\n
+        */
+        transition: border-color 160ms ease-out;
+      }
+
+      .nav-btn svg {
+        width: 18px;
+        height: 18px;
+        opacity: 0.72;
+      }
+
+      .nav-btn:hover {
+        border-color: rgba(255, 107, 0, 0.22);
+      }
+
+      /*
+        轮播容器：
+        - viewport 固定高度，让 3 条卡片稳定布局\n
+        - track 用 transform 做滑动，避免触发布局重排\n
+      */
+      .carousel {
+        position: relative;
+        min-height: 0;
+      }
+
+      .carousel[data-active="false"] {
+        display: none;
+      }
+
+      .carousel__viewport {
+        overflow: hidden;
+        border-radius: 20px;
+        /*
+          去掉“红框内层容器”的视觉层级（按用户反馈）：
+          - 保留 viewport 仅用于裁切轮播滑动\n
+          - 不再额外画边框/底色/内边距，避免出现“套娃容器”\n
+        */
+        border: none;
+        background: transparent;
+        padding: 0;
+      }
+
+      .carousel__track {
+        display: flex;
+        width: 100%;
+        transition: transform 320ms ease-out;
+        transform: translate3d(0, 0, 0);
+        will-change: transform;
+      }
+
+      .carousel__slide {
+        flex: 0 0 100%;
+        display: grid;
+        gap: 12px;
+      }
+
+      /*
+        卡片（榜单条目）：
+        - 每页 3 条\n
+        - 贴近主站 Practice 卡片：白底、圆角、细边框、轻阴影\n
+      */
+      .entry {
+        background: rgba(255, 255, 255, 0.92);
+        /*
+          卡片边框/阴影（按用户反馈）：
+          - 阴影更淡\n
+          - 边框更干净，参考对照图的“轻描边”\n
+        */
+        border: 1px solid rgba(255, 107, 0, 0.12);
+        border-radius: 18px;
+        padding: 14px 14px;
+        box-shadow: 0 12px 34px -34px rgba(50, 20, 0, 0.14), 0 0 0 1px rgba(255, 255, 255, 0.74) inset;
+        /*
+          交互规则（按用户反馈）：
+          - 取消 hover 上浮/阴影变化\n
+          - hover 仅保留边框高亮\n
+        */
+        transition: border-color 180ms ease-out;
+      }
+
+      .entry:hover {
+        border-color: rgba(255, 107, 0, 0.22);
+      }
+
+      /* 右侧榜单卡片：热门榜单/每周精选样式已对齐，因此不再需要 entry__top/entry__rank/entry__tag 这些旧样式。 */
+
+      .entry__title {
+        margin: 10px 0 0;
+        font-size: 14px;
+        font-weight: 900;
+        line-height: 1.55;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .entry__desc {
+        margin: 8px 0 0;
+        color: rgba(26, 21, 16, 0.64);
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.55;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .entry__meta {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        color: rgba(26, 21, 16, 0.46);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .entry__meta-left {
+        /*
+          左侧辅助信息（来源/时间窗/热度等）：
+          - 允许缩小并省略号截断\n
+          - 避免与右侧 skill-name chip 抢空间\n
+        */
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /*
+        右侧 Chip（skill-name）：
+        - 按用户反馈：把 skill-name 移到原 NEW 位置\n
+        - NEW/精选角标本版不展示（避免信息噪声）\n
+        - 统一使用一个轻量 chip，作为“归属/技能维度”的提示\n
+      */
+      .entry__skill {
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        max-width: 48%;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+        /*
+          右下角 skill chip（按用户反馈）：
+          - skillname 文字换成纯橙\n
+          - 边框/底色保持轻量，避免抢标题\n
+        */
+        border: 1px solid rgba(255, 107, 0, 0.2);
+        background: rgba(255, 107, 0, 0.08);
+        color: var(--primary);
+      }
+
+      .entry__skill-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /*
+        ==================================================
+        8) 响应式：小屏改为单列，保证可读性与一屏约束\n
+        ==================================================
+      */
+      @media (max-width: 980px) {
+        .hero__layout {
+          grid-template-columns: 1fr;
+          gap: 18px;
+        }
+
+        .kpi-grid {
+          max-width: 100%;
+        }
+
+        .board {
+          height: 44vh; /* 小屏下给榜单固定高度，避免挤压左侧信息 */
+        }
+      }
+
+      /*
+        短屏兜底：优先保证“首屏不溢出”\n
+        - 隐藏副标题\n
+        - KPI 卡减少 padding\n
+        - 适当收敛字号与间距，但保持“每页 3 条”不变\n
+      */
+      @media (max-height: 760px) {
+        :root {
+          /* 给短屏多挤一点可视空间（Header 上移） */
+          --header-top: 16px;
+        }
+
+        .hero__subtitle {
+          display: none;
+        }
+
+        .hero-copy__brand {
+          font-size: clamp(48px, 5vw, 72px);
+        }
+
+        .hero-copy__slogan {
+          font-size: clamp(18px, 2.1vw, 24px);
+          max-width: 36ch;
+        }
+
+        .kpi-grid {
+          /* 短屏优先保证信息密度与不溢出：缩小 gap，避免左侧高度超过右侧。 */
+          gap: 10px;
+        }
+
+        .kpi {
+          /*
+            短屏（例如 13 寸笔记本/分屏）：
+            - KPI 卡片要“更紧凑”，否则左侧会比右侧更高\n
+            - 这里显式覆盖默认 min-height/padding，保证两列更容易同高\n
+          */
+          min-height: 92px;
+          padding: 10px 10px;
+          border-radius: 20px;
+        }
+
+        .kpi__decor {
+          /* 装饰图形同步缩小，保持“有内容但不噪” */
+          width: 92px;
+          height: 52px;
+          right: 8px;
+          bottom: 8px;
+          opacity: 0.86;
+        }
+
+        .kpi__value {
+          font-size: 28px;
+        }
+
+        .kpi__label {
+          font-size: 11px;
+        }
+
+        .kpi__hint {
+          font-size: 10px;
+        }
+
+        .entry {
+          padding: 12px 12px;
+        }
+      }
+
+      /*
+        超短屏兜底（更激进地“压缩信息密度”）：
+        - 典型场景：笔记本分屏、浏览器底部工具栏较高导致可视高度 < 680px\n
+        - 目标：依然保证「首屏内容不被裁切」且「右侧每页 3 条」不变\n
+        - 方式：减少卡片内边距/间距 + 标题/摘要改为 1 行截断（避免 2 行撑高）\n
+        说明：
+        - 仅在超短屏触发，不影响常规屏幕的阅读体验\n
+        - 仍遵循交互规则：hover 只做边框高亮（不做上浮/阴影变化）\n
+      */
+      @media (max-height: 680px) {
+        .hero-copy__brand {
+          font-size: clamp(44px, 4.6vw, 66px);
+        }
+
+        .hero-copy__slogan {
+          font-size: clamp(16px, 2vw, 22px);
+        }
+
+        .hero__layout {
+          gap: 24px;
+        }
+
+        .hero-left {
+          gap: 12px;
+        }
+
+        .kpi-grid {
+          gap: 9px;
+        }
+
+        .kpi {
+          min-height: 88px;
+          padding: 10px 10px;
+        }
+
+        .kpi__value {
+          font-size: 27px;
+        }
+
+        .kpi__decor {
+          width: 86px;
+          height: 48px;
+          right: 8px;
+          bottom: 8px;
+          opacity: 0.82;
+        }
+
+        .board {
+          padding: 14px 14px 12px;
+          border-radius: 24px;
+        }
+
+        .board__head {
+          padding-bottom: 8px;
+        }
+
+        .board__tabs {
+          gap: 18px;
+        }
+
+        .board-tab {
+          height: 40px;
+          padding-bottom: 5px;
+          font-size: 14px;
+        }
+
+        .board-tab::after {
+          height: 2px;
+        }
+
+        .dot {
+          width: 16px;
+          height: 5px;
+        }
+
+        .dot[data-active="true"] {
+          width: 22px;
+        }
+
+        .nav-btn {
+          width: 32px;
+          height: 32px;
+        }
+
+        .carousel__slide {
+          gap: 10px;
+        }
+
+        .entry {
+          padding: 11px 11px;
+        }
+
+        .entry__title {
+          margin-top: 8px;
+          -webkit-line-clamp: 1;
+        }
+
+        .entry__desc {
+          margin-top: 6px;
+          -webkit-line-clamp: 1;
+        }
+
+        .entry__meta {
+          margin-top: 8px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .carousel__track,
+        .kpi,
+        .entry,
+        .board-tab,
+        .nav-btn,
+        .dot {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!--
+      顶部 Floating Header（Mockup）：
+      - 用于让首屏视觉尽可能贴近主站上线效果\n
+      - 这里的交互（搜索/跳转）都作为占位，不接真实路由\n
+    -->
+    <header class="app-header" role="banner" aria-label="顶部导航（Mockup）">
+      <div class="app-header__inner">
+        <a class="logo" href="#" aria-label="Skill Hub 首页（占位链接）">
+          <span class="logo-icon" aria-hidden="true">
+            <!-- 复用主站 Logo SVG（见 components/AppHeader.tsx） -->
+            <svg viewBox="0 0 24 24" role="img" aria-label="Logo">
+              <path
+                d="M12 2.8c2.4 0 4.6 1.2 5.9 3.1.6.9.9 2 1 3.1.1 1.7-.3 3.1-1.2 4.3-.4.6-1.2 1.4-2 2.1-1.7 1.4-2.5 2.6-2.8 4.5H13c.1-1.6.8-3 2.3-4.3.7-.6 1.4-1.2 1.8-1.7.6-.8.8-1.7.7-2.8-.2-1.8-1.8-3.6-4-3.9-2.6-.4-4.9 1.3-5.3 3.6-.2 1.2 0 2.2.6 3.1.4.6 1.1 1.2 1.9 1.9 1.6 1.3 2.3 2.6 2.3 4.3H11c-.3-1.9-1.1-3.1-2.8-4.5-.9-.7-1.6-1.5-2-2.1-.9-1.2-1.3-2.6-1.2-4.3.1-1.1.4-2.2 1-3.1C7.4 4 9.6 2.8 12 2.8Z"
+                fill="rgba(255,255,255,0.95)"
+              />
+              <path
+                d="M9.3 13.4c.4.6 1.1 1.2 1.9 1.9 1.6 1.3 2.3 2.6 2.3 4.3H11c-.3-1.9-1.1-3.1-2.8-4.5-.9-.7-1.6-1.5-2-2.1-.6-.8-.9-1.7-.9-2.7 0-.1 0-.2 0-.3.3.8.7 1.5 1.3 2.1Z"
+                fill="rgba(255,255,255,0.75)"
+              />
+            </svg>
+          </span>
+          <span class="logo-text">Skill Hub</span>
+        </a>
+
+        <form class="search" role="search" aria-label="全局搜索（占位）" action="#" method="get">
+          <span class="search__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M10.8 18.2a7.4 7.4 0 1 1 0-14.8 7.4 7.4 0 0 1 0 14.8Z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M16.8 16.8 21 21"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+          <input type="search" name="q" placeholder="搜索 Skill 名称、描述、标签" aria-label="搜索关键词" />
+          <button type="submit">搜索</button>
+        </form>
+
+        <nav class="nav-actions" aria-label="快捷操作（占位）">
+          <a class="action-chip" href="#" aria-label="交流群（占位链接）">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M16.5 21c0-3-2.7-5.4-6-5.4S4.5 18 4.5 21"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <path
+                d="M10.5 15.6a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4Z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M20 21c0-2-1.2-3.7-3-4.6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <path
+                d="M16.8 7.4a3.4 3.4 0 0 1 0 6.8"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <span>交流群</span>
+          </a>
+
+          <a class="action-chip" href="#" aria-label="入门教程（占位链接）">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M4.8 5.8c0-1 0.8-1.8 1.8-1.8h11c1 0 1.8 0.8 1.8 1.8v14.4c0 1-0.8 1.8-1.8 1.8h-11c-1 0-1.8-0.8-1.8-1.8V5.8Z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M8 7.8h8M8 11h8M8 14.2h6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <span>入门教程</span>
+          </a>
+
+          <a class="action-chip action-chip--primary" href="#" aria-label="提交 Skill（占位链接）">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 5v14M5 12h14"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <span>Skill</span>
+          </a>
+
+          <div class="user-chip" aria-label="用户头像（占位）" title="用户菜单（占位）">
+            <span class="user-chip__avatar" aria-hidden="true"></span>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero" aria-label="首页首屏 Banner（v1.5.7 Mockup）">
+      <div class="hero__inner">
+        <div class="hero__layout" aria-label="首屏两列布局">
+          <!-- 左侧：logo+slogan+关键数据 -->
+          <section class="hero-left" aria-label="左侧：品牌与关键数据">
+            <!--
+              品牌区（保持线上样式）：
+              - 复用主站 FeaturedCarousel 的 hero-copy 排版与渐变规则\n
+              - 这里仅做布局组合，不改变字体/渐变/强调词样式\n
+            -->
+            <div class="hero-copy hero-copy--minimal" aria-label="站点品牌与主标语">
+              <h1 class="hero-copy__title hero-copy__title--minimal" aria-label="站点名称与主标语">
+                <span class="hero-copy__brand">Skill Hub 中国</span>
+                <span class="hero-copy__slogan">
+                  助力国内 Skill 使用者快速找到
+                  <span class="hero-copy__slogan-emphasis">能用、好用、可复用</span>
+                  的实践方案
+                </span>
+              </h1>
+              <p class="hero__subtitle" aria-label="站点副说明">汇聚优质 Skill，打通真实场景，沉淀持续生产力</p>
+            </div>
+
+            <div class="kpi-grid" aria-label="关键数据展示（4项）">
+              <!-- 案例数量（仅展示真实数值，不做“伪趋势图”） -->
+              <article class="kpi kpi--cases" aria-label="案例数量">
+                <div class="kpi__content">
+                  <div class="kpi__label">案例数量</div>
+                  <!--
+                    数字展示规范（按最新反馈）：
+                    - 统一使用「千分位逗号」分割（例如 50,000）\n
+                    - 不使用 K+ / 万+ 等缩写（避免口径不清）\n
+                    - Mockup 这里用示例值，真实上线时需替换为接口返回的真实数据\n
+                  -->
+                  <div class="kpi__value">1,280</div>
+                  <div class="kpi__hint">全站累计</div>
+                </div>
+                <!-- 装饰图形：仅用于填充留白，不代表真实统计趋势 -->
+                <div class="kpi__decor" aria-hidden="true">
+                  <svg viewBox="0 0 120 72" fill="none">
+                    <path d="M6 66H114" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.12" />
+                    <rect x="10" y="38" width="10" height="28" rx="5" fill="currentColor" opacity="0.18" />
+                    <rect x="26" y="30" width="10" height="36" rx="5" fill="currentColor" opacity="0.22" />
+                    <rect x="42" y="22" width="10" height="44" rx="5" fill="currentColor" opacity="0.26" />
+                    <rect x="58" y="28" width="10" height="38" rx="5" fill="currentColor" opacity="0.22" />
+                    <rect x="74" y="18" width="10" height="48" rx="5" fill="currentColor" opacity="0.3" />
+                    <rect x="90" y="12" width="10" height="54" rx="5" fill="currentColor" opacity="0.34" />
+                  </svg>
+                </div>
+              </article>
+
+              <!-- 本周上新 -->
+              <article class="kpi kpi--weekly" aria-label="本周上新">
+                <div class="kpi__content">
+                  <div class="kpi__label">本周上新</div>
+                  <div class="kpi__value">32</div>
+                  <div class="kpi__hint">近 7 天更新</div>
+                </div>
+                <!-- 装饰图形：仅用于填充留白，不代表真实统计趋势 -->
+                <div class="kpi__decor" aria-hidden="true">
+                  <svg viewBox="0 0 120 72" fill="none">
+                    <path d="M6 66H114" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.12" />
+                    <path
+                      d="M10 52 C 26 36, 38 46, 54 30 C 70 14, 86 30, 108 18"
+                      stroke="currentColor"
+                      stroke-width="4.5"
+                      stroke-linecap="round"
+                      opacity="0.34"
+                    />
+                    <circle cx="108" cy="18" r="5.5" fill="currentColor" opacity="0.2" />
+                  </svg>
+                </div>
+              </article>
+
+              <!-- 精选 Skill -->
+              <article class="kpi kpi--featured" aria-label="精选 Skill">
+                <div class="kpi__content">
+                  <div class="kpi__label">精选 Skill</div>
+                  <div class="kpi__value">156</div>
+                  <div class="kpi__hint">精选/推荐</div>
+                </div>
+                <!-- 装饰图形：仅用于填充留白，不代表真实统计趋势/占比 -->
+                <div class="kpi__decor" aria-hidden="true">
+                  <svg viewBox="0 0 120 72" fill="none">
+                    <path
+                      d="M20 54 A 40 40 0 0 1 100 54"
+                      stroke="currentColor"
+                      stroke-width="7"
+                      stroke-linecap="round"
+                      opacity="0.16"
+                    />
+                    <path
+                      d="M20 54 A 40 40 0 0 1 84 28"
+                      stroke="currentColor"
+                      stroke-width="7"
+                      stroke-linecap="round"
+                      opacity="0.34"
+                    />
+                    <path d="M60 54 L 88 34" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.24" />
+                    <circle cx="60" cy="54" r="6.5" fill="currentColor" opacity="0.18" />
+                  </svg>
+                </div>
+              </article>
+
+              <!-- 下载总量 -->
+              <article class="kpi kpi--downloads" aria-label="下载总量">
+                <div class="kpi__content">
+                  <div class="kpi__label">下载总量</div>
+                  <!-- 不展示 K+，改为千分位分割的完整数字（示例值） -->
+                  <div class="kpi__value">50,000</div>
+                  <div class="kpi__hint">全站累计</div>
+                </div>
+                <!-- 装饰图形：仅用于填充留白，不代表真实统计趋势 -->
+                <div class="kpi__decor" aria-hidden="true">
+                  <svg viewBox="0 0 120 72" fill="none">
+                    <path d="M6 66H114" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.12" />
+                    <path
+                      d="M10 46 C 24 36, 34 54, 48 44 C 62 34, 74 52, 90 40 C 100 32, 108 36, 112 30"
+                      stroke="currentColor"
+                      stroke-width="4.5"
+                      stroke-linecap="round"
+                      opacity="0.3"
+                    />
+                    <path
+                      d="M92 14v18m0 0 8-8m-8 8-8-8"
+                      stroke="currentColor"
+                      stroke-width="3.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      opacity="0.22"
+                    />
+                  </svg>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <!-- 右侧：每周精选 + 热门榜单（Tab + 轮播） -->
+          <aside class="hero-right" aria-label="右侧：每周精选与热门榜单">
+            <section class="board" aria-label="榜单模块">
+              <div class="board__head" aria-label="榜单头部">
+	                <div class="board__tabs" role="tablist" aria-label="榜单切换">
+	                  <button class="board-tab" type="button" data-tab="weekly" data-active="true" aria-selected="true">
+	                    每周精选
+	                  </button>
+	                  <button class="board-tab" type="button" data-tab="hot" data-active="false" aria-selected="false">
+	                    热门榜单
+	                  </button>
+	                </div>
+
+                <div class="board__controls" aria-label="轮播控制">
+                  <div class="dots" aria-label="轮播页码指示器">
+                    <span class="dot" data-dot="0" data-active="true" aria-hidden="true"></span>
+                    <span class="dot" data-dot="1" data-active="false" aria-hidden="true"></span>
+                    <span class="dot" data-dot="2" data-active="false" aria-hidden="true"></span>
+                  </div>
+                  <button class="nav-btn" type="button" data-action="prev" aria-label="上一页">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M14.5 6 8.5 12l6 6"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button class="nav-btn" type="button" data-action="next" aria-label="下一页">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M9.5 6 15.5 12l-6 6"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 每周精选：轮播（每页 3 条） -->
+              <div class="carousel" data-carousel="weekly" data-active="true" aria-label="每周精选轮播">
+                <div class="carousel__viewport" aria-label="每周精选列表区域">
+                  <div class="carousel__track" data-track="weekly">
+                    <!-- Slide 1 -->
+                    <div class="carousel__slide" aria-label="每周精选 第 1 页">
+                      <article class="entry">
+                        <h3 class="entry__title">嫌 AI 写的界面太丑？装上这个开源插件，秒变资深设计师</h3>
+                        <p class="entry__desc">提供组件规范、配色与布局建议，让 UI 输出更稳定、更接近真实产品落地。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 公众号 · 蓝湖设计</span>
+                          <span class="entry__skill"><span class="entry__skill-name">ui-ux-pro-max</span></span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">从 0 到 1 搭了个 Claude Skills，自动写推文的全流程实战</h3>
+                        <p class="entry__desc">收集素材 → 选题 → 生成 → 审核 → 发布，一套 SOP 可复用。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 公众号 · 轻量AI</span>
+                          <span class="entry__skill"><span class="entry__skill-name">x-skills</span></span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">Vercel 新工具 agent-browser：让 AI 操作浏览器省 93% Token</h3>
+                        <p class="entry__desc">点击、抓取、填表、截图一体化，适合自动化测试与数据采集场景。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 公众号 · 认真实验</span>
+                          <span class="entry__skill"><span class="entry__skill-name">agent-browser</span></span>
+                        </div>
+                      </article>
+                    </div>
+
+                    <!-- Slide 2 -->
+                    <div class="carousel__slide" aria-label="每周精选 第 2 页">
+                      <article class="entry">
+                        <h3 class="entry__title">把复杂需求拆成可执行任务：目标→约束→验收的三段式</h3>
+                        <p class="entry__desc">每一步都有可验证产物，适合多人协作与评审，减少返工。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 知乎 · 实战派</span>
+                          <span class="entry__skill"><span class="entry__skill-name">sequential-thinking</span></span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">从 PRD 到视觉稿：45 分钟交付流程（模板 + 验收清单）</h3>
+                        <p class="entry__desc">让“好看且可落地”的页面更快到位，减少沟通成本。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 公众号 · 交付派</span>
+                          <span class="entry__skill"><span class="entry__skill-name">doc-coauthoring</span></span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">30 分钟接入外部 API：封装调用链，留下可复用工具接口</h3>
+                        <p class="entry__desc">快速搭建工具层，降低后续集成成本，适合原型验证。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 飞书文档 · 内训</span>
+                          <span class="entry__skill"><span class="entry__skill-name">mcp-builder</span></span>
+                        </div>
+                      </article>
+                    </div>
+
+                    <!-- Slide 3 -->
+                    <div class="carousel__slide" aria-label="每周精选 第 3 页">
+                      <article class="entry">
+                        <h3 class="entry__title">做一份可复用的数据报告模板：公式+格式+可视化一键生成</h3>
+                        <p class="entry__desc">把“报表体力活”交给工具，适合运营/数据团队标准化交付。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 飞书文档 · 数据组</span>
+                          <span class="entry__skill"><span class="entry__skill-name">xlsx</span></span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">节日海报可复用方案：seeded randomness 保证复现性</h3>
+                        <p class="entry__desc">一套参数，多张海报，适合营销素材批量生成与复用。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 小红书 · 设计控</span>
+                          <span class="entry__skill"><span class="entry__skill-name">algorithmic-art</span></span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">用 docx 做专业文档批注：评论、修订、格式一把梭</h3>
+                        <p class="entry__desc">沉淀可复用的文档协作模板，适合审阅与交付场景。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 其他 · 协作流</span>
+                          <span class="entry__skill"><span class="entry__skill-name">docx</span></span>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 热门榜单：轮播（每页 3 条） -->
+              <div class="carousel" data-carousel="hot" data-active="false" aria-label="热门榜单轮播">
+                <div class="carousel__viewport" aria-label="热门榜单列表区域">
+                  <div class="carousel__track" data-track="hot">
+                    <!-- Slide 1 -->
+                    <div class="carousel__slide" aria-label="热门榜单 第 1 页">
+                      <article class="entry">
+                        <h3 class="entry__title">AI 辅助文案生成：从选题到发布的可复用模板</h3>
+                        <p class="entry__desc">适用于内容团队/运营团队：节省时间，保证一致性与可复现。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 公众号 · 程序员鱼皮</span>
+                          <span class="entry__skill">
+                            <span class="entry__skill-name">skill-creator</span>
+                          </span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">一键自动化工作流：从收集到分发的“少点几次”方案</h3>
+                        <p class="entry__desc">把重复操作流程化，适合客服/运营/增长场景的自动分流。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 公众号 · Next 观察</span>
+                          <span class="entry__skill">
+                            <span class="entry__skill-name">frontend-design</span>
+                          </span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">每日更新 UI/UX：组件搭配与可落地视觉规范</h3>
+                        <p class="entry__desc">适合设计与前端协作：减少试错，快速形成一致的产品感。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 公众号 · 蓝湖设计</span>
+                          <span class="entry__skill">
+                            <span class="entry__skill-name">superpowers</span>
+                          </span>
+                        </div>
+                      </article>
+                    </div>
+
+                    <!-- Slide 2 -->
+                    <div class="carousel__slide" aria-label="热门榜单 第 2 页">
+                      <article class="entry">
+                        <h3 class="entry__title">检索链路优化：召回/排序/过滤三段式提升回答准确率</h3>
+                        <p class="entry__desc">企业内部知识库典型路径，适合客服与支持系统的“可复现迭代”。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 知乎 · 实战派</span>
+                          <span class="entry__skill">
+                            <span class="entry__skill-name">agent-browser</span>
+                          </span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">风险模式识别：在 PR 阶段提前拦截高风险改动</h3>
+                        <p class="entry__desc">把评审变成“问题归类 + 修复建议”，降低无效沟通。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 掘金 · Code Review</span>
+                          <span class="entry__skill">
+                            <span class="entry__skill-name">ui-ux-pro-max</span>
+                          </span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">周报自动汇总：多来源采集 + 统一摘要 + 行动项生成</h3>
+                        <p class="entry__desc">适合产品/运营周会：信息输入统一，输出可追踪。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 飞书文档 · 数据组</span>
+                          <span class="entry__skill">
+                            <span class="entry__skill-name">seo-audit</span>
+                          </span>
+                        </div>
+                      </article>
+                    </div>
+
+                    <!-- Slide 3 -->
+                    <div class="carousel__slide" aria-label="热门榜单 第 3 页">
+                      <article class="entry">
+                        <h3 class="entry__title">结构化面试复盘：问题库 + 评分表 + 回答改写</h3>
+                        <p class="entry__desc">把经验沉淀成可复用框架，帮助持续提升表达质量。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 公众号 · 面试官说</span>
+                          <span class="entry__skill">
+                            <span class="entry__skill-name">find-skills</span>
+                          </span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">内容选题自动化：从趋势采集到标题 AB 测试</h3>
+                        <p class="entry__desc">让内容生产有节奏：可复盘、可迭代、可复用。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 小红书 · 内容运营</span>
+                          <span class="entry__skill">
+                            <span class="entry__skill-name">skill-installer</span>
+                          </span>
+                        </div>
+                      </article>
+                      <article class="entry">
+                        <h3 class="entry__title">优先级调度：问题分类 + SLA 路由 + 自动回复模板</h3>
+                        <p class="entry__desc">减少等待时间与重复提问，适合中小团队快速落地。</p>
+                        <div class="entry__meta">
+                          <span class="entry__meta-left">来自 其他 · 客服团队</span>
+                          <span class="entry__skill">
+                            <span class="entry__skill-name">mcp-builder</span>
+                          </span>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第二屏占位：用于验证“首屏不露出第二屏” -->
+    <main
+      style="
+        width: min(var(--content-width), calc(100% - var(--page-gutter) * 2));
+        margin: 0 auto;
+        padding: 24px 0 60px;
+        position: relative;
+        z-index: 1;
+      "
+      aria-label="内容区占位"
+    >
+      <section
+        style="
+          background: rgba(255, 255, 255, 0.72);
+          border: 1px solid rgba(255, 255, 255, 0.9);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-card);
+          padding: 22px;
+        "
+      >
+        <h2 style="margin: 0; font-family: var(--font-heading); font-size: 24px">内容区（占位）</h2>
+        <p style="margin: 8px 0 0; color: var(--muted); line-height: 1.7; font-weight: 700">
+          这里将进入 Skills/实践的主列表。本 Mockup 的重点是首屏：左侧 KPI + 右侧 Tab 轮播（每页 3 条）。
+        </p>
+      </section>
+    </main>
+
+    <script>
+      /**
+       * 首屏避让 Floating Header（修复遮挡问题）
+       * ------------------------------------------------------------
+       * 现象：
+       * - Header 使用 fixed 悬浮样式，若首屏内容 padding-top 估算不足，会出现标题被遮挡\n
+       *
+       * 方案：
+       * - 运行时读取 header 实际高度（包含 top 偏移）\n
+       * - 把结果写入 CSS 变量 --hero-padding-top，让 .hero__inner 自动“让开”\n
+       *
+       * 性能说明：
+       * - 只在 resize / header 尺寸变化时更新\n
+       * - 更新的是 CSS 变量（不会触发大量 DOM 读写）\n
+       */
+      (function syncHeroPaddingTop() {
+        var header = document.querySelector(".app-header");
+        if (!header) return;
+
+        var root = document.documentElement;
+        var rafId = 0;
+
+        function clamp(value, min, max) {
+          return Math.min(Math.max(value, min), max);
+        }
+
+        function update() {
+          // cancel pending
+          if (rafId) {
+            cancelAnimationFrame(rafId);
+          }
+
+          rafId = requestAnimationFrame(function () {
+            var rect = header.getBoundingClientRect();
+            // Header 底部留一点呼吸空间，避免首行文字贴边。
+            var safeTop = Math.ceil(rect.bottom + 24);
+            // 上下限保护：避免异常情况下 padding 过大导致首屏溢出。
+            var top = clamp(safeTop, 112, 220);
+            root.style.setProperty("--hero-padding-top", top + "px");
+          });
+        }
+
+        update();
+
+        window.addEventListener("resize", update, { passive: true });
+
+        // Header 的内容在不同宽度下可能换行，因此用 ResizeObserver 监听高度变化更稳。
+        if (typeof ResizeObserver !== "undefined") {
+          var ro = new ResizeObserver(function () {
+            update();
+          });
+          ro.observe(header);
+        }
+      })();
+
+      /**
+       * Tab + Carousel（静态 Mockup 最小交互）
+       * ------------------------------------------------------------
+       * 需求对齐：
+        * - 右侧模块有 2 个 Tab：每周精选 / 热门榜单\n
+       * - 每个 Tab 内是轮播：每页 3 条，支持上一页/下一页\n
+       *
+       * 性能说明：
+       * - 轮播切换只更新 transform（translate3d），避免触发布局重排\n
+       * - 动画节奏控制在 320ms，接近线上交互的“轻快但不跳”\n
+       */
+      (function initBoard() {
+        var tabs = Array.prototype.slice.call(document.querySelectorAll(".board-tab"));
+        var carousels = Array.prototype.slice.call(document.querySelectorAll(".carousel"));
+        var dots = Array.prototype.slice.call(document.querySelectorAll(".dot"));
+        var prevBtn = document.querySelector('[data-action=\"prev\"]');
+        var nextBtn = document.querySelector('[data-action=\"next\"]');
+
+        if (!tabs.length || !carousels.length || !prevBtn || !nextBtn) return;
+
+        // 每个 Tab 维护自己的页码，避免切换 Tab 后“跳回”影响用户预期。
+        var indexByTab = { weekly: 0, hot: 0 };
+        var activeTab = "weekly";
+
+        /**
+         * 支持通过 URL 指定首屏默认 Tab（方便评审/截图/对比）：\n
+         * - 默认：?tab=weekly\n
+         * - 热门：?tab=hot\n
+         *
+         * 说明：
+         * - 这是 Mockup 级别的“便利能力”，不代表最终线上交互设计\n
+         * - 兜底策略：解析失败时回退 weekly\n
+         */
+        function getInitialTab() {
+          try {
+            var params = new URLSearchParams(window.location.search || "");
+            var tab = params.get("tab");
+            if (tab === "hot" || tab === "weekly") return tab;
+          } catch (e) {
+            // 老旧环境或异常时直接回退默认值（不影响主流程）。
+          }
+          return "weekly";
+        }
+
+        function getTrack(tab) {
+          var carousel = document.querySelector('.carousel[data-carousel=\"' + tab + '\"]');
+          if (!carousel) return null;
+          return carousel.querySelector('.carousel__track[data-track=\"' + tab + '\"]');
+        }
+
+        function getSlideCount(tab) {
+          var track = getTrack(tab);
+          if (!track) return 0;
+          return track.querySelectorAll(".carousel__slide").length;
+        }
+
+        function setDots(activeIndex) {
+          dots.forEach(function (dot) {
+            var isActive = String(dot.getAttribute("data-dot")) === String(activeIndex);
+            dot.setAttribute("data-active", isActive ? "true" : "false");
+          });
+        }
+
+        function render(tab) {
+          var carousel = document.querySelector('.carousel[data-carousel=\"' + tab + '\"]');
+          var track = getTrack(tab);
+          if (!carousel || !track) return;
+
+          var slideCount = getSlideCount(tab);
+          if (slideCount <= 0) return;
+
+          // 兜底：避免 index 越界
+          var index = indexByTab[tab] % slideCount;
+          if (index < 0) index = index + slideCount;
+          indexByTab[tab] = index;
+
+          // transform 切换：每次移动 100%
+          track.style.transform = "translate3d(" + -index * 100 + "%, 0, 0)";
+
+          // 指示器只展示当前 Tab 的 index
+          if (tab === activeTab) {
+            setDots(index);
+          }
+        }
+
+        function setActiveTab(nextTab) {
+          activeTab = nextTab;
+
+          tabs.forEach(function (tab) {
+            var isActive = tab.getAttribute("data-tab") === nextTab;
+            tab.setAttribute("data-active", isActive ? "true" : "false");
+            tab.setAttribute("aria-selected", isActive ? "true" : "false");
+          });
+
+          carousels.forEach(function (carousel) {
+            var isActive = carousel.getAttribute("data-carousel") === nextTab;
+            carousel.setAttribute("data-active", isActive ? "true" : "false");
+          });
+
+          // 切换 Tab 后，渲染目标 Tab 当前页
+          render(nextTab);
+        }
+
+        tabs.forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            var nextTab = tab.getAttribute("data-tab");
+            if (!nextTab) return;
+            setActiveTab(nextTab);
+          });
+        });
+
+        prevBtn.addEventListener("click", function () {
+          var slideCount = getSlideCount(activeTab);
+          if (slideCount <= 1) return;
+          indexByTab[activeTab] = indexByTab[activeTab] - 1;
+          render(activeTab);
+        });
+
+        nextBtn.addEventListener("click", function () {
+          var slideCount = getSlideCount(activeTab);
+          if (slideCount <= 1) return;
+          indexByTab[activeTab] = indexByTab[activeTab] + 1;
+          render(activeTab);
+        });
+
+        // 初始化：保证首屏指示器与 transform 正确
+        setActiveTab(getInitialTab());
+      })();
+    </script>
+  </body>
+</html>

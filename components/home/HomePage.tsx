@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SKILL_ISSUE_URL, TAG_OPTIONS, SORT_OPTIONS, PAGE_SIZE } from "@/lib/constants";
 import { STORAGE_KEYS } from "@/lib/storage-keys";
-import type { Paginated, Practice, PracticeWithSkills, Skill } from "@/lib/types";
+import type { BoardEntry, HomeMetrics, Paginated, Practice, PracticeWithSkills, Skill } from "@/lib/types";
 import type { DeviceKind } from "@/lib/device";
 import SkillCard from "@/components/home/SkillCard";
 import { SkillCardSkeleton } from "@/components/SkillCardSkeleton";
-import FeaturedCarousel from "@/components/home/FeaturedCarousel";
+import HomeRetentionBanner from "@/components/home/HomeRetentionBanner";
+import PracticeDiscoveryBanner from "@/components/home/PracticeDiscoveryBanner";
 import Pagination from "@/components/home/Pagination";
 import EmptyState from "@/components/EmptyState";
 import ModeDock, { type HomeMode } from "@/components/home/ModeDock";
 import PracticeFeedCard from "@/components/home/PracticeFeedCard";
 import PracticeFeedCardSkeleton from "@/components/home/PracticeFeedCardSkeleton";
-import PracticeDiscoveryBanner from "@/components/home/PracticeDiscoveryBanner";
 import { Clock, Filter, FilterX, Flame, Plus, RefreshCcw, SearchX, Sparkles, TriangleAlert, X } from "lucide-react";
 import HomeMobileView from "@/components/home/mobile/HomeMobileView";
 import { trackEvent } from "@/lib/analytics";
@@ -24,15 +24,33 @@ export type HomeInitialState = {
   tag?: string;
   sort?: string;
   mode?: string;
+  /**
+   * practices 模式的时间窗口筛选：
+   * - 当前仅支持 `7d`（近 7 天）
+   * - 由首页 KPI「本周上新」点击写入
+   */
+  window?: string;
   // ids=1,2,3：用于"从实践卡片筛选相关 Skill"场景（仅展示指定 Skill 列表）
   ids?: string;
 };
+
+/**
+ * 首页 KPI 点击动作 key（与 HomeRetentionBanner 的 KPI 配置保持同口径）。
+ */
+type HomeKpiActionKey =
+  | "practice_total"
+  | "practice_weekly_new"
+  | "skill_featured_total"
+  | "download_total";
 
 export default function HomePage({
   initial,
   deviceKind = "desktop",
   initialSkills,
   initialTotalPages,
+  initialFeatured,
+  initialHotBoardEntries,
+  initialHomeMetrics,
 }: {
   initial: HomeInitialState;
   /**
@@ -51,12 +69,30 @@ export default function HomePage({
    * SSR 预取对应的总页数（与初始技能列表一致）。
    */
   initialTotalPages?: number;
+  /**
+   * 首屏“每周精选”SSR 预取数据（仅默认首页 + PC 注入）：
+   * - undefined：未预取，客户端按旧逻辑展示 loading 后再拉取
+   * - []：已预取但当前无数据，首屏直接渲染空态（不闪骨架）
+   */
+  initialFeatured?: Practice[];
+  /**
+   * 首屏“热门榜单”SSR 预取数据（仅默认首页 + PC 注入）。
+   */
+  initialHotBoardEntries?: BoardEntry[];
+  /**
+   * 首屏 KPI SSR 预取数据（仅默认首页 + PC 注入）：
+   * - null：已预取但聚合失败（组件会展示 `—`）
+   * - undefined：未预取，组件保留旧的 loading 过程
+   */
+  initialHomeMetrics?: HomeMetrics | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // Next 的 usePathname 在部分类型版本下可能返回 null，这里统一兜底为首页根路径。
   const safePathname = pathname || "/";
+  // 设备判定：本期只改 PC 首屏，mobile 分支保持现状。
+  const isMobile = deviceKind === "mobile";
 
   // 默认模式保持当前行为：刷 Skill；当 URL 带 mode=practices 时进入实践模式（可分享/刷新保持）。
   const initialMode: HomeMode = initial.mode === "practices" ? "practices" : "skills";
@@ -77,6 +113,12 @@ export default function HomePage({
   const [query, setQuery] = useState(initial.q || "");
   // skills 列表的"指定 id 过滤"（例如从实践卡片点"筛选相关 Skill"进入）
   const [ids, setIds] = useState(initial.ids || "");
+  /**
+   * practices 时间窗口筛选：
+   * - 仅支持 "7d"；其它值统一降级为空
+   * - 仅在 practices 模式参与请求参数拼装
+   */
+  const [practiceWindow, setPracticeWindow] = useState<"" | "7d">(initial.window === "7d" ? "7d" : "");
   const [page, setPage] = useState(1);
 
   /**
@@ -106,9 +148,24 @@ export default function HomePage({
   // retry 触发器：递增即可强制重新请求（避免把 fetch 逻辑暴露到渲染层）。
   const [practiceReloadKey, setPracticeReloadKey] = useState(0);
 
-  const [featured, setFeatured] = useState<Practice[]>([]);
-  // Hero 推荐卡片加载状态：用于触发"骨架 -> 渐隐 -> 入场"过渡。
-  const [featuredLoading, setFeaturedLoading] = useState(true);
+  /**
+   * 首屏榜单/KPI 的 SSR 预取标记：
+   * - 与 initialSkills 的判定语义保持一致：只要 props 存在（即使是空数组），都算“已预取”
+   * - 用于抑制 hydration 后“内容 -> 骨架”的闪烁
+   */
+  const hasInitialFeatured = typeof initialFeatured !== "undefined";
+  const hasInitialHotBoardEntries = typeof initialHotBoardEntries !== "undefined";
+  const hasInitialHomeMetrics = typeof initialHomeMetrics !== "undefined";
+
+  const [featured, setFeatured] = useState<Practice[]>(initialFeatured || []);
+  // Hero 推荐卡片加载状态：SSR 已预取时直接置为 false，避免首屏骨架闪烁。
+  const [featuredLoading, setFeaturedLoading] = useState(!hasInitialFeatured);
+  // PC 首屏 KPI（4 项）数据：接口失败时允许降级展示 `—`，不阻断页面渲染。
+  const [homeMetrics, setHomeMetrics] = useState<HomeMetrics | null>(initialHomeMetrics ?? null);
+  const [homeMetricsLoading, setHomeMetricsLoading] = useState(!hasInitialHomeMetrics);
+  // PC 右侧热门榜单（近 7 天）：与每周精选共用卡片结构。
+  const [hotBoardEntries, setHotBoardEntries] = useState<BoardEntry[]>(initialHotBoardEntries || []);
+  const [hotBoardLoading, setHotBoardLoading] = useState(!hasInitialHotBoardEntries);
 
   /**
    * 解析 ids=1,2,3... 的数量（去重后），用于展示"关联技能筛选"Chip。
@@ -149,7 +206,29 @@ export default function HomePage({
    * - 如果用户未筛选且仍为空：提示"暂无 Skill"，引导用户去提交（右上角 +Skill / Issue 链接）
    */
   // ids 仅在 skills 模式下生效：实践模式不应因为 URL 带了 ids 而误判"有筛选"。
-  const hasFilters = Boolean(query) || (tag && tag !== "全部") || (mode === "skills" && Boolean(ids));
+  const hasFilters =
+    Boolean(query) ||
+    (tag && tag !== "全部") ||
+    (mode === "skills" && Boolean(ids)) ||
+    (mode === "practices" && practiceWindow === "7d");
+
+  /**
+   * 每周精选榜单数据（来源：/api/practices/featured）转换为首屏榜单统一结构。
+   * ------------------------------------------------------------
+   * 这样可以保证「每周精选」与「热门榜单」走同一套卡片组件，避免样式分叉。
+   */
+  const weeklyBoardEntries = useMemo<BoardEntry[]>(() => {
+    return (featured || []).map((item) => ({
+      id: item.id,
+      title: item.title,
+      summary: item.summary,
+      channel: item.channel,
+      author_name: item.author_name,
+      source_url: item.source_url,
+      updated_at: item.updated_at,
+      skill_name: item.skill_name ?? null,
+    }));
+  }, [featured]);
 
   useEffect(() => {
     setQuery(initial.q || "");
@@ -174,6 +253,16 @@ export default function HomePage({
     setIds(initial.ids || "");
     setPage(1);
   }, [initial.ids]);
+
+  useEffect(() => {
+    /**
+     * URL window 同步：
+     * - 只接受 7d，其它值统一视为“无窗口筛选”
+     * - 保证前进/后退后，列表筛选与 URL 完整一致
+     */
+    setPracticeWindow(initial.window === "7d" ? "7d" : "");
+    setPage(1);
+  }, [initial.window]);
 
   useEffect(() => {
     // URL mode 变化（例如：分享链接 / 浏览器前进后退）时，客户端同步切换模式。
@@ -230,17 +319,24 @@ export default function HomePage({
     if (sort) search.set("sort", sort);
     // ids 仅在 skills 模式下参与请求（实践列表不支持该参数，避免"看起来像筛选生效但其实没用"的错觉）。
     if (mode === "skills" && ids) search.set("ids", ids);
+    // practices 时间窗口筛选（当前仅 7d）；skills 模式不传递该参数。
+    if (mode === "practices" && practiceWindow === "7d") {
+      search.set("window", "7d");
+    }
     return search.toString();
-  }, [page, tag, query, sort, ids, mode]);
-
-  // 设备判定：本期 tablet 按 desktop 处理，避免扩大改造范围。
-  const isMobile = deviceKind === "mobile";
+  }, [page, tag, query, sort, ids, mode, practiceWindow]);
 
   useEffect(() => {
     let cancelled = false;
     const fetchFeatured = async () => {
-      // 保持首屏进入时的"骨架卡片"可见，直到数据到达。
-      setFeaturedLoading(true);
+      /**
+       * 若服务端已注入首屏数据，则后台刷新时不再回退到骨架：
+       * - 保持可读文本持续可见（SEO/UX 一致）
+       * - 仅在“未预取”时展示 loading
+       */
+      if (!hasInitialFeatured) {
+        setFeaturedLoading(true);
+      }
       try {
         const res = await fetch("/api/practices/featured", { cache: "no-store" });
         const json = await res.json();
@@ -261,7 +357,88 @@ export default function HomePage({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [hasInitialFeatured]);
+
+  useEffect(() => {
+    /**
+     * 本期范围限定：仅 PC 首屏需要 KPI 聚合数据。
+     * - mobile 直接跳过请求，避免无意义网络开销。
+     * - 同时把 loading 置为 false，避免传递到桌面组件时出现误状态。
+     */
+    if (isMobile) {
+      setHomeMetricsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchHomeMetrics = async () => {
+      // SSR 已预取时，刷新过程不再回退到骨架。
+      if (!hasInitialHomeMetrics) {
+        setHomeMetricsLoading(true);
+      }
+      try {
+        const res = await fetch("/api/home/metrics", { cache: "no-store" });
+        const json = await res.json();
+        if (!cancelled) {
+          setHomeMetrics((json?.data || null) as HomeMetrics | null);
+        }
+      } catch {
+        if (!cancelled) {
+          setHomeMetrics(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setHomeMetricsLoading(false);
+        }
+      }
+    };
+
+    fetchHomeMetrics();
+    return () => {
+      cancelled = true;
+    };
+  }, [isMobile, hasInitialHomeMetrics]);
+
+  useEffect(() => {
+    /**
+     * 本期范围限定：仅 PC 首屏需要热门榜单数据。
+     * - mobile 保持现有交互，不额外请求热榜接口。
+     */
+    if (isMobile) {
+      setHotBoardLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchHotBoard = async () => {
+      // SSR 已预取时，刷新过程不再回退到骨架。
+      if (!hasInitialHotBoardEntries) {
+        setHotBoardLoading(true);
+      }
+      try {
+        const res = await fetch("/api/practices/hot?window=7d&limit=9", { cache: "no-store" });
+        const json = await res.json();
+        if (!cancelled) {
+          setHotBoardEntries((json?.data || []) as BoardEntry[]);
+        }
+      } catch {
+        if (!cancelled) {
+          setHotBoardEntries([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setHotBoardLoading(false);
+        }
+      }
+    };
+
+    fetchHotBoard();
+    return () => {
+      cancelled = true;
+    };
+  }, [isMobile, hasInitialHotBoardEntries]);
 
   useEffect(() => {
     // 仅在「刷 Skill」模式请求 skills，避免在实践模式下做无意义请求。
@@ -434,6 +611,9 @@ export default function HomePage({
       }
     } else {
       nextSearch.delete("mode");
+      // skills 模式不使用 practices 时间窗口筛选。
+      nextSearch.delete("window");
+      setPracticeWindow("");
       // 对称处理：skills 模式默认展示"最热"
       if (!nextSearch.get("sort")) {
         setSort("heat");
@@ -488,9 +668,85 @@ export default function HomePage({
     // 同步本地 state：避免"URL 已变但 UI 还停留在旧模式/旧筛选"的短暂割裂。
     setMode("skills");
     setIds(skillIds.join(","));
+    setPracticeWindow("");
     setTag("全部");
     setQuery("");
     setPage(1);
+  };
+
+  /**
+   * 滚动到首页列表锚点（筛选条）：
+   * - 统一用于 KPI 点击后的“视角落点”
+   * - 动态读取 fixed header 的当前高度，避免被遮挡
+   */
+  const scrollToListAnchor = () => {
+    const anchor = document.getElementById("skill-list");
+    if (!anchor) return;
+
+    const header = document.querySelector(".app-header");
+    const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
+    const top = window.scrollY + anchor.getBoundingClientRect().top - Math.ceil(headerBottom + 10);
+
+    window.scrollTo({
+      top: Math.max(top, 0),
+      behavior: "smooth",
+    });
+  };
+
+  /**
+   * KPI 点击动作（首屏看板 -> 列表）：
+   * ------------------------------------------------------------
+   * 需求映射：
+   * - 本周上新：切到 practices + window=7d（近 7 天）
+   * - 案例数量：切到 practices（全量）
+   * - 精选 Skill / 下载总量：切到 skills
+   * - 所有场景都自动滚动到列表筛选条位置
+   */
+  const handleKpiClick = (key: HomeKpiActionKey) => {
+    const nextSearch = new URLSearchParams(searchParams?.toString() || "");
+
+    // ids 仅对 skills 模式生效：KPI 导航属于“模式切换入口”，统一清理避免语义冲突。
+    nextSearch.delete("ids");
+    setIds("");
+
+    if (key === "practice_weekly_new") {
+      nextSearch.set("mode", "practices");
+      nextSearch.set("window", "7d");
+      // 周更列表更关注新鲜度，默认拉到“最新”排序。
+      nextSearch.set("sort", "recent");
+
+      setMode("practices");
+      setPracticeWindow("7d");
+      setSort("recent");
+      markPracticeModeDiscovered();
+    } else if (key === "practice_total") {
+      nextSearch.set("mode", "practices");
+      nextSearch.delete("window");
+
+      setMode("practices");
+      setPracticeWindow("");
+      markPracticeModeDiscovered();
+    } else {
+      // 精选 Skill / 下载总量：统一回到 skills 模式。
+      nextSearch.delete("mode");
+      nextSearch.delete("window");
+
+      setMode("skills");
+      setPracticeWindow("");
+    }
+
+    setPage(1);
+    // KPI 点击需要记录，便于后续分析“从首屏看板到列表”的导流效果。
+    trackEvent("home_kpi_click", { key });
+
+    // 先同步 URL，再滚动，避免用户刷新后状态丢失。
+    pushSearchParams(nextSearch, { scroll: false });
+    // 等路由/state 落地后滚动，避免在布局更新前计算到错误位置。
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        scrollToListAnchor();
+      });
+    });
   };
 
   const handleMobileLoadMore = () => {
@@ -506,6 +762,21 @@ export default function HomePage({
     }
     setPracticeReloadKey((key) => key + 1);
   };
+
+  // 页面停留时长埋点
+  useEffect(() => {
+    const startTime = Date.now();
+    return () => {
+      const duration = Math.floor((Date.now() - startTime) / 1000);
+      // 只记录停留 > 3 秒的
+      if (duration > 3) {
+        trackEvent("page_view_duration", {
+          mode,
+          duration_seconds: duration,
+        });
+      }
+    };
+  }, [mode]);
 
   // 移动端：使用专属 View（两列网格 + 无限滚动 + ActionSheet）。
   if (isMobile) {
@@ -543,34 +814,24 @@ export default function HomePage({
     );
   }
 
-  // 页面停留时长埋点
-  useEffect(() => {
-    const startTime = Date.now();
-    return () => {
-      const duration = Math.floor((Date.now() - startTime) / 1000);
-      // 只记录停留 > 3 秒的
-      if (duration > 3) {
-        trackEvent("page_view_duration", {
-          mode,
-          duration_seconds: duration,
-        });
-      }
-    };
-  }, [mode]);
-
   return (
     <>
-      <FeaturedCarousel practices={featured} loading={featuredLoading} />
+      <HomeRetentionBanner
+        metrics={homeMetrics}
+        metricsLoading={homeMetricsLoading}
+        weeklyEntries={weeklyBoardEntries}
+        weeklyLoading={featuredLoading}
+        hotEntries={hotBoardEntries}
+        hotLoading={hotBoardLoading}
+        onKpiClick={handleKpiClick}
+      />
 
-      {/* 实践模式引导 Banner（仅桌面端） */}
-      {!isMobile && (
-        <PracticeDiscoveryBanner
-          mode={mode}
-          onTryNow={() => {
-            handleModeChange("practices");
-          }}
-        />
-      )}
+      {/**
+       * 实践模式引导 Banner（v1.5.6 能力保留）：
+       * - 用户强调该能力不能丢失，故在首屏 Banner 后恢复挂载
+       * - 组件内部自带 localStorage 记忆与显隐逻辑
+       */}
+      <PracticeDiscoveryBanner mode={mode} onTryNow={() => handleModeChange("practices")} />
 
       <ModeDock mode={mode} onChange={handleModeChange} />
 

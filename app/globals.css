@@ -1755,6 +1755,7 @@ button[data-loading="true"] .btn__loading {
   background: transparent;
   border: 0;
   box-shadow: none;
+  top: 41px;
 }
 
 .hero-copy::before {
@@ -3156,6 +3157,870 @@ button[data-loading="true"] .btn__loading {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
 }
 
+/* ---------- PC Retention Banner (v1.5.7) ---------- */
+/*
+  设计目标（仅 PC）：
+  - 首屏主布局：左侧品牌 + 4 KPI，右侧每周精选/热门榜单
+  - 热门与精选共用同一条目样式，不展示排名
+  - hover 仅边框/下划线高亮，不做上浮和阴影增强
+*/
+.pc-retention-banner {
+  position: relative;
+  z-index: 1;
+  /* 不再强制 100vh，改为由内容自然撑开，避免“被锁死一屏高度”的裁切问题。 */
+  overflow: visible;
+}
+
+.pc-retention-banner__inner {
+  width: min(100%, var(--content-width));
+  margin: 0 auto;
+  padding: var(--pc-retention-padding-top, 124px) var(--page-gutter) clamp(18px, 4vh, 30px);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.pc-retention-banner__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 30px;
+  align-items: stretch;
+  align-content: start;
+}
+
+.pc-retention-left {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pc-retention-copy {
+  max-width: 760px;
+}
+
+.pc-retention-copy .hero__subtitle {
+  margin-top: 12px;
+}
+
+.pc-retention-kpi-grid {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pc-retention-kpi {
+  --kpi-accent: rgba(255, 107, 0, 1);
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 98px;
+  padding: 12px;
+  border-radius: 22px;
+  border: 1px solid rgba(26, 21, 16, 0.06);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 16px 40px -42px rgba(50, 20, 0, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.76) inset;
+  transition: border-color 180ms ease-out;
+  cursor: pointer;
+}
+
+.pc-retention-kpi:hover {
+  /* 按需求取消统一橙色 hover 高亮，改为中性边框微强调。 */
+  border-color: rgba(26, 21, 16, 0.1);
+}
+
+.pc-retention-kpi:disabled {
+  cursor: default;
+}
+
+.pc-retention-kpi:focus-visible {
+  outline: none;
+  border-color: rgba(255, 107, 0, 0.34);
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.76) inset;
+}
+
+.pc-retention-kpi::before {
+  content: "";
+  position: absolute;
+  right: -74px;
+  top: -84px;
+  width: 248px;
+  height: 248px;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pc-retention-kpi::after {
+  /*
+    Hover 扫光层（替代原先的内容放大）：
+    - 仅使用 transform + opacity，避免触发布局重排
+    - 默认隐藏，hover 时触发一次扫过动画
+  */
+  content: "";
+  position: absolute;
+  top: -28%;
+  left: -46%;
+  /* 扩大扫光带宽度，让 hover 反馈更明显。 */
+  width: 52%;
+  height: 164%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.42) 34%,
+    rgba(255, 255, 255, 0.96) 50%,
+    rgba(255, 255, 255, 0.42) 66%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translate3d(-220%, 0, 0) rotate(8deg);
+}
+
+.pc-retention-kpi__content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 6px;
+  width: min(100%, 57%);
+}
+
+.pc-retention-kpi__viz {
+  position: absolute;
+  right: 16px;
+  bottom: 10px;
+  width: 174px;
+  height: 80px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pc-retention-kpi__viz svg {
+  width: 100%;
+  height: 100%;
+}
+
+.pc-retention-kpi__viz-axis {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-opacity: 0.22;
+}
+
+.pc-retention-kpi__viz-fill {
+  fill: currentColor;
+  fill-opacity: 0.4;
+}
+
+.pc-retention-kpi__viz-stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0.42;
+}
+
+.pc-retention-kpi__viz-dot {
+  fill: currentColor;
+  fill-opacity: 0.34;
+}
+
+.pc-retention-kpi__viz-track {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 11;
+  stroke-linecap: round;
+  stroke-opacity: 0.18;
+}
+
+.pc-retention-kpi__viz-needle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-opacity: 0.36;
+}
+
+.pc-retention-kpi__viz-arrow {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0.36;
+}
+
+.pc-retention-kpi__label {
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  color: var(--kpi-accent);
+  opacity: 0.9;
+}
+
+.pc-retention-kpi__value {
+  font-family: var(--font-heading);
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: 0.5px;
+  /*
+    按产品反馈：数字色值与卡片标题色值保持完全一致，
+    统一使用当前卡片的 --kpi-accent。
+  */
+  color: var(--kpi-accent);
+  /* 数字递增动画期间使用等宽数字，避免位数变化造成“左右抖动”。 */
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-retention-kpi__value--loading {
+  /*
+    加载态占位：
+    - 文本透明，仅用于占据真实行高
+    - 避免从 loading -> real value 时出现垂直跳动
+  */
+  color: transparent;
+  user-select: none;
+}
+
+.pc-retention-kpi__hint {
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.2;
+  color: rgba(26, 21, 16, 0.54);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pc-retention-kpi__hint::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--kpi-accent);
+  opacity: 0.3;
+}
+
+.pc-retention-kpi__hint--loading {
+  color: transparent;
+  user-select: none;
+}
+
+.pc-retention-kpi__hint--loading::before {
+  opacity: 0;
+}
+
+.pc-retention-kpi--loading::after {
+  /*
+    KPI 加载态扫光：
+    - 取消条状骨架，改为整卡扫光
+    - 动画仅使用 transform + opacity，避免重排
+  */
+  opacity: 0.56;
+  animation: pc-retention-kpi-loading-sheen 1.35s linear infinite;
+}
+
+.pc-retention-kpi--cases {
+  --kpi-accent: rgba(255, 107, 0, 1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(255, 107, 0, 0.09));
+}
+
+.pc-retention-kpi--cases::before {
+  background: radial-gradient(circle, rgba(255, 166, 120, 0.3) 0%, rgba(255, 166, 120, 0.13) 45%, rgba(255, 166, 120, 0) 74%);
+}
+
+.pc-retention-kpi__viz--cases {
+  color: rgba(255, 160, 112, 1);
+}
+
+.pc-retention-kpi--weekly {
+  --kpi-accent: rgba(34, 197, 94, 1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(34, 197, 94, 0.1));
+}
+
+.pc-retention-kpi--weekly::before {
+  background: radial-gradient(circle, rgba(116, 219, 153, 0.28) 0%, rgba(116, 219, 153, 0.11) 46%, rgba(116, 219, 153, 0) 74%);
+}
+
+.pc-retention-kpi__viz--weekly {
+  color: rgba(120, 210, 146, 1);
+}
+
+.pc-retention-kpi--featured {
+  --kpi-accent: rgba(255, 204, 0, 1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(255, 204, 0, 0.11));
+}
+
+.pc-retention-kpi--featured::before {
+  background: radial-gradient(circle, rgba(255, 223, 118, 0.32) 0%, rgba(255, 223, 118, 0.12) 46%, rgba(255, 223, 118, 0) 74%);
+}
+
+.pc-retention-kpi__viz--featured {
+  bottom: 6px;
+  color: rgba(248, 214, 118, 1);
+}
+
+.pc-retention-kpi--downloads {
+  --kpi-accent: rgba(139, 92, 246, 1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(139, 92, 246, 0.11));
+}
+
+.pc-retention-kpi:not(:disabled):hover::after {
+  /*
+    Hover 持续扫光：
+    - 鼠标停留期间循环播放
+    - 鼠标移出后自动停止
+  */
+  animation: pc-retention-kpi-sheen 1.05s linear infinite;
+}
+
+.pc-retention-kpi--downloads::before {
+  background: radial-gradient(circle, rgba(194, 159, 255, 0.28) 0%, rgba(194, 159, 255, 0.12) 46%, rgba(194, 159, 255, 0) 74%);
+}
+
+.pc-retention-kpi__viz--downloads {
+  color: rgba(190, 162, 245, 1);
+}
+
+.pc-retention-right {
+  min-height: 0;
+  display: flex;
+  min-width: 0;
+}
+
+.pc-retention-board {
+  --pc-retention-row-count: 3;
+  --pc-retention-entry-height: 132px;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 107, 0, 0.16);
+  background: rgba(255, 255, 255, 0.36);
+  box-shadow: 0 18px 56px -54px rgba(50, 20, 0, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.76) inset;
+  padding: 16px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.pc-retention-board__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 107, 0, 0.1);
+}
+
+.pc-retention-board__tabs {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 22px;
+}
+
+.pc-retention-board__tab {
+  position: relative;
+  height: 44px;
+  padding: 0 2px 6px;
+  border-radius: 0;
+  color: rgba(26, 21, 16, 0.62);
+  font-size: 15px;
+  font-weight: 900;
+  transition: color 180ms ease-out;
+}
+
+.pc-retention-board__tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--primary);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms ease-out, opacity 180ms ease-out;
+}
+
+.pc-retention-board__tab[data-active="true"] {
+  color: var(--primary);
+}
+
+.pc-retention-board__tab[data-active="true"]::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.pc-retention-board__tab:hover::after {
+  opacity: 0.24;
+  transform: scaleX(1);
+}
+
+/*
+  交互细节：
+  - hover 预览只用于非激活 Tab 的“轻提示”
+  - 对激活 Tab，hover 时仍需保持纯橙色满亮下划线（避免被 0.24 覆盖变淡）
+*/
+.pc-retention-board__tab[data-active="true"]:hover::after {
+  opacity: 1;
+}
+
+.pc-retention-board__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pc-retention-board__dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pc-retention-board__dot {
+  width: 20px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(26, 21, 16, 0.08);
+  transition: background-color 180ms ease-out, width 180ms ease-out;
+}
+
+.pc-retention-board__dot[data-active="true"] {
+  width: 28px;
+  background: rgba(255, 107, 0, 0.72);
+}
+
+.pc-retention-board__nav {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(26, 21, 16, 0.08);
+  background: rgba(255, 255, 255, 0.86);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 160ms ease-out;
+}
+
+.pc-retention-board__nav:hover:not(:disabled) {
+  border-color: rgba(255, 107, 0, 0.24);
+}
+
+.pc-retention-board__nav:disabled {
+  opacity: 0.38;
+}
+
+.pc-retention-board__viewport {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.pc-retention-board__track {
+  display: flex;
+  width: 100%;
+  transform: translate3d(0, 0, 0);
+  transition: transform 320ms ease-out;
+  will-change: transform;
+}
+
+.pc-retention-board__slide {
+  flex: 0 0 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: repeat(var(--pc-retention-row-count, 3), var(--pc-retention-entry-height, 132px));
+  align-content: start;
+  gap: 12px;
+}
+
+.pc-retention-entry-link {
+  display: block;
+  min-height: 0;
+}
+
+.pc-retention-entry-link[aria-disabled="true"] {
+  cursor: default;
+}
+
+.pc-retention-entry {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 107, 0, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12px 34px -34px rgba(50, 20, 0, 0.14),
+    0 0 0 1px rgba(255, 255, 255, 0.74) inset;
+  padding: 14px;
+  transition: border-color 180ms ease-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.pc-retention-entry-link:hover .pc-retention-entry,
+.pc-retention-entry-link:focus-visible .pc-retention-entry {
+  border-color: rgba(255, 107, 0, 0.22);
+}
+
+.pc-retention-entry__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pc-retention-entry__desc {
+  min-height: calc(13px * 1.55 * 2);
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pc-retention-entry__meta {
+  margin-top: auto;
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pc-retention-entry__source {
+  min-width: 0;
+  color: rgba(26, 21, 16, 0.46);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pc-retention-entry__skill {
+  max-width: 48%;
+  min-width: 0;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.08);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 24px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pc-retention-entry--skeleton {
+  padding: 14px;
+  justify-content: flex-start;
+  padding-top: 22px;
+  gap: 10px;
+}
+
+.pc-retention-entry__line {
+  position: relative;
+  overflow: hidden;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(124, 94, 77, 0.14);
+}
+
+.pc-retention-entry__line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.64), rgba(255, 255, 255, 0));
+  transform: translate3d(-110%, 0, 0);
+  animation: pc-retention-shimmer 1.4s linear infinite;
+}
+
+.pc-retention-entry__line--title {
+  height: 16px;
+  width: 82%;
+}
+
+.pc-retention-entry__line--short {
+  width: 58%;
+}
+
+.pc-retention-entry--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 146px;
+}
+
+.pc-retention-entry__empty-text {
+  color: rgba(124, 94, 77, 0.86);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+@media (max-width: 1120px) {
+  .pc-retention-banner__layout {
+    gap: 24px;
+  }
+
+  .pc-retention-kpi {
+    min-height: 94px;
+    padding: 11px;
+  }
+
+  .pc-retention-kpi__value {
+    font-size: 30px;
+  }
+
+  .pc-retention-kpi__content {
+    width: min(100%, 60%);
+  }
+
+  .pc-retention-kpi__viz {
+    width: 160px;
+    height: 72px;
+    right: 12px;
+    bottom: 8px;
+  }
+}
+
+@media (max-height: 760px) {
+  .pc-retention-banner__inner {
+    padding-top: clamp(108px, 16vh, 132px);
+    gap: 12px;
+  }
+
+  .pc-retention-copy .hero__subtitle {
+    display: none;
+  }
+
+  .pc-retention-kpi-grid {
+    gap: 10px;
+  }
+
+  .pc-retention-kpi {
+    min-height: 92px;
+    padding: 10px;
+  }
+
+  .pc-retention-kpi__value {
+    font-size: 28px;
+  }
+
+  .pc-retention-kpi__content {
+    width: min(100%, 62%);
+  }
+
+  .pc-retention-kpi__viz {
+    width: 148px;
+    height: 66px;
+  }
+
+  .pc-retention-entry {
+    padding: 12px;
+  }
+
+  .pc-retention-board {
+    --pc-retention-entry-height: 118px;
+  }
+
+  .pc-retention-entry__desc {
+    min-height: calc(12px * 1.52 * 2);
+    font-size: 12px;
+    line-height: 1.52;
+  }
+}
+
+@media (max-height: 680px) {
+  .pc-retention-banner__layout {
+    gap: 24px;
+  }
+
+  .pc-retention-copy .hero-copy__brand {
+    font-size: clamp(44px, 4.6vw, 66px);
+  }
+
+  .pc-retention-copy .hero-copy__slogan {
+    font-size: clamp(16px, 2vw, 22px);
+  }
+
+  .pc-retention-kpi {
+    min-height: 88px;
+  }
+
+  .pc-retention-kpi__value {
+    font-size: 27px;
+  }
+
+  .pc-retention-kpi__content {
+    width: min(100%, 64%);
+  }
+
+  .pc-retention-kpi__viz {
+    width: 138px;
+    height: 62px;
+  }
+
+  .pc-retention-board {
+    --pc-retention-entry-height: 104px;
+    padding: 14px 14px 12px;
+    border-radius: 24px;
+  }
+
+  .pc-retention-board__head {
+    padding-bottom: 8px;
+  }
+
+  .pc-retention-board__tabs {
+    gap: 18px;
+  }
+
+  .pc-retention-board__tab {
+    height: 40px;
+    padding-bottom: 5px;
+    font-size: 14px;
+  }
+
+  .pc-retention-board__tab::after {
+    height: 2px;
+  }
+
+  .pc-retention-board__dot {
+    width: 16px;
+    height: 5px;
+  }
+
+  .pc-retention-board__dot[data-active="true"] {
+    width: 22px;
+  }
+
+  .pc-retention-board__nav {
+    width: 32px;
+    height: 32px;
+  }
+
+  .pc-retention-board__slide {
+    gap: 10px;
+  }
+
+  .pc-retention-entry {
+    padding: 9px;
+  }
+
+  .pc-retention-entry__title {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .pc-retention-entry__desc {
+    min-height: calc(11px * 1.4 * 2);
+    margin-top: 5px;
+    font-size: 11px;
+    line-height: 1.4;
+    -webkit-line-clamp: 2;
+  }
+
+  .pc-retention-entry__meta {
+    padding-top: 6px;
+  }
+
+  .pc-retention-entry__source {
+    font-size: 11px;
+  }
+
+  .pc-retention-entry__skill {
+    height: 22px;
+    line-height: 22px;
+    font-size: 11px;
+  }
+}
+
+@keyframes pc-retention-kpi-sheen {
+  0% {
+    opacity: 0;
+    transform: translate3d(-220%, 0, 0) rotate(8deg);
+  }
+  14% {
+    opacity: 0.36;
+  }
+  32% {
+    opacity: 1;
+  }
+  56% {
+    opacity: 0.62;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(340%, 0, 0) rotate(8deg);
+  }
+}
+
+@keyframes pc-retention-kpi-loading-sheen {
+  0% {
+    opacity: 0;
+    transform: translate3d(-260%, 0, 0) rotate(8deg);
+  }
+  22% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(360%, 0, 0) rotate(8deg);
+  }
+}
+
+@keyframes pc-retention-shimmer {
+  from {
+    transform: translate3d(-110%, 0, 0);
+  }
+  to {
+    transform: translate3d(110%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-retention-board__track,
+  .pc-retention-board__tab::after,
+  .pc-retention-board__dot,
+  .pc-retention-board__nav,
+  .pc-retention-entry,
+  .pc-retention-kpi::after,
+  .pc-retention-entry__line::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .pc-retention-kpi::after {
+    opacity: 0 !important;
+    transform: translate3d(-220%, 0, 0) rotate(8deg) !important;
+  }
+}
+
 /* ---------- Toolbar ---------- */
 .toolbar {
   display: flex;
@@ -3939,7 +4804,7 @@ button[data-loading="true"] .btn__loading {
 .practice-card--feed .practice-card__summary {
   color: var(--muted);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.7;
   margin: 0;
   position: relative;
@@ -5866,7 +6731,7 @@ body.is-detail::after {
 .practice-card p {
   color: var(--muted);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.7;
   display: -webkit-box;
   -webkit-line-clamp: 3;

@@ -9,6 +9,7 @@ import { getSiteUrl } from "@/lib/site";
  */
 export default function robots(): MetadataRoute.Robots {
   const siteUrl = getSiteUrl();
+  const siteOrigin = siteUrl.toString().replace(/\/$/, "");
 
   return {
     rules: {
@@ -16,6 +17,8 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/", "/auth/"],
     },
+    // 显式声明 host，帮助爬虫统一识别首选域名（www）。
+    host: siteOrigin,
     sitemap: new URL("/sitemap.xml", siteUrl).toString(),
   };
 }
