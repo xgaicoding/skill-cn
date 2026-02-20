@@ -20,7 +20,7 @@
  * 环境变量（从 .env 读取）：
  *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  *   DEEPSEEK_API_KEY
- *   JUEJIN_COOKIE（掘金完整 cookie）
+ *   DEEPSEEK_API_KEY
  */
 
 const fs = require("fs");
@@ -53,7 +53,6 @@ loadEnv();
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY;
-const JUEJIN_COOKIE = process.env.JUEJIN_COOKIE || "";
 
 // ============ Supabase ============
 async function supabaseGet(apiPath) {
@@ -83,31 +82,25 @@ async function checkPracticeExistsByTitle(title) {
 }
 
 // ============ 掘金搜索 API ============
-async function searchJuejin(keyword, limit = 10) {
+async function searchJuejin(keyword, limit = 10, retries = 2) {
   // 用 Chrome 渲染网页搜索（比 API 召回率高很多，能搜到老文章）
-  const puppeteer = require(path.join(ROOT_DIR, "node_modules/puppeteer-core"));
-  const browser = await puppeteer.launch({
-    executablePath: "/usr/bin/google-chrome",
-    headless: "new",
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--single-process", "--disable-extensions"],
-  });
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const puppeteer = require(path.join(ROOT_DIR, "node_modules/puppeteer-core"));
+    const browser = await puppeteer.launch({
+      executablePath: "/usr/bin/google-chrome",
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--single-process", "--disable-extensions"],
+    });
 
-  try {
-    const page = await browser.newPage();
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    );
-    if (JUEJIN_COOKIE) {
-      const cookies = JUEJIN_COOKIE.split(";").map((c) => {
-        const [name, ...rest] = c.trim().split("=");
-        return { name: name.trim(), value: rest.join("=").trim(), domain: ".juejin.cn" };
-      }).filter((c) => c.name && c.value);
-      await page.setCookie(...cookies);
-    }
+    try {
+      const page = await browser.newPage();
+      await page.setUserAgent(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      );
 
-    const searchUrl = `https://juejin.cn/search?query=${encodeURIComponent(keyword)}&type=0`;
-    await page.goto(searchUrl, { waitUntil: "networkidle2", timeout: 30000 });
-    await new Promise((r) => setTimeout(r, 2000));
+      const searchUrl = `https://juejin.cn/search?query=${encodeURIComponent(keyword)}&type=0`;
+      await page.goto(searchUrl, { waitUntil: "networkidle2", timeout: 30000 });
+      await new Promise((r) => setTimeout(r, 2000));
 
     // 提取搜索结果中的文章链接和标题
     const results = await page.evaluate(() => {
@@ -141,9 +134,17 @@ async function searchJuejin(keyword, limit = 10) {
       ctime: "",
       url: `https://juejin.cn/post/${r.article_id}`,
     }));
-  } finally {
-    await browser.close();
-  }
+    } catch (err) {
+      await browser.close();
+      if (attempt < retries) {
+        console.log(`   ⚠️ 搜索 "${keyword}" 超时，重试 (${attempt + 1}/${retries})...`);
+        await new Promise((r) => setTimeout(r, 2000));
+        continue;
+      }
+      throw err;
+    }
+  } // end for retries
+  return [];
 }
 
 // ============ Chrome 渲染获取全文 ============
@@ -356,6 +357,7 @@ function generateSearchKeywords(skills) {
 async function main() {
   const args = process.argv.slice(2);
   const doImport = args.includes("--import");
+  const doNotify = args.includes("--notify"); // 跑完输出汇总到 .discover_result.txt
 
   // 解析 --keyword
   let customKeyword = null;
@@ -370,10 +372,6 @@ async function main() {
   // 检查环境变量
   for (const [k, v] of Object.entries({ SUPABASE_URL, SUPABASE_KEY, DEEPSEEK_KEY })) {
     if (!v) { console.error(`缺少环境变量: ${k}`); process.exit(1); }
-  }
-  if (!JUEJIN_COOKIE) {
-    console.error("缺少环境变量: JUEJIN_COOKIE（掘金完整 cookie）");
-    process.exit(1);
   }
 
   try {
@@ -536,7 +534,7 @@ async function main() {
           // 生成摘要
           const summary = await generateSummary(article.title, article._content);
           const skillIds = [...new Set(matched.map((s) => s.id))];
-          const today = new Date().toISOString().slice(0, 10);
+          const today = new Date().toISOString();
 
           const practice = {
             skill_ids: skillIds,
@@ -575,6 +573,32 @@ async function main() {
       console.log("\n🎉 自动入库完成！");
     } else if (passed.length > 0 && !doImport) {
       console.log("💡 提示：加 --import 参数可自动入库通过筛选的文章");
+    }
+
+    // 7. 输出可发送的汇总消息（方便复制到群里）
+    if (passed.length > 0) {
+      console.log("\n" + "=".repeat(60));
+      console.log("📋 以下是可发送到群里的汇总消息：");
+      console.log("=".repeat(60));
+      let msg = `📊 掘金实践文章发掘报告\n\n`;
+      msg += `候选 ${candidates.length} 篇 → 通过 ${passed.length} 篇\n\n`;
+      for (let i = 0; i < passed.length; i++) {
+        const a = passed[i];
+        const j = a._judgment;
+        msg += `${i + 1}. ${a.title}\n`;
+        msg += `   ${a.url}\n`;
+        msg += `   Skill: ${(j.skills || []).join(", ")} | ${(j.confidence * 100).toFixed(0)}%\n\n`;
+      }
+      if (doImport) msg += `✅ 已自动入库`;
+      else msg += `💡 待审核确认后入库`;
+      console.log(msg);
+
+      // --notify: 写汇总到文件，供外部读取发送
+      if (doNotify) {
+        const resultFile = path.join(__dirname, ".discover_result.txt");
+        fs.writeFileSync(resultFile, msg, "utf8");
+        console.log(`\n📝 汇总已写入: ${resultFile}`);
+      }
     }
   } catch (err) {
     console.error(`\n❌ 失败: ${err.message}`);
