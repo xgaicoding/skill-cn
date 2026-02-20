@@ -315,17 +315,17 @@ function matchSkills(extractedNames, dbSkills) {
 
 // ============ 生成搜索关键词 ============
 function generateSearchKeywords(skills) {
-  // 只用 Skill 名称作为搜索关键词，不加通用词
+  // 直接用 Skill 英文名搜索，不加后缀（掘金搜索会把中文后缀当主关键词）
   const keywords = new Set();
   for (const skill of skills) {
     const name = skill.name
       .replace(/-best-practices$/i, "")
       .replace(/-skill$/i, "")
-      .replace(/-pro$/i, "")
-      .replace(/-/g, " ");
-    // 跳过太短的关键词（容易搜出噪音）
-    if (name.length >= 2) {
-      keywords.add(name + " 实战");
+      .replace(/-skills$/i, "")
+      .replace(/-pro$/i, "");
+    // 跳过太短或太通用的关键词
+    if (name.length >= 3 && !["pdf", "xlsx", "rag", "ppt"].includes(name.toLowerCase())) {
+      keywords.add(name);
     }
   }
   return [...keywords];
