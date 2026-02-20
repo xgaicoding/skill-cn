@@ -176,17 +176,23 @@ async function fetchArticleContent(url) {
 }
 
 // ============ AI 判断是否为实践文章 ============
-const JUDGE_PROMPT = `你是 AI 实践文章评审专家。请判断以下文章是否为"实践文章"。
+function buildJudgePrompt(skillNames) {
+  const skillList = skillNames.join(", ");
+  return `你是 AI 实践文章评审专家。请判断以下文章是否为"实践文章"。
 
 **实践文章的定义**：用具体的 AI Skill/工具，在真实场景中做出了具体产出。
 核心公式：Skill × 场景 = 实践
 
+**重要约束：只识别以下 Skill 列表中的工具，不在列表中的工具一律忽略**：
+${skillList}
+
 **好文章（收录）**：
-- 用某个 Skill 做了一个项目/解决了一个问题
+- 用上述列表中的某个 Skill 做了一个项目/解决了一个问题
 - 有操作步骤、代码、截图、踩坑记录
 - 最终有可见的产出
 
 **差文章（不收录）**：
+- 文章中没有使用上述列表中的任何 Skill
 - 单纯介绍/推荐工具，无具体落地场景
 - 工具对比评测，但没有实际项目产出
 - 纯概念科普、新闻资讯
@@ -203,13 +209,15 @@ Claude Code, Cursor, Windsurf, Copilot, ChatGPT, DeepSeek, Gemini, GPT-4, Claude
 {
   "is_practice": true/false,
   "confidence": 0.0-1.0,
-  "skills": ["skill-name-1"],
+  "skills": ["只填上述列表中匹配到的skill名称"],
   "scene": "一句话描述使用场景",
   "reason": "判断理由（一句话）"
 }`;
+}
 
-async function judgeArticle(title, content) {
-  const prompt = JUDGE_PROMPT.replace("{title}", title).replace("{content}", content.slice(0, 3000));
+async function judgeArticle(title, content, skillNames) {
+  const promptTemplate = buildJudgePrompt(skillNames);
+  const prompt = promptTemplate.replace("{title}", title).replace("{content}", content.slice(0, 3000));
 
   const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
     method: "POST",
@@ -416,8 +424,9 @@ async function main() {
           continue;
         }
 
-        // AI 判断
-        const judgment = await judgeArticle(article.title, content);
+        // AI 判断（传入 skills 表名单，只识别已有 Skill）
+        const skillNames = dbSkills.map((s) => s.name);
+        const judgment = await judgeArticle(article.title, content, skillNames);
         article._content = content;
         article._judgment = judgment;
 
