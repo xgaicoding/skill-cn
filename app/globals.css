@@ -7780,3 +7780,127 @@ body.is-detail::after {
     font-size: 13px;
   }
 }
+
+/* ============================================================
+   pSEO Tier 1: FAQ 区块
+   ============================================================ */
+.detail-faq {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 32px 32px;
+}
+.detail-faq__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary, #e8e8e8);
+  margin-bottom: 24px;
+}
+.detail-faq__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.detail-faq__item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px 24px;
+  transition: border-color 0.2s;
+}
+.detail-faq__item:hover {
+  border-color: rgba(255, 168, 0, 0.3);
+}
+.detail-faq__q {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #e8e8e8);
+  margin-bottom: 8px;
+}
+.detail-faq__q::before {
+  content: "Q. ";
+  color: rgba(255, 168, 0, 0.9);
+  font-weight: 700;
+}
+.detail-faq__a {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-secondary, #a0a0a0);
+  margin: 0;
+}
+
+/* ============================================================
+   pSEO Tier 1: 相关 Skill 推荐
+   ============================================================ */
+.detail-related {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 32px 64px;
+}
+.detail-related__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary, #e8e8e8);
+  margin-bottom: 24px;
+}
+.detail-related__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.detail-related__card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.detail-related__card:hover {
+  border-color: rgba(255, 168, 0, 0.3);
+  transform: translateY(-2px);
+}
+.detail-related__name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #e8e8e8);
+}
+.detail-related__desc {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-secondary, #a0a0a0);
+  flex: 1;
+}
+.detail-related__heat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: rgba(255, 168, 0, 0.9);
+}
+.detail-related__heat .icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* 响应式：小屏两列 */
+@media (max-width: 768px) {
+  .detail-faq {
+    padding: 32px 16px 24px;
+  }
+  .detail-faq__item {
+    padding: 16px;
+  }
+  .detail-related {
+    padding: 24px 16px 48px;
+  }
+  .detail-related__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .detail-related__card {
+    padding: 16px;
+  }
+}

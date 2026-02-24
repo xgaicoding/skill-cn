@@ -87,7 +87,7 @@ const buildMarkdownForRender = (rawMarkdown: string): string => {
   const keys = tableKeys.length ? tableKeys : Object.keys(frontmatter);
 
   if (!keys.length) {
-    // frontmatter 为空时，直接移除 frontmatter，避免出现“超大标题”
+    // frontmatter 为空时，直接移除 frontmatter，避免出现"超大标题"
     return content;
   }
 
@@ -109,7 +109,7 @@ const buildMarkdownForRender = (rawMarkdown: string): string => {
 
 /**
  * PracticeCardSkeleton：
- * - 用于“实践列表加载中”的占位卡片
+ * - 用于"实践列表加载中"的占位卡片
  * - 结构对齐真实 practice-card，避免加载完成后整体高度抖动
  */
 const PracticeCardSkeleton = () => {
@@ -172,7 +172,7 @@ const MobilePracticeCardSkeleton = ({ index }: { index: number }) => {
 
 /**
  * MobileDetailCardSkeleton：
- * - v1.2.0 移动端 Skill 详情页“信息卡”骨架
+ * - v1.2.0 移动端 Skill 详情页"信息卡"骨架
  * - 目标：加载中不出现一整块空白，而是呈现可读的结构占位（pills / 标题 / 描述 / 按钮）
  */
 const MobileDetailCardSkeleton = () => {
@@ -211,9 +211,9 @@ const MobileDetailCardSkeleton = () => {
 
 /**
  * 详情页「实践文章」卡片的强调色：
- * - 需求：与首页/全站“暖色（橙/黄）”基调保持一致，尽量避免过多粉色与绿色。
+ * - 需求：与首页/全站"暖色（橙/黄）"基调保持一致，尽量避免过多粉色与绿色。
  * - 实现：用 CSS 自定义变量 `--accent` 驱动卡片内部的描边/高光（见 app/globals.css .practice-card）。
- * - 说明：这里按列表 index 轮换强调色即可，避免引入复杂的“按渠道映射”逻辑（视觉稿目的优先）。
+ * - 说明：这里按列表 index 轮换强调色即可，避免引入复杂的"按渠道映射"逻辑（视觉稿目的优先）。
  */
 const PRACTICE_ACCENTS = [
   "rgba(255,107,0,0.98)", // warm orange
@@ -221,10 +221,17 @@ const PRACTICE_ACCENTS = [
   "rgba(255,168,0,0.90)", // golden orange
 ];
 
+/** pSEO Tier 1: FAQ 项类型 */
+type FaqItem = { question: string; answer: string };
+/** pSEO Tier 1: 相关 Skill 类型 */
+type RelatedSkill = { id: number; name: string; tag: string; heat_score: number; description: string };
+
 export default function DetailPage({
   id,
   deviceKind = "desktop",
   initialSkill,
+  faqItems = [],
+  relatedSkills = [],
 }: {
   id: string;
   /**
@@ -235,22 +242,26 @@ export default function DetailPage({
   deviceKind?: DeviceKind;
   /**
    * 详情页 SSR 预取数据：
-   * - 有值时直接用于首屏渲染，避免爬虫抓到“空壳页面”
+   * - 有值时直接用于首屏渲染，避免爬虫抓到"空壳页面"
    * - 依旧保留客户端刷新逻辑，用于补最新数据
    */
   initialSkill?: Skill | null;
+  /** pSEO Tier 1: FAQ 区块数据（服务端生成） */
+  faqItems?: FaqItem[];
+  /** pSEO Tier 1: 相关 Skill 推荐（同 tag，服务端查询） */
+  relatedSkills?: RelatedSkill[];
 }) {
   const skillId = Number(id);
   const isMobile = deviceKind === "mobile";
   const [skill, setSkill] = useState<Skill | null>(initialSkill || null);
   const [skillLoading, setSkillLoading] = useState(!initialSkill);
   const { user } = useAuthUser();
-  // 按钮级别的请求状态，用于展示“正在处理”的过渡态。
+  // 按钮级别的请求状态，用于展示"正在处理"的过渡态。
   const [downloadPending, setDownloadPending] = useState(false);
   const [submitPracticePending, setSubmitPracticePending] = useState(false);
   /**
    * v1.4.0：npx 命令复制状态（仅 PC）
-   * - 用于在按钮上给出“已复制/复制失败”等轻量反馈
+   * - 用于在按钮上给出"已复制/复制失败"等轻量反馈
    * - 不使用全局 Toast，避免引入额外依赖与样式回归风险
    */
   const [npxCopyState, setNpxCopyState] = useState<"idle" | "copied" | "error">("idle");
@@ -262,18 +273,18 @@ export default function DetailPage({
   const [practiceLoading, setPracticeLoading] = useState(false);
   const [practiceError, setPracticeError] = useState<string | null>(null);
   const [practiceReloadKey, setPracticeReloadKey] = useState(0);
-  // 实践排序：参考首页“最热/最新”，热度按点击量，最新按更新时间。
+  // 实践排序：参考首页"最热/最新"，热度按点击量，最新按更新时间。
   // 实践列表默认按「最新」展示：
   // - 对应 UI 上的「最新」分段按钮
   // - 与首页实践模式的默认排序保持一致，降低用户心智成本
   const [practiceSort, setPracticeSort] = useState<"heat" | "recent">("recent");
 
   /**
-   * Mobile Toast（用于“PC 专属能力”降级提示）
+   * Mobile Toast（用于"PC 专属能力"降级提示）
    * ------------------------------------------------------------
    * 需求口径：
    * - 下载/投稿等 PC 专属能力，在移动端点击后统一 toast 提示：
-   *   “请前往PC版网页使用功能”
+   *   "请前往PC版网页使用功能"
    */
   const [toastMessage, setToastMessage] = useState<string>("");
   const [toastVisible, setToastVisible] = useState(false);
@@ -366,7 +377,7 @@ export default function DetailPage({
    * - 技能包（is_package=true）：展示仓库根目录 README
    */
   const docTitle = skill?.is_package ? "README" : "SKILL.md";
-  // README 读取自仓库根目录，因此“前往 Source”应指向仓库主页；普通 Skill 仍指向原 source_url（可能是子目录）。
+  // README 读取自仓库根目录，因此"前往 Source"应指向仓库主页；普通 Skill 仍指向原 source_url（可能是子目录）。
   const docSourceUrl = skill?.is_package ? repoHomeUrl : skill?.source_url || "#";
 
   /**
@@ -447,7 +458,7 @@ export default function DetailPage({
    * - key: 常见为 href（链接）/ src（图片）
    * - node: 当前 HAST 节点（这里不需要依赖它做判断，key 足够）
    *
-   * 这里先用 react-markdown 内置的 defaultUrlTransform 做一次“安全过滤”，
+   * 这里先用 react-markdown 内置的 defaultUrlTransform 做一次"安全过滤"，
    * 再做 GitHub 相对路径转换，最后再做一次安全过滤，避免引入危险协议。
    */
   const urlTransform = (url: string, key: string) => {
@@ -468,7 +479,7 @@ export default function DetailPage({
   useEffect(() => {
     /**
      * 当 skillId 变化时重置实践列表分页状态：
-     * - 避免从上一个 Skill 的“第 N 页”带到新 Skill 导致空列表/越界
+     * - 避免从上一个 Skill 的"第 N 页"带到新 Skill 导致空列表/越界
      * - 对移动端无限滚动同样必要：否则会把不同 skill 的实践 append 到一起
      */
     setPractices((prev) => (prev.length > 0 ? [] : prev));
@@ -478,7 +489,7 @@ export default function DetailPage({
 
     /**
      * v1.4.0：skillId 变化时重置 npx 复制状态
-     * - 避免从上一个 Skill 延续“已复制/复制失败”的反馈文案
+     * - 避免从上一个 Skill 延续"已复制/复制失败"的反馈文案
      * - 同时清理定时器，防止切换详情页后仍触发 setState
      */
     setNpxCopyState("idle");
@@ -500,7 +511,7 @@ export default function DetailPage({
         setSkillLoading(true);
       }
       try {
-        // 第一次请求走“快路径”：只拿缓存，保证页面立即可见。
+        // 第一次请求走"快路径"：只拿缓存，保证页面立即可见。
         const res = await fetch(`/api/skills/${skillId}?refresh=0`, { cache: "no-store" });
         const json = await res.json();
         if (!cancelled) {
@@ -549,7 +560,7 @@ export default function DetailPage({
         const payload = json as Paginated<Practice>;
         if (!cancelled) {
           const next = payload.data || [];
-          // 无限滚动：第 2 页起做“追加”而非“整页替换”，避免滚动加载时丢失上一页内容。
+          // 无限滚动：第 2 页起做"追加"而非"整页替换"，避免滚动加载时丢失上一页内容。
           // - mobile：详情页关联实践两列网格无限滚动
           // - desktop：Skill 详情页下方实践卡片同样改为无限滚动
           if (practicePage > 1) {
@@ -608,7 +619,7 @@ export default function DetailPage({
     } catch {
       // ignore
     }
-    // 设置短暂延迟，避免下载触发但按钮立刻恢复导致“像是没反应”。
+    // 设置短暂延迟，避免下载触发但按钮立刻恢复导致"像是没反应"。
     window.setTimeout(() => setDownloadPending(false), 2000);
     window.location.href = `/api/skills/${skill.id}/download`;
   };
@@ -622,7 +633,7 @@ export default function DetailPage({
    *
    * 注意：
    * - 复制逻辑不应阻塞主线程太久；这里仅创建一个临时 textarea 后立即销毁
-   * - 复制成功/失败用按钮文案做轻量反馈（“已复制/复制失败”），不影响页面其他交互
+   * - 复制成功/失败用按钮文案做轻量反馈（"已复制/复制失败"），不影响页面其他交互
    */
   const copyTextToClipboard = async (text: string): Promise<boolean> => {
     const payload = (text || "").trim();
@@ -676,7 +687,7 @@ export default function DetailPage({
     const ok = await copyTextToClipboard(npxCommand);
     setNpxCopyState(ok ? "copied" : "error");
 
-    // 反馈仅短暂展示，然后自动恢复为“复制”。
+    // 反馈仅短暂展示，然后自动恢复为"复制"。
     npxCopyTimerRef.current = window.setTimeout(() => {
       setNpxCopyState("idle");
       npxCopyTimerRef.current = null;
@@ -692,7 +703,7 @@ export default function DetailPage({
   /**
    * 实践卡片点击统计：
    * - 跳转由 `<a target="_blank">` 的默认行为完成，避免 JS 打开窗口带来的兼容性/拦截问题。
-   * - 统计请求不 `await`：避免阻塞浏览器打开新窗口/新标签页（体感会更“跟手”）。
+   * - 统计请求不 `await`：避免阻塞浏览器打开新窗口/新标签页（体感会更"跟手"）。
    */
   const handlePracticeClick = (practice: Practice) => {
     fetch(`/api/practices/${practice.id}/click`, { method: "POST" }).catch(() => {
@@ -723,8 +734,8 @@ export default function DetailPage({
    * 移动端关联实践：无限滚动触底加载
    * ------------------------------------------------------------
    * 说明：
-   * - 本期不要求“返回恢复页数/滚动位置”，因此这里保持实现简单
-   * - 触底加载的关键是“避免重复触发”：
+   * - 本期不要求"返回恢复页数/滚动位置"，因此这里保持实现简单
+   * - 触底加载的关键是"避免重复触发"：
    *   - 有下一页
    *   - 当前不在 loading
    *   - 当前没有 error
@@ -785,7 +796,7 @@ export default function DetailPage({
    * ------------------------------------------------------------
    * 为什么需要：
    * - 部分移动端 WebView（尤其是 iOS 某些内嵌浏览器）存在 IntersectionObserver 不触发/偶发失效的情况
-   * - 用户会表现为“滑到底也不加载下一页”，非常影响体验
+   * - 用户会表现为"滑到底也不加载下一页"，非常影响体验
    *
    * 方案：
    * - 保留 IntersectionObserver（性能更好、语义更清晰）
@@ -813,7 +824,7 @@ export default function DetailPage({
       const rect = el.getBoundingClientRect();
       const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
 
-      // 触发阈值：哨兵进入“视口底部往下 600px”范围即加载下一页（与 Observer rootMargin 对齐）
+      // 触发阈值：哨兵进入"视口底部往下 600px"范围即加载下一页（与 Observer rootMargin 对齐）
       const thresholdPx = isMobile ? 600 : 800;
       const shouldLoad = rect.top - viewportH <= thresholdPx;
       if (!shouldLoad) return;
@@ -832,7 +843,7 @@ export default function DetailPage({
     };
 
     // 首次绑定时立即检查一次：
-    // - 列表不足一屏时可直接触发下一页加载（避免用户“无路可滑”）
+    // - 列表不足一屏时可直接触发下一页加载（避免用户"无路可滑"）
     onScroll();
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -887,7 +898,7 @@ export default function DetailPage({
     );
   }
 
-  // 移动端详情页：使用 mockup 对齐的“简化布局”（以关联实践列表为主）。
+  // 移动端详情页：使用 mockup 对齐的"简化布局"（以关联实践列表为主）。
   if (isMobile) {
     const title = skill?.name || "未找到";
     const desc = skill?.description || "";
@@ -1038,7 +1049,7 @@ export default function DetailPage({
           </div>
         </main>
 
-        {/* Toast：用于移动端提示“请前往PC版网页使用功能” */}
+        {/* Toast：用于移动端提示"请前往PC版网页使用功能" */}
         <div className="m-toast" role="status" aria-live="polite" data-visible={toastVisible ? "true" : "false"}>
           {toastMessage}
         </div>
@@ -1073,7 +1084,7 @@ export default function DetailPage({
 
                   {/*
                     技能包问号提示（仅桌面端）：
-                    - 需求：问号需要“包含在技能包 label 内”，避免作为独立元素导致断行/错位
+                    - 需求：问号需要"包含在技能包 label 内"，避免作为独立元素导致断行/错位
                     - 交互：hover / focus-visible 时展示气泡；移动端不做该交互（移动端使用独立布局，不渲染此段）
                   */}
                   <button className="tag__help" type="button" aria-label="技能包说明" aria-describedby={packageHelpId}>
@@ -1140,7 +1151,7 @@ export default function DetailPage({
               {/* 下载按钮增加扫光轮播特效与独立 hover 逻辑，保持视觉强调但不再上浮 */}
               <div className="detail-panel__download" data-unsupported={!supportsDownloadZip}>
                 {/* v1.4.0：npx 指令下载（仅 PC）
-                    - 需求：npx 区块在“下载 ZIP”入口上方
+                    - 需求：npx 区块在"下载 ZIP"入口上方
                     - 视觉：不展示额外标题/外层容器，只展示命令框 + 复制图标 */}
                 {npxCommand ? (
                   <div className="detail-panel__npx" aria-label="npx 下载指令">
@@ -1259,9 +1270,9 @@ export default function DetailPage({
           </div>
 
           <div className="detail-switch__panels">
-            {/* 实践区不再包一层大容器（detail-card），与 mockup/detail.html 保持一致：卡片直接“铺在背景上”更轻盈。 */}
+            {/* 实践区不再包一层大容器（detail-card），与 mockup/detail.html 保持一致：卡片直接"铺在背景上"更轻盈。 */}
             <section className="detail-tabpanel detail-tabpanel--practices practice-section" aria-label="实践列表">
-              {/* 投稿引导条：整条可点击，引导“先浏览、再投稿”的行为路径 */}
+              {/* 投稿引导条：整条可点击，引导"先浏览、再投稿"的行为路径 */}
               <button
                 className="practice-cta practice-cta--interactive"
                 type="button"
@@ -1274,7 +1285,7 @@ export default function DetailPage({
                 <span className="practice-cta__sweep" aria-hidden="true" />
                 <div className="practice-cta__content">
                   <h3 className="practice-cta__title">
-                    {/* 标题前的装饰图标：保留“投稿主题”，避免误判为可点击入口 */}
+                    {/* 标题前的装饰图标：保留"投稿主题"，避免误判为可点击入口 */}
                     <Sparkles className="icon" aria-hidden="true" />
                     分享你的实践，让更多人看见你的方案
                   </h3>
@@ -1294,7 +1305,7 @@ export default function DetailPage({
                 const showFirstPageSkeleton = practiceLoading && practicePage === 1;
                 const loadingMore = practiceLoading && practicePage > 1;
 
-                // 触底加载的手动兜底：当用户不希望等自动触发时，可点击“加载更多”。
+                // 触底加载的手动兜底：当用户不希望等自动触发时，可点击"加载更多"。
                 const handleLoadMore = () => {
                   if (!hasMore) return;
                   if (practiceLoading) return;
@@ -1343,7 +1354,7 @@ export default function DetailPage({
                         // 作者名/渠道名可能为空：统一 trim 后组合展示，保证 UI 始终有可读内容。
                         const channelName = practice.channel?.trim();
                         const authorName = practice.author_name?.trim();
-                        // 同时存在时用“渠道·作者”格式；否则回退到任一可用值，最后兜底为 "-"。
+                        // 同时存在时用"渠道·作者"格式；否则回退到任一可用值，最后兜底为 "-"。
                         const sourceText =
                           channelName && authorName ? `${channelName}·${authorName}` : channelName || authorName || "-";
                         return (
@@ -1371,7 +1382,7 @@ export default function DetailPage({
                                 <Eye className="icon" />
                                 {formatCompactNumber(practice.click_count)}
                               </span>
-                              {/* 实践卡片底部元信息：展示“渠道·作者”，更符合来源信息语义。 */}
+                              {/* 实践卡片底部元信息：展示"渠道·作者"，更符合来源信息语义。 */}
                               <span className="meta" aria-label={`来源 ${sourceText}`} title={sourceText}>
                                 <User className="icon" />
                                 {sourceText}
@@ -1434,6 +1445,47 @@ export default function DetailPage({
             </section>
           </div>
         </section>
+
+        {/* pSEO Tier 1: FAQ 区块 — SSR 直出，覆盖高频搜索意图 */}
+        {faqItems.length > 0 && (
+          <section className="detail-faq" aria-label="常见问题">
+            <h2 className="detail-faq__title">常见问题</h2>
+            <dl className="detail-faq__list">
+              {faqItems.map((item, i) => (
+                <div className="detail-faq__item" key={i}>
+                  <dt className="detail-faq__q">{item.question}</dt>
+                  <dd className="detail-faq__a">{item.answer}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+
+        {/* pSEO Tier 1: 相关 Skill 推荐 — 强化内链网络 */}
+        {relatedSkills.length > 0 && (
+          <section className="detail-related" aria-label="相关 Skill">
+            <h2 className="detail-related__title">相关 Skill</h2>
+            <div className="detail-related__grid">
+              {relatedSkills.map((rs) => (
+                <Link
+                  key={rs.id}
+                  href={`/skill/${rs.id}`}
+                  className="detail-related__card"
+                  aria-label={`查看 ${rs.name}`}
+                >
+                  <span className="detail-related__name">{rs.name}</span>
+                  <span className="detail-related__desc">
+                    {rs.description ? rs.description.slice(0, 60) + (rs.description.length > 60 ? "..." : "") : rs.tag}
+                  </span>
+                  <span className="detail-related__heat">
+                    <Flame className="icon" aria-hidden="true" />
+                    {formatHeat(rs.heat_score)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </>
   );

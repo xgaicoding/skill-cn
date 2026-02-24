@@ -161,6 +161,68 @@ export default async function Page({ params }: { params: { id: string } }) {
     notFound();
   }
 
+  const supabase = getSupabaseServerClient();
+
+  /**
+   * pSEO Tier 1：相关 Skill 推荐（同 tag，排除自身，按热度排序，最多 6 个）
+   */
+  const { data: relatedSkillsRaw } = await supabase
+    .from("skills")
+    .select("id, name, tag, heat_score, description")
+    .eq("is_listed", true)
+    .eq("tag", skill.tag || "")
+    .neq("id", skillId)
+    .order("heat_score", { ascending: false })
+    .limit(6);
+  const relatedSkills = (relatedSkillsRaw || []) as Array<{
+    id: number;
+    name: string;
+    tag: string;
+    heat_score: number;
+    description: string;
+  }>;
+
+  /**
+   * pSEO Tier 1：FAQ 区块（自动生成，SSR 直出）
+   * - 覆盖高频搜索意图："XX 是什么""XX 怎么用""XX 和 YY 的区别"
+   * - FAQ Schema 直接影响 Google 富文本摘要展示
+   */
+  const faqItems: Array<{ question: string; answer: string }> = [];
+  const skillName = skill.name;
+  const skillDesc = (skill.description || "").trim();
+  const practiceCount = skill.practice_count || 0;
+
+  // Q1: XX 是什么？
+  faqItems.push({
+    question: `${skillName} 是什么？`,
+    answer: skillDesc
+      ? `${skillName} 是一个 AI Agent Skill（智能体技能）。${skillDesc}`
+      : `${skillName} 是一个 AI Agent Skill（智能体技能），可以在 Claude Code、Cursor 等 AI 编程工具中使用，帮助开发者提升效率。`,
+  });
+
+  // Q2: XX 怎么用？
+  faqItems.push({
+    question: `${skillName} 怎么用？`,
+    answer: `你可以在 Skill Hub 中国下载 ${skillName} 的 SKILL.md 文件，放入你的项目目录中。AI Agent（如 Claude Code）会自动识别并加载该 Skill，按照其中定义的规则和流程来辅助你完成任务。${practiceCount > 0 ? `目前已有 ${practiceCount} 篇实践案例可供参考。` : ""}`,
+  });
+
+  // Q3: 有哪些实践案例？
+  if (practiceCount > 0) {
+    faqItems.push({
+      question: `${skillName} 有哪些实践案例？`,
+      answer: `目前 Skill Hub 中国收录了 ${practiceCount} 篇 ${skillName} 的实践案例，涵盖真实项目中的使用场景、操作步骤和踩坑记录。你可以在本页面的「热门实践」区域查看完整列表。`,
+    });
+  }
+
+  // Q4: 和相关 Skill 的区别（如果有相关 Skill）
+  if (relatedSkills.length > 0) {
+    const topRelated = relatedSkills[0];
+    faqItems.push({
+      question: `${skillName} 和 ${topRelated.name} 有什么区别？`,
+      answer: `${skillName} 和 ${topRelated.name} 都属于「${skill.tag}」类别的 AI Skill。${skillDesc ? `${skillName} 主要用于${skillDesc.slice(0, 60)}。` : ""}${topRelated.description ? `${topRelated.name} 则侧重于${topRelated.description.slice(0, 60)}。` : ""}你可以根据具体场景选择最合适的 Skill。`,
+    });
+  }
+
   const siteUrl = getSiteUrl();
   const siteOrigin = siteUrl.toString().replace(/\/$/, "");
   const canonicalPath = `/skill/${skillId}`;
@@ -171,6 +233,7 @@ export default async function Page({ params }: { params: { id: string } }) {
    * 结构化数据（详情页）：
    * 1) SoftwareApplication：描述当前 Skill 的核心属性、交互量与更新时间
    * 2) BreadcrumbList：补充层级路径，帮助搜索引擎理解信息结构
+   * 3) FAQPage：FAQ 区块，直接影响 Google 富文本摘要
    */
   const softwareApplicationJsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -220,11 +283,32 @@ export default async function Page({ params }: { params: { id: string } }) {
     ],
   };
 
+  // pSEO: FAQ Schema（FAQPage）
+  const faqJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(softwareApplicationJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(breadcrumbJsonLd) }} />
-      <DetailPage id={params.id} deviceKind={deviceKind} initialSkill={skill} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(faqJsonLd) }} />
+      <DetailPage
+        id={params.id}
+        deviceKind={deviceKind}
+        initialSkill={skill}
+        faqItems={faqItems}
+        relatedSkills={relatedSkills}
+      />
     </>
   );
 }

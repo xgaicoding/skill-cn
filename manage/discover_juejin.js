@@ -93,7 +93,10 @@ async function getBrowser() {
     args: [
       "--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu",
       "--disable-dev-shm-usage", "--single-process", "--disable-extensions",
-      "--js-flags=--max-old-space-size=256",
+      "--js-flags=--max-old-space-size=128",
+      "--disable-background-networking", "--disable-default-apps",
+      "--disable-translate", "--disable-sync", "--metrics-recording-only",
+      "--no-first-run", "--disable-backgrounding-occluded-windows",
     ],
   });
   return _browser;
@@ -403,13 +406,6 @@ async function main() {
     for (let kwIdx = 0; kwIdx < keywords.length; kwIdx++) {
       const kw = keywords[kwIdx];
 
-      // 每 10 个关键词重启 Browser 释放内存
-      if (kwIdx > 0 && kwIdx % 10 === 0) {
-        await closeBrowser();
-        console.log(`   🔄 重启 Browser（已搜索 ${kwIdx} 个关键词，释放内存）`);
-        await new Promise((r) => setTimeout(r, 1000));
-      }
-
       try {
         const results = await searchJuejin(kw, perKeywordLimit);
         for (const r of results) {
@@ -418,14 +414,29 @@ async function main() {
             allCandidates.set(r.article_id, r);
           }
         }
-        // 避免请求过快
-        await new Promise((r) => setTimeout(r, 300));
       } catch (err) {
         console.log(`   ⚠️ 搜索 "${kw}" 失败: ${err.message}`);
       }
+
+      // 每个关键词搜完都关闭浏览器 + GC，彻底杜绝 Chrome 进程堆积
+      await closeBrowser();
+      if (global.gc) global.gc();
+
+      if ((kwIdx + 1) % 10 === 0) {
+        console.log(`   ✅ 已搜索 ${kwIdx + 1}/${keywords.length} 个关键词`);
+      }
+
+      // 避免请求过快
+      await new Promise((r) => setTimeout(r, 500));
     }
 
     console.log(`   共发现 ${allCandidates.size} 篇去重后的候选文章`);
+
+    // 搜索阶段完成，彻底关掉浏览器释放内存
+    await closeBrowser();
+    if (global.gc) global.gc();
+    console.log("   🧹 搜索完成，关闭 Browser 释放内存");
+    await new Promise((r) => setTimeout(r, 3000));
 
     // 3. 过滤已收录（URL + 标题双重去重）
     console.log("\n🔍 过滤已收录文章...");
@@ -445,37 +456,29 @@ async function main() {
       process.exit(0);
     }
 
-    // 4. Chrome 抓取全文 + AI 判断
-    console.log("\n🤖 逐篇分析（Chrome 渲染 + AI 判断）...");
+    // 4. 逐篇分析（每篇用独立子进程，进程退出后内存彻底释放）
+    console.log("\n🤖 逐篇分析（子进程模式，每篇独立 Chrome）...");
     const passed = [];
     const failed = [];
 
-    // 预计算 skill 关键词（拆成子词，任一子词命中即可）
     const skillNames = dbSkills.map((s) => s.name);
     const skillSubwords = dbSkills.flatMap((s) => {
       const parts = s.name.toLowerCase().split(/[-_]/);
-      // 返回长度>=3的子词（去掉太短的如 "ui"）
       return parts.filter((p) => p.length >= 3);
     });
     const skillSubwordsUnique = [...new Set(skillSubwords)];
+    const skillNamesJson = JSON.stringify(skillNames);
+    const analyzeScript = path.join(__dirname, "analyze_one.js");
 
     for (let i = 0; i < candidates.length; i++) {
       const article = candidates[i];
       const progress = `[${i + 1}/${candidates.length}]`;
 
-      // 每 10 篇重启 Browser 释放内存
-      if (i > 0 && i % 10 === 0) {
-        await closeBrowser();
-        console.log(`   🔄 重启 Browser（已处理 ${i} 篇，释放内存）`);
-        await new Promise((r) => setTimeout(r, 1000));
-      }
-
       try {
-        // 快速预筛：用 title + brief 检查是否可能包含已有 Skill 关键词
+        // 快速预筛
         const textToCheck = (article.title + " " + article.brief).toLowerCase();
         const maybeRelevant = skillSubwordsUnique.some((word) => word.length >= 3 && textToCheck.includes(word));
         if (!maybeRelevant) {
-          // 标题和摘要里完全没有任何 Skill 关键词，大概率不相关，跳过 Chrome 渲染
           process.stdout.write(`${progress} ${article.title.slice(0, 50)}... `);
           console.log("⏭️ 预筛跳过（标题/摘要无 Skill 关键词）");
           failed.push({ ...article, reason: "预筛：无 Skill 关键词" });
@@ -484,17 +487,28 @@ async function main() {
 
         process.stdout.write(`${progress} ${article.title.slice(0, 50)}... `);
 
-        // Chrome 抓全文
-        const content = await fetchArticleContent(article.url);
-        if (content.length < 200) {
-          console.log("❌ 内容过短，跳过");
-          failed.push({ ...article, reason: "内容过短" });
+        // 子进程分析（独立 Chrome + AI 判断，进程退出后内存彻底释放）
+        let result;
+        try {
+          const stdout = execSync(
+            `node --max-old-space-size=256 "${analyzeScript}" "${article.url}" '${skillNamesJson.replace(/'/g, "'\\''")}'`,
+            { cwd: ROOT_DIR, encoding: "utf8", timeout: 60000, stdio: ["pipe", "pipe", "pipe"] }
+          );
+          result = JSON.parse(stdout.trim());
+        } catch (err) {
+          console.log(`⚠️ 子进程失败: ${err.message.slice(0, 80)}`);
+          failed.push({ ...article, reason: "子进程失败" });
           continue;
         }
 
-        // AI 判断（传入 skills 表名单，只识别已有 Skill）
-        const judgment = await judgeArticle(article.title, content, skillNames);
-        article._content = content;
+        if (result.error) {
+          console.log(`❌ ${result.error}`);
+          failed.push({ ...article, reason: result.error });
+          continue;
+        }
+
+        const judgment = result.judgment;
+        article._content = result.content;
         article._judgment = judgment;
 
         if (judgment.is_practice && judgment.confidence >= 0.6) {
@@ -507,7 +521,7 @@ async function main() {
         }
 
         // 控制速率
-        await new Promise((r) => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, 300));
       } catch (err) {
         console.log(`⚠️ 失败: ${err.message}`);
         failed.push({ ...article, reason: err.message });
