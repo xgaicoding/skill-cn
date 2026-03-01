@@ -1,0 +1,250 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.15",
+    "lastTouchedAt": "2026-02-19T02:23:42.519Z"
+  },
+  "wizard": {
+    "lastRunAt": "2026-02-12T14:00:34.919Z",
+    "lastRunVersion": "2026.2.9",
+    "lastRunCommand": "onboard",
+    "lastRunMode": "local"
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "anthropic": {
+        "baseUrl": "https://code.wenwen-ai.com",
+        "apiKey": "sk-eVo1Zy2MVq3Y5TjzHa1SbFMRa1uztexctPZ22w0N1VLidzI1",
+        "api": "anthropic-messages",
+        "models": [
+          {
+            "id": "claude-opus-4-6",
+            "name": "claude-opus-4-6"
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "anthropic/claude-opus-4-6"
+      },
+      "workspace": "/root/.openclaw/workspace",
+      "memorySearch": {
+        "provider": "openai",
+        "remote": {
+          "baseUrl": "https://api.apimart.ai/v1",
+          "apiKey": "sk-yc9vSlIkup2fPUNla6ebESqgxOR5L0UvbJsn1tXxWDRW2PGe"
+        },
+        "model": "text-embedding-3-small"
+      },
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    },
+    "list": [
+      {
+        "id": "musk",
+        "name": "马斯克",
+        "workspace": "/root/.openclaw/workspace",
+        "heartbeat": {
+          "every": "1h",
+          "activeHours": {
+            "start": "08:30",
+            "end": "23:00",
+            "timezone": "Asia/Shanghai"
+          },
+          "target": "telegram",
+          "to": "8276646786",
+          "accountId": "musk"
+        },
+        "groupChat": {
+          "mentionPatterns": [
+            "@马斯克",
+            "@musk",
+            "马斯克"
+          ]
+        }
+      },
+      {
+        "id": "zhangyiming",
+        "name": "张一鸣",
+        "workspace": "/root/.openclaw/workspace-zhangyiming",
+        "heartbeat": {
+          "every": "1h",
+          "activeHours": {
+            "start": "08:30",
+            "end": "23:00",
+            "timezone": "Asia/Shanghai"
+          },
+          "target": "telegram",
+          "to": "8276646786",
+          "accountId": "zhangyiming"
+        },
+        "groupChat": {
+          "mentionPatterns": [
+            "@张一鸣",
+            "@zhangyiming",
+            "张一鸣"
+          ]
+        }
+      },
+      {
+        "id": "leijun",
+        "name": "雷军",
+        "workspace": "/root/.openclaw/workspace-leijun",
+        "heartbeat": {
+          "every": "30m",
+          "activeHours": {
+            "start": "08:30",
+            "end": "23:00",
+            "timezone": "Asia/Shanghai"
+          },
+          "target": "telegram",
+          "to": "8276646786",
+          "accountId": "leijun"
+        },
+        "groupChat": {
+          "mentionPatterns": [
+            "@雷军",
+            "@leijun",
+            "雷军"
+          ]
+        }
+      }
+    ]
+  },
+  "tools": {
+    "web": {
+      "search": {
+        "apiKey": "BSAzsAZ0GUCYxzPctRh9o2qsZpB7wRd"
+      }
+    },
+    "sessions": {
+      "visibility": "all"
+    },
+    "agentToAgent": {
+      "enabled": true
+    }
+  },
+  "bindings": [
+    {
+      "agentId": "zhangyiming",
+      "match": {
+        "channel": "telegram",
+        "accountId": "zhangyiming"
+      }
+    },
+    {
+      "agentId": "leijun",
+      "match": {
+        "channel": "telegram",
+        "accountId": "leijun"
+      }
+    }
+  ],
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true
+  },
+  "session": {
+    "agentToAgent": {
+      "maxPingPongTurns": 2
+    }
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "session-memory": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "groups": {
+        "-5235126696": {
+          "requireMention": true
+        }
+      },
+      "groupPolicy": "allowlist",
+      "streamMode": "off",
+      "accounts": {
+        "musk": {
+          "dmPolicy": "pairing",
+          "botToken": "8571258132:AAE1DCJpX_9kcavEVr8GEun3E7rGpD1RJ_g",
+          "groups": {
+            "-5235126696": {
+              "enabled": true
+            }
+          },
+          "groupPolicy": "allowlist",
+          "streamMode": "off"
+        },
+        "zhangyiming": {
+          "dmPolicy": "pairing",
+          "botToken": "8206956998:AAH2Aw1KHxGIi5YatVm1MkNDoSks_H8zDDs",
+          "groups": {
+            "-5235126696": {
+              "enabled": true
+            }
+          },
+          "groupPolicy": "allowlist",
+          "streamMode": "off"
+        },
+        "leijun": {
+          "dmPolicy": "pairing",
+          "botToken": "7681205507:AAHf42DSQSzkEhfZtori_OtpevDPZsVUZJ4",
+          "groups": {
+            "-5235126696": {
+              "enabled": true
+            }
+          },
+          "groupPolicy": "allowlist",
+          "streamMode": "off"
+        }
+      }
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "controlUi": {
+      "allowInsecureAuth": false
+    },
+    "auth": {
+      "mode": "token",
+      "token": "18c8eb29ab0c8301bee45b1ef1d4dcad33f74376cd6a8ccd"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "telegram": {
+        "enabled": true
+      }
+    }
+  }
+}
