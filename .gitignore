@@ -24,3 +24,4 @@ output_resource/
 .next/
 manage/
 .agents/
+supabase/.temp/

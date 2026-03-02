@@ -124,7 +124,8 @@ async function searchJuejin(keyword, limit = 10, retries = 2) {
       await page.setUserAgent(
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
       );
-      const searchUrl = `https://juejin.cn/search?query=${encodeURIComponent(keyword)}&type=0`;
+      // type=0 综合搜索, sort_type=1 按时间排序, period=1 一周内
+      const searchUrl = `https://juejin.cn/search?query=${encodeURIComponent(keyword)}&type=0&sort_type=1&period=1`;
       await page.goto(searchUrl, { waitUntil: "networkidle2", timeout: 30000 });
       await sleep(2000);
 
