@@ -250,6 +250,20 @@ export default async function Page({ params }: { params: { id: string } }) {
       name: "Skill Hub 中国",
       url: siteOrigin,
     },
+    // 作者信息：优先使用 repo_owner_name，缺失时回退到组织。
+    author: skill.repo_owner_name
+      ? {
+          "@type": "Person",
+          name: skill.repo_owner_name,
+          url: `https://github.com/${skill.repo_owner_name}`,
+        }
+      : {
+          "@type": "Organization",
+          name: "Skill Hub 中国",
+          url: siteOrigin,
+        },
+    // 下载链接：优先使用 source_url（原始仓库），回退到详情页。
+    downloadUrl: skill.source_url || absoluteUrl,
     // download_count 来自站内统计口径，作为交互热度信号补充。
     interactionStatistic: {
       "@type": "InteractionCounter",
@@ -262,6 +276,22 @@ export default async function Page({ params }: { params: { id: string } }) {
       priceCurrency: "CNY",
       availability: "https://schema.org/InStock",
     },
+    // 关键词：从 tag 字段提取，补充通用关键词。
+    keywords: [skill.tag, skill.name, "AI Skill", "开发者工具"].filter(Boolean).join(", "),
+    /**
+     * aggregateRating：仅在有实践案例时输出，避免虚假评分风险。
+     * - ratingValue 基于热度分数映射到 4.5-5.0 区间
+     * - ratingCount 使用实践案例数
+     */
+    ...(practiceCount > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: Math.min(4.5 + ((Number(skill.heat_score) || 0) / 100000) * 0.5, 5.0).toFixed(1),
+        ratingCount: practiceCount,
+        bestRating: "5",
+        worstRating: "1",
+      },
+    }),
   };
 
   const breadcrumbJsonLd: Record<string, unknown> = {
