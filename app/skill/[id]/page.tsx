@@ -327,11 +327,129 @@ export default async function Page({ params }: { params: { id: string } }) {
     })),
   };
 
+  /**
+   * Article Schema：
+   * - 将 Skill 详情页标记为技术文章，提升搜索引擎对内容型页面的理解
+   * - headline / description / author / dateModified 等字段覆盖 Google Article 富文本要求
+   */
+  const articleJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: `${skillName} 实战教程与可复用方案`,
+    description,
+    url: absoluteUrl,
+    inLanguage: "zh-CN",
+    datePublished: skill.updated_at || undefined,
+    dateModified: skill.updated_at || undefined,
+    author: skill.repo_owner_name
+      ? {
+          "@type": "Person",
+          name: skill.repo_owner_name,
+          url: `https://github.com/${skill.repo_owner_name}`,
+        }
+      : {
+          "@type": "Organization",
+          name: "Skill Hub 中国",
+          url: siteOrigin,
+        },
+    publisher: {
+      "@type": "Organization",
+      name: "Skill Hub 中国",
+      url: siteOrigin,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteOrigin}/og-cover.png`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": absoluteUrl,
+    },
+    image: `${siteOrigin}/og-cover.png`,
+    keywords: [skillName, `${skillName} 教程`, `${skillName} 实战`, skill.tag, "AI Skill"].filter(Boolean),
+    ...(practiceCount > 0 && {
+      about: {
+        "@type": "Thing",
+        name: skillName,
+        description: `共有 ${practiceCount} 篇实践案例`,
+      },
+    }),
+  };
+
+  /**
+   * HowTo Schema：
+   * - 提供"如何使用该 Skill"的结构化步骤，覆盖 Google HowTo 富文本摘要
+   * - 步骤基于 Skill 的通用使用流程自动生成
+   */
+  const howToSteps = [
+    {
+      "@type": "HowToStep" as const,
+      position: 1,
+      name: "下载 Skill 文件",
+      text: skill.supports_download_zip
+        ? `在 Skill Hub 中国的 ${skillName} 详情页点击「下载」按钮，获取 SKILL.md 文件。`
+        : `前往 ${skillName} 的官方仓库（${skill.source_url || "GitHub"}）下载 SKILL.md 文件。`,
+      url: absoluteUrl,
+    },
+    {
+      "@type": "HowToStep" as const,
+      position: 2,
+      name: "放入项目目录",
+      text: `将下载的 SKILL.md 文件放入你的项目根目录或 .cursor/rules、.claude 等 AI 工具的配置目录中。`,
+    },
+    {
+      "@type": "HowToStep" as const,
+      position: 3,
+      name: "启动 AI Agent 加载 Skill",
+      text: `打开 Claude Code、Cursor 等 AI 编程工具，Agent 会自动识别并加载 ${skillName}，按照 Skill 中定义的规则辅助你完成任务。`,
+    },
+  ];
+
+  // 如果有 npx 命令，插入一步快捷安装
+  if (skill.npx_download_command) {
+    howToSteps.splice(1, 0, {
+      "@type": "HowToStep" as const,
+      position: 2,
+      name: "使用命令行快速安装",
+      text: `也可以通过命令行一键安装：${skill.npx_download_command}`,
+    });
+    // 重新编号
+    howToSteps.forEach((step, i) => {
+      step.position = i + 1;
+    });
+  }
+
+  // 如果有实践案例，追加一步参考实践
+  if (practiceCount > 0) {
+    howToSteps.push({
+      "@type": "HowToStep" as const,
+      position: howToSteps.length + 1,
+      name: "参考实践案例",
+      text: `查看 ${practiceCount} 篇 ${skillName} 的实践案例，了解真实项目中的使用场景和踩坑记录。`,
+      url: absoluteUrl,
+    });
+  }
+
+  const howToJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: `如何使用 ${skillName}`,
+    description: `一步步教你下载、安装并使用 ${skillName} AI Skill，快速提升开发效率。`,
+    totalTime: "PT5M",
+    tool: {
+      "@type": "HowToTool",
+      name: "AI 编程工具（Claude Code / Cursor 等）",
+    },
+    step: howToSteps,
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(softwareApplicationJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(articleJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(howToJsonLd) }} />
       <DetailPage
         id={params.id}
         deviceKind={deviceKind}
