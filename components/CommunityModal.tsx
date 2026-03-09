@@ -89,16 +89,16 @@ export default function CommunityModal({
 
       <div className="community-modal__panel" ref={panelRef} tabIndex={-1} role="document">
         {/* 关闭按钮：右上角固定位置 */}
-        <button className="community-modal__close" type="button" onClick={onClose} aria-label="关闭">
+        {/* <button className="community-modal__close" type="button" onClick={onClose} aria-label="关闭">
           <X className="icon" aria-hidden="true" />
-        </button>
+        </button> */}
 
         <div className="community-modal__header">
           <span className="community-modal__badge">
             <Users className="icon" aria-hidden="true" />
             交流群
           </span>
-          <h2 id="community-modal-title">加入 AI 生产力 交流群</h2>
+          <h2 id="community-modal-title">加入 AI 生产力 交流群🦞</h2>
           <p className="community-modal__desc" id="community-modal-desc">
             扫描二维码加入交流，用 AI 释放你的生产力！
           </p>
