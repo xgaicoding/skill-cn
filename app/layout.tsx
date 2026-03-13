@@ -8,6 +8,7 @@ import AppFooter from "@/components/AppFooter";
 import { getSiteUrl } from "@/lib/site";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const siteUrl = getSiteUrl();
 const siteOrigin = siteUrl.toString().replace(/\/$/, "");
@@ -167,6 +168,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             - 放在 RootLayout 内确保全站生效
           */}
           <SpeedInsights />
+          {/* Google Analytics 4：追踪流量来源、用户行为与自定义事件 */}
+          {process.env.NEXT_PUBLIC_GA_ID && (
+            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+          )}
         </div>
       </body>
     </html>
