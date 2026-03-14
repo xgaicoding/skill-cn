@@ -91,8 +91,20 @@ export default function HomePage({
   const searchParams = useSearchParams();
   // Next 的 usePathname 在部分类型版本下可能返回 null，这里统一兜底为首页根路径。
   const safePathname = pathname || "/";
-  // 设备判定：本期只改 PC 首屏，mobile 分支保持现状。
-  const isMobile = deviceKind === "mobile";
+  /**
+   * 设备判定（客户端）：
+   * - SSR 阶段始终按 desktop 渲染（SEO：Google 爬虫看到完整桌面版）
+   * - 客户端 hydration 后通过 window.innerWidth 判断真实设备
+   * - 配合 mobile.css 媒体查询，消除切换前的布局闪烁
+   */
+  const [isMobile, setIsMobile] = useState(deviceKind === "mobile");
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // 默认模式保持当前行为：刷 Skill；当 URL 带 mode=practices 时进入实践模式（可分享/刷新保持）。
   const initialMode: HomeMode = initial.mode === "practices" ? "practices" : "skills";

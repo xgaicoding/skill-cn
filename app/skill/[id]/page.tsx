@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import DetailPage from "@/components/detail/DetailPage";
-import { headers } from "next/headers";
-import { detectDeviceKindFromUA } from "@/lib/device";
+import type { DeviceKind } from "@/lib/device";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+
+/**
+ * 详情页 ISR 缓存：
+ * - 每 120 秒重新生成
+ * - Skill 数据更新频率低，2 分钟缓存足够
+ */
+export const revalidate = 120;
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import type { Skill } from "@/lib/types";
@@ -144,12 +150,11 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 
 export default async function Page({ params }: { params: { id: string } }) {
   /**
-   * 详情页同样需要区分移动端 View：
-   * - mobile：使用移动端专属布局（信息纵向排布 + 关联实践两列无限滚动）
-   * - tablet/desktop：保持现有桌面详情页逻辑
+   * ISR 模式下不读 UA（避免 headers() 强制动态渲染）：
+   * - SSR 统一按 desktop 输出（SEO 友好）
+   * - 客户端 DetailPage 组件自行检测设备类型
    */
-  const ua = headers().get("user-agent") || "";
-  const deviceKind = detectDeviceKindFromUA(ua);
+  const deviceKind = "desktop" as const;
 
   const skillId = Number(params.id);
   if (Number.isNaN(skillId)) {

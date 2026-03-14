@@ -252,7 +252,20 @@ export default function DetailPage({
   relatedSkills?: RelatedSkill[];
 }) {
   const skillId = Number(id);
-  const isMobile = deviceKind === "mobile";
+
+  /**
+   * 客户端设备检测（与 HomePage 同策略）：
+   * - SSR 始终按 desktop 渲染（SEO + ISR 友好）
+   * - 客户端 hydration 后根据 window.innerWidth 切换
+   */
+  const [isMobile, setIsMobile] = useState(deviceKind === "mobile");
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
   const [skill, setSkill] = useState<Skill | null>(initialSkill || null);
   const [skillLoading, setSkillLoading] = useState(!initialSkill);
   const { user } = useAuthUser();
