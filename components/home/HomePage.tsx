@@ -106,25 +106,30 @@ export default function HomePage({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // 默认模式保持当前行为：刷 Skill；当 URL 带 mode=practices 时进入实践模式（可分享/刷新保持）。
-  const initialMode: HomeMode = initial.mode === "practices" ? "practices" : "skills";
+  /**
+   * 从 URL 读取初始状态（兼容 ISR：服务端不传 searchParams）：
+   * - SSR 阶段 searchParams 为空，使用默认值
+   * - 客户端 hydration 后 searchParams 可用，自动初始化正确状态
+   */
+  const urlMode = searchParams?.get("mode") || initial.mode;
+  const urlTag = searchParams?.get("tag") || initial.tag;
+  const urlSort = searchParams?.get("sort") || initial.sort;
+  const urlQ = searchParams?.get("q") || initial.q;
+  const urlIds = searchParams?.get("ids") || initial.ids;
+
+  const initialMode: HomeMode = urlMode === "practices" ? "practices" : "skills";
   const [mode, setMode] = useState<HomeMode>(initialMode);
 
-  const [tag, setTag] = useState(initial.tag || "全部");
+  const [tag, setTag] = useState(urlTag || "全部");
   /**
    * 排序默认值（小优化）：
    * - skills 模式：默认"最热"（heat）
    * - practices 模式：默认"最新"（recent）
-   *
-   * 注意：
-   * - 如果 URL 明确带了 sort，则尊重 URL（例如用户主动切换到"最热"）
-   * - 如果 URL 没带 sort，则使用各自模式的默认值，避免用户感觉"怎么默认不是最新"
    */
   const defaultSortForInitialMode = initialMode === "practices" ? "recent" : "heat";
-  const [sort, setSort] = useState(initial.sort || defaultSortForInitialMode);
-  const [query, setQuery] = useState(initial.q || "");
-  // skills 列表的"指定 id 过滤"（例如从实践卡片点"筛选相关 Skill"进入）
-  const [ids, setIds] = useState(initial.ids || "");
+  const [sort, setSort] = useState(urlSort || defaultSortForInitialMode);
+  const [query, setQuery] = useState(urlQ || "");
+  const [ids, setIds] = useState(urlIds || "");
   /**
    * practices 时间窗口筛选：
    * - 仅支持 "7d"；其它值统一降级为空

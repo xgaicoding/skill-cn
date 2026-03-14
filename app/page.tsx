@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import HomePage from "@/components/home/HomePage";
 import { PAGE_SIZE } from "@/lib/constants";
 import type { BoardEntry, HomeMetrics, Practice, Skill } from "@/lib/types";
@@ -12,49 +13,13 @@ import {
 /**
  * 首页 ISR 缓存：
  * - 每 60 秒重新生成一次静态页面
- * - 配合 Vercel CDN，TTFB 从 2s+ 降到几十毫秒
- * - 数据实时性要求不高（Skill 列表 / 实践案例更新频率低）
+ * - 不使用 searchParams/headers 等动态 API，确保 ISR 真正生效
+ * - Vercel CDN 缓存后 TTFB 可降到 <100ms
  */
 export const revalidate = 60;
 
-type HomeSearchParams = {
-  /**
-   * 首页 query：
-   * - q/tag/sort/mode：既有参数
-   * - window：实践模式时间窗口筛选（当前仅 7d）
-   * - ids：用于"从实践卡片筛选相关 Skill"场景（展示指定 id 列表的 Skill 卡片）
-   *   例：/?ids=1,2,3
-   */
-  q?: string;
-  tag?: string;
-  sort?: string;
-  mode?: string;
-  window?: string;
-  ids?: string;
-};
-
 /**
- * 判断是否为"默认首页"（无筛选/无搜索/无特殊模式）：
- * - 只有默认首页才进行 SSR 预取，避免与带参数页面产生内容不一致
- */
-const isDefaultHomeParams = (params?: HomeSearchParams) => {
-  if (!params) return true;
-  const tag = params.tag;
-  const sort = params.sort;
-  const mode = params.mode;
-  const windowParam = params.window;
-  const q = params.q;
-  const ids = params.ids;
-
-  const isDefaultTag = !tag || tag === "全部";
-  const isDefaultSort = !sort || sort === "heat";
-  const isDefaultMode = !mode || mode === "skills";
-
-  return !q && !ids && !windowParam && isDefaultTag && isDefaultSort && isDefaultMode;
-};
-
-/**
- * 首页首屏预取（仅默认首页）：
+ * 首页首屏预取：
  * - 复用 /api/skills 的统一查询逻辑，避免口径漂移
  * - 保证爬虫能拿到真实内容，同时减少重复维护成本
  */
@@ -71,7 +36,6 @@ const fetchInitialSkills = async () => {
       totalPages: payload.totalPages,
     };
   } catch {
-    // 兜底：SSR 失败不阻塞页面渲染，交给客户端继续拉取
     return {
       skills: [] as Skill[],
       totalPages: 1,
@@ -80,14 +44,10 @@ const fetchInitialSkills = async () => {
 };
 
 /**
- * 首页首屏"更新看板"预取（仅默认首页 + PC）：
- * - featured：每周精选（左侧榜单数据）
- * - hotEntries：热门榜单（右侧 Tab 数据）
+ * 首页首屏"更新看板"预取：
+ * - featured：每周精选
+ * - hotEntries：热门榜单
  * - metrics：4 项 KPI
- *
- * 注意：
- * - 这里是 SEO 关键数据，失败时降级为空数组/null，避免阻断页面渲染
- * - 客户端仍会在 hydration 后按既有逻辑刷新，保证交互一致
  */
 const fetchInitialHomeRetentionData = async () => {
   try {
@@ -97,13 +57,8 @@ const fetchInitialHomeRetentionData = async () => {
       fetchHomeMetricsSnapshot(),
     ]);
 
-    return {
-      featured,
-      hotEntries,
-      metrics,
-    };
+    return { featured, hotEntries, metrics };
   } catch {
-    // 兜底：任何异常都不影响首页可用性。
     return {
       featured: [] as Practice[],
       hotEntries: [] as BoardEntry[],
@@ -112,96 +67,70 @@ const fetchInitialHomeRetentionData = async () => {
   }
 };
 
-export async function generateMetadata({
-  searchParams,
-}: {
-  searchParams?: HomeSearchParams;
-}): Promise<Metadata> {
-  const shouldIndex = isDefaultHomeParams(searchParams);
-  const mode = searchParams?.mode || "skills";
-  const hasQuery = Boolean(searchParams?.q);
-  const hasTag = Boolean(searchParams?.tag && searchParams.tag !== "全部");
+/**
+ * 静态 Metadata（不依赖 searchParams）：
+ * - 首页 canonical 固定为根路径
+ * - 带参数的页面（搜索/筛选）由客户端组件在 document.title 里更新
+ * - 不使用 searchParams 避免触发动态渲染
+ */
+export const metadata: Metadata = {
+  title: "Skill Hub 中国 - 实战 Skill 案例与可复用方案库",
+  description:
+    "聚合真实 Skill 实战案例与可复用方案，帮助你更快找到能用、好用、可复用的工作流。",
+  keywords: [
+    "Skill Hub",
+    "Skill 中国",
+    "AI Skill 实战",
+    "工作流自动化",
+    "工具选型",
+    "Claude",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Skill Hub 中国 - 实战 Skill 案例与可复用方案库",
+    description:
+      "聚合真实 Skill 实战案例与可复用方案，帮助你更快找到能用、好用、可复用的工作流。",
+    url: "/",
+    type: "website",
+    images: [{ url: "/og-cover.png", alt: "Skill Hub 中国首页分享图" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Skill Hub 中国 - 实战 Skill 案例与可复用方案库",
+    description:
+      "聚合真实 Skill 实战案例与可复用方案，帮助你更快找到能用、好用、可复用的工作流。",
+    images: ["/og-cover.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
-  /**
-   * 首页标题/描述策略：
-   * - 默认首页：强调品牌 + 核心价值（可索引）
-   * - 参数页（搜索/筛选/模式）：给用户更清晰语义，但保持 noindex，防止薄页收录
-   */
-  let title = "Skill Hub 中国 - 实战 Skill 案例与可复用方案库";
-  let description = "聚合真实 Skill 实战案例与可复用方案，帮助你更快找到能用、好用、可复用的工作流。";
-
-  if (!shouldIndex) {
-    if (mode === "practices") {
-      title = "实践案例广场 - Skill Hub 中国";
-      description = "浏览本周上新与热门实践案例，快速复用可落地的 Skill 方案。";
-    } else if (hasQuery) {
-      title = "搜索结果 - Skill Hub 中国";
-      description = "按关键词快速筛选 Skill 与实战案例，定位与你场景最匹配的方案。";
-    } else if (hasTag) {
-      title = "分类筛选 - Skill Hub 中国";
-      description = "按分类浏览 Skill 实战内容，快速发现高相关的工具与案例。";
-    }
-  }
-
-  const metadata: Metadata = {
-    title,
-    description,
-    keywords: ["Skill Hub", "Skill 中国", "AI Skill 实战", "工作流自动化", "工具选型", "Claude"],
-    // 首页 canonical 固定为根路径，避免 query 参数造成重复内容。
-    alternates: {
-      canonical: "/",
-    },
-    openGraph: {
-      title,
-      description,
-      url: "/",
-      type: "website",
-      images: [{ url: "/og-cover.png", alt: "Skill Hub 中国首页分享图" }],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: ["/og-cover.png"],
-    },
-    // 带筛选/搜索的参数页统一 noindex，避免收录空壳页面。
-    robots: shouldIndex
-      ? {
-          index: true,
-          follow: true,
-        }
-      : {
-          index: false,
-          follow: true,
-        },
-  };
-
-  return metadata;
-}
-
-export default async function Page({
-  searchParams,
-}: {
-  searchParams?: HomeSearchParams;
-}) {
-  const shouldPrefetch = isDefaultHomeParams(searchParams);
-  const initialSkillsPayload = shouldPrefetch ? await fetchInitialSkills() : null;
-  /**
-   * 首屏更新看板 SSR 预取：
-   * - ISR 模式下无法区分设备类型（无 headers()），统一预取
-   * - 客户端 HomePage 组件根据 window.innerWidth 决定是否使用
-   */
-  const initialHomeRetentionPayload = shouldPrefetch ? await fetchInitialHomeRetentionData() : null;
+/**
+ * 首页 Server Component：
+ * - 不接收 searchParams（避免动态渲染，确保 ISR 生效）
+ * - SSR 输出默认首页内容（Skill 列表 + 看板数据）
+ * - 客户端 HomePage 组件通过 useSearchParams() 读取 URL 参数，
+ *   自动切换到搜索/筛选/模式状态
+ */
+export default async function Page() {
+  const initialSkillsPayload = await fetchInitialSkills();
+  const initialHomeRetentionPayload = await fetchInitialHomeRetentionData();
 
   return (
-    <HomePage
-      initial={searchParams || {}}
-      deviceKind="desktop"
-      initialSkills={initialSkillsPayload?.skills}
-      initialTotalPages={initialSkillsPayload?.totalPages}
-      initialFeatured={initialHomeRetentionPayload?.featured}
-      initialHotBoardEntries={initialHomeRetentionPayload?.hotEntries}
-      initialHomeMetrics={initialHomeRetentionPayload?.metrics}
-    />
+    <Suspense fallback={null}>
+      <HomePage
+        initial={{}}
+        deviceKind="desktop"
+        initialSkills={initialSkillsPayload.skills}
+        initialTotalPages={initialSkillsPayload.totalPages}
+        initialFeatured={initialHomeRetentionPayload.featured}
+        initialHotBoardEntries={initialHomeRetentionPayload.hotEntries}
+        initialHomeMetrics={initialHomeRetentionPayload.metrics}
+      />
+    </Suspense>
   );
 }
