@@ -13,11 +13,12 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import type { Skill } from "@/lib/types";
 import { getSiteUrl } from "@/lib/site";
+import { getSkillSeo } from "@/lib/seo-keywords";
 
 /**
  * 详情页 SEO 描述生成：
  * - 优先使用数据库 description（控制长度）
- * - description 缺失时，自动回退到“名称 + 场景 + 价值”的语义模板
+ * - description 缺失时，自动回退到"名称 + 场景 + 价值"的语义模板
  */
 function buildSkillDescription(skill: Skill): string {
   const rawDesc = (skill.description || "").trim();
@@ -98,17 +99,18 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 
   const description = buildSkillDescription(skill);
-  /**
-   * 这里不要手动拼接站点名：
-   * - 根布局已配置 `template: "%s | Skill Hub 中国"`
-   * - 仅传“页面主标题”可避免出现「站点名重复拼接」
-   */
-  const title = `${skill.name} 实战教程与可复用方案`;
+
+  // SEO 关键词优化：使用需求词而非品牌词作为 title
+  // 哥飞方法论："做需求词不做品牌词"
+  const seoData = getSkillSeo(skillId);
+  const title = seoData?.seoTitle ?? `${skill.name} 实战教程与可复用方案`;
   const keywords = [
     skill.name,
+    ...(seoData ? [seoData.demandKeyword, `${seoData.demandKeyword} 教程`] : []),
     `${skill.name} 教程`,
     `${skill.name} 实战`,
     skill.tag || "Skill",
+    "Agent Skill",
     "Skill Hub 中国",
   ];
 

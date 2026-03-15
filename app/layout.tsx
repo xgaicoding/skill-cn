@@ -56,11 +56,11 @@ const websiteJsonLd: Record<string, unknown> = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Skill Hub 中国 - 实战 Skill 案例与可复用方案库",
+    default: "AI 工具实战方案库 - Agent Skill 教程与最佳实践 | Skill Hub 中国",
     template: "%s | Skill Hub 中国",
   },
-  description: "Skill Hub 中国：聚合真实 Skill 实战案例与可复用方案，帮助你快速选型、落地并持续提升生产力。",
-  keywords: ["Skill Hub", "Skill 中国", "AI 工具实战", "Skill 案例", "工作流自动化", "Claude", "Trae", "Remotion"],
+  description: "聚合 AI 编程、设计、自动化等领域的 Agent Skill 实战案例与可复用方案。Cursor、Claude Code、Trae 等 AI 工具的最佳实践指南。",
+  keywords: ["Agent Skill", "AI 工具", "AI 编程", "AI 实践", "Skill Hub", "Claude Code", "Cursor", "Trae", "AI 自动化", "工作流"],
   category: "technology",
   applicationName: "Skill Hub 中国",
   creator: "Skill Hub 中国",
@@ -113,18 +113,18 @@ export const metadata: Metadata = {
    * - 预置默认分享图，避免在动态 OG 图上线前出现空白预览
    */
   openGraph: {
-    title: "Skill Hub 中国 - 实战 Skill 案例与可复用方案库",
-    description: "聚合真实 Skill 实战案例，帮助你更快找到能用、好用、可复用的方案。",
+    title: "AI 工具实战方案库 - Agent Skill 教程与最佳实践 | Skill Hub 中国",
+    description: "聚合 AI 编程、设计、自动化等领域的 Agent Skill 实战案例与可复用方案。",
     url: siteOrigin,
     siteName: "Skill Hub 中国",
     locale: "zh_CN",
     type: "website",
-    images: [{ url: "/og-cover.png", alt: "Skill Hub 中国" }],
+    images: [{ url: "/og-cover.png", alt: "Skill Hub 中国 - AI 工具实战方案库" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Skill Hub 中国 - 实战 Skill 案例与可复用方案库",
-    description: "聚合真实 Skill 实战案例，帮助你更快找到能用、好用、可复用的方案。",
+    title: "AI 工具实战方案库 - Agent Skill 教程与最佳实践 | Skill Hub 中国",
+    description: "聚合 AI 编程、设计、自动化等领域的 Agent Skill 实战案例与可复用方案。",
     images: ["/og-cover.png"],
   },
 };
