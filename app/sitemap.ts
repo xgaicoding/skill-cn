@@ -14,14 +14,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = getSupabaseServerClient();
 
   /**
-   * 仅收录已上架 Skill：
+   * 仅收录已上架 Skill / Practice：
    * - 与站点实际对外展示一致
    * - 避免爬虫索引“未发布/下架”内容
    */
-  const { data, error } = await supabase
-    .from("skills")
-    .select("id, updated_at")
-    .eq("is_listed", true);
+  const [{ data: skillsData, error: skillsError }, { data: practicesData, error: practicesError }] = await Promise.all([
+    supabase.from("skills").select("id, updated_at").eq("is_listed", true),
+    supabase.from("practices").select("id, updated_at").eq("is_listed", true),
+  ]);
 
   /**
    * 首页 lastModified 的估算口径：
@@ -47,17 +47,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // 若数据库查询失败，仍返回首页入口，保证 sitemap 可访问。
-  if (error || !data) {
-    return entries;
-  }
+  // 任一查询失败时不抛错：仍返回可用条目，保证 sitemap 始终可访问。
+  const skillEntries =
+    !skillsError && skillsData
+      ? skillsData.map((skill) => ({
+          url: new URL(`/skill/${skill.id}`, siteUrl).toString(),
+          changeFrequency: "weekly" as const,
+          priority: 0.8,
+          lastModified: skill.updated_at ? new Date(skill.updated_at) : undefined,
+        }))
+      : [];
 
-  const detailEntries = data.map((skill) => ({
-    url: new URL(`/skill/${skill.id}`, siteUrl).toString(),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-    lastModified: skill.updated_at ? new Date(skill.updated_at) : undefined,
-  }));
+  const practiceEntries =
+    !practicesError && practicesData
+      ? practicesData.map((practice) => ({
+          url: new URL(`/practice/${practice.id}`, siteUrl).toString(),
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
+          lastModified: practice.updated_at ? new Date(practice.updated_at) : undefined,
+        }))
+      : [];
 
-  return [...entries, ...detailEntries];
+  return [...entries, ...skillEntries, ...practiceEntries];
 }
