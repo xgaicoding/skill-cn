@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import Link from "next/link";
 import HomePage from "@/components/home/HomePage";
 import { PAGE_SIZE } from "@/lib/constants";
 import type { BoardEntry, HomeMetrics, Practice, Skill } from "@/lib/types";
@@ -9,6 +10,7 @@ import {
   fetchHomeHotBoardEntries,
   fetchHomeMetricsSnapshot,
 } from "@/lib/data/home-retention";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
  * 首页 ISR 缓存：
@@ -116,21 +118,81 @@ export const metadata: Metadata = {
  * - 客户端 HomePage 组件通过 useSearchParams() 读取 URL 参数，
  *   自动切换到搜索/筛选/模式状态
  */
+/**
+ * SSR 内链索引：
+ * 查询所有已上架的 skill 和 practice，在首页 HTML 中输出链接。
+ * 对用户视觉隐藏（sr-only），但搜索引擎爬虫可以发现所有内页。
+ * 这是解决"首页 CSR 导致爬虫看不到内链"的标准 SEO 做法。
+ */
+const fetchSeoLinks = async () => {
+  try {
+    const supabase = getSupabaseServerClient();
+    const [{ data: skills }, { data: practices }] = await Promise.all([
+      supabase.from("skills").select("id, name").eq("is_listed", true).order("id"),
+      supabase.from("practices").select("id, title").eq("is_listed", true).order("id"),
+    ]);
+    return {
+      skills: (skills || []) as { id: number; name: string }[],
+      practices: (practices || []) as { id: number; title: string }[],
+    };
+  } catch {
+    return { skills: [], practices: [] };
+  }
+};
+
 export default async function Page() {
-  const initialSkillsPayload = await fetchInitialSkills();
-  const initialHomeRetentionPayload = await fetchInitialHomeRetentionData();
+  const [initialSkillsPayload, initialHomeRetentionPayload, seoLinks] = await Promise.all([
+    fetchInitialSkills(),
+    fetchInitialHomeRetentionData(),
+    fetchSeoLinks(),
+  ]);
 
   return (
-    <Suspense fallback={null}>
-      <HomePage
-        initial={{}}
-        deviceKind="desktop"
-        initialSkills={initialSkillsPayload.skills}
-        initialTotalPages={initialSkillsPayload.totalPages}
-        initialFeatured={initialHomeRetentionPayload.featured}
-        initialHotBoardEntries={initialHomeRetentionPayload.hotEntries}
-        initialHomeMetrics={initialHomeRetentionPayload.metrics}
-      />
-    </Suspense>
+    <>
+      <Suspense fallback={null}>
+        <HomePage
+          initial={{}}
+          deviceKind="desktop"
+          initialSkills={initialSkillsPayload.skills}
+          initialTotalPages={initialSkillsPayload.totalPages}
+          initialFeatured={initialHomeRetentionPayload.featured}
+          initialHotBoardEntries={initialHomeRetentionPayload.hotEntries}
+          initialHomeMetrics={initialHomeRetentionPayload.metrics}
+        />
+      </Suspense>
+
+      {/* SEO 内链：对用户隐藏，对爬虫可见 */}
+      <nav
+        aria-label="站点导航"
+        style={{
+          position: "absolute",
+          width: "1px",
+          height: "1px",
+          padding: 0,
+          margin: "-1px",
+          overflow: "hidden",
+          clip: "rect(0, 0, 0, 0)",
+          whiteSpace: "nowrap",
+          borderWidth: 0,
+        }}
+      >
+        <h2>全部 Skill</h2>
+        <ul>
+          {seoLinks.skills.map((s) => (
+            <li key={`seo-skill-${s.id}`}>
+              <Link href={`/skill/${s.id}`}>{s.name}</Link>
+            </li>
+          ))}
+        </ul>
+        <h2>全部实践</h2>
+        <ul>
+          {seoLinks.practices.map((p) => (
+            <li key={`seo-practice-${p.id}`}>
+              <Link href={`/practice/${p.id}`}>{p.title}</Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </>
   );
 }
