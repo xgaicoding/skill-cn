@@ -354,145 +354,210 @@ export default async function Page({ params }: { params: { id: string } }) {
         <div className="hero__bg" aria-hidden="true"></div>
         <div className="hero__inner hero__inner--detail">
           <div className="hero-copy hero-copy--detail">
-            <nav className="breadcrumb" aria-label="面包屑导航">
-              <Link href="/">首页</Link>
-              <span>/</span>
-              <span>{practice.title}</span>
-            </nav>
-
-            <div className="detail-title-row">
-              <h1 id="practice-title" className="detail-title">
-                {practice.title}
+            <div className="detail-hero__title-row">
+              <h1 id="practice-title" className="detail-hero__title">
+                <span className="hero-copy__brand hero-copy__brand--skill">{practice.title}</span>
               </h1>
 
               {anchorSkillId && relatedSkills[0] ? (
-                <span className="tag" aria-label={`主关联 Skill ${relatedSkills[0].name}`}>
+                <span className="tag detail-hero__tag" aria-label={`主关联 Skill ${relatedSkills[0].name}`}>
                   <Tag className="icon" aria-hidden="true" />
                   {relatedSkills[0].name}
                 </span>
               ) : null}
             </div>
 
-            <p className="detail-subtitle">{summaryText}</p>
+            <p className="detail-hero__subtitle">{summaryText}</p>
 
-            <div className="info-list" aria-label="实践元信息">
-              <span className="info-item" aria-label={`作者 ${authorName}`}>
+            <div className="detail-hero__stats" aria-label="实践元信息">
+              <span className="stat" aria-label={`作者 ${authorName}`}>
                 <User className="icon" aria-hidden="true" />
-                {authorName}
+                <span className="stat__label">作者</span>
+                <span className="stat__value">{authorName}</span>
               </span>
-              <span className="info-item" aria-label={`更新时间 ${formatDate(practice.updated_at)}`}>
-                <CalendarDays className="icon" aria-hidden="true" />
-                {formatDate(practice.updated_at)}
-              </span>
-              <span className="info-item" aria-label={`来源渠道 ${channelName}`}>
+              <span className="stat" aria-label={`来源渠道 ${channelName}`}>
                 <Tag className="icon" aria-hidden="true" />
-                {channelName}
+                <span className="stat__label">来源</span>
+                <span className="stat__value">{channelName}</span>
               </span>
+              <span className="stat stat--empty" aria-label={`更新时间 ${formatDate(practice.updated_at)}`}>
+                <CalendarDays className="icon" aria-hidden="true" />
+                <span className="stat__label">Update</span>
+                <span className="stat__value">{formatDate(practice.updated_at)}</span>
+              </span>
+              <span className="stat" aria-label={`阅读量 ${formatCompactNumber(practice.click_count)}`}>
+                <Eye className="icon" aria-hidden="true" />
+                <span className="stat__label">阅读</span>
+                <span className="stat__value">{formatCompactNumber(practice.click_count)}</span>
+              </span>
+            </div>
+
+            <div className="detail-hero__facts" aria-label="快捷导航">
+              <Link className="hero-fact hero-fact--link" href="/" aria-label="返回首页">
+                <span className="hero-fact__dot" aria-hidden="true" />
+                返回首页
+                <ExternalLink className="icon" aria-hidden="true" />
+              </Link>
+              {anchorSkillId && relatedSkills[0] ? (
+                <Link
+                  className="hero-fact hero-fact--link"
+                  href={`/skill/${relatedSkills[0].id}`}
+                  aria-label={`查看关联 Skill：${relatedSkills[0].name}`}
+                >
+                  <span className="hero-fact__dot" aria-hidden="true" />
+                  关联 Skill：{relatedSkills[0].name}
+                  <ExternalLink className="icon" aria-hidden="true" />
+                </Link>
+              ) : (
+                <span className="hero-fact" aria-label="暂无主关联 Skill">
+                  <span className="hero-fact__dot" aria-hidden="true" />
+                  暂无主关联 Skill
+                </span>
+              )}
             </div>
           </div>
 
           <aside className="detail-panel" aria-label="原文入口">
+            <div className="detail-panel__repo" aria-label="作者与来源">
+              <span className="detail-panel__repo-avatar" aria-hidden="true"></span>
+              <div className="detail-panel__repo-main">
+                <div className="detail-panel__repo-name">{authorName}</div>
+                <span className="detail-panel__repo-short">
+                  <Tag className="icon" aria-hidden="true" />
+                  {channelName}
+                </span>
+              </div>
+            </div>
+
             <div className="detail-panel__header">
               <div className="detail-panel__title">阅读入口</div>
               <div className="detail-panel__hint">点击按钮跳转原文（新窗口打开）</div>
             </div>
 
             <div className="detail-panel__actions">
-              <a
-                className="btn btn--primary detail-panel__download-btn"
-                href={sourceUrl || "#"}
-                target={sourceUrl ? "_blank" : undefined}
-                rel={sourceUrl ? "noreferrer noopener" : undefined}
-                aria-disabled={!sourceUrl}
-                aria-label="Read Original（新窗口）"
-              >
-                <ExternalLink className="icon" aria-hidden="true" />
-                <span className="btn__label">Read Original</span>
-              </a>
+              <div className="detail-panel__download">
+                <a
+                  className="btn btn--primary detail-panel__download-btn"
+                  href={sourceUrl || "#"}
+                  target={sourceUrl ? "_blank" : undefined}
+                  rel={sourceUrl ? "noreferrer noopener" : undefined}
+                  aria-disabled={!sourceUrl}
+                  aria-label="Read Original（新窗口）"
+                >
+                  <ExternalLink className="icon" aria-hidden="true" />
+                  <span className="btn__label">Read Original</span>
+                </a>
+              </div>
             </div>
           </aside>
         </div>
       </section>
 
       <main className="page page--detail">
-        <section className="detail-related" aria-label="关联 Skill">
-          <h2 className="detail-related__title">关联 Skill</h2>
-          {relatedSkills.length > 0 ? (
-            <div className="detail-related__grid">
-              {relatedSkills.map((skill) => (
-                <Link
-                  key={skill.id}
-                  href={`/skill/${skill.id}`}
-                  className="detail-related__card"
-                  aria-label={`查看 Skill：${skill.name}`}
-                >
-                  <span className="detail-related__name">{skill.name}</span>
-                  <span className="detail-related__desc">
-                    {skill.description
-                      ? skill.description.slice(0, 80) + (skill.description.length > 80 ? "..." : "")
-                      : skill.tag || "暂无描述"}
-                  </span>
-                </Link>
-              ))}
+        <section className="detail-switch" aria-label="关联内容切换">
+          <input className="detail-switch__radio" type="radio" name="detail-view" id="view-practices" defaultChecked />
+          <input className="detail-switch__radio" type="radio" name="detail-view" id="view-skillmd" />
+
+          <div className="detail-switch__header">
+            <div className="detail-switch__left">
+              <div className="detail-switch__tabs" aria-label="查看内容">
+                <label className="detail-switch__tab" htmlFor="view-practices">
+                  相关实践
+                  <span className="detail-switch__count">{formatCompactNumber(relatedPractices.length)}</span>
+                </label>
+                <label className="detail-switch__tab" htmlFor="view-skillmd">
+                  关联 Skill
+                  <span className="detail-switch__count">{formatCompactNumber(relatedSkills.length)}</span>
+                </label>
+                <span className="detail-switch__indicator" aria-hidden="true" />
+              </div>
             </div>
-          ) : (
-            <p className="callout">当前实践暂未关联已上架 Skill。</p>
-          )}
-        </section>
+          </div>
 
-        <section className="detail-card practice-section" aria-label="相关实践">
-          <header className="section-header">
-            <h2>相关实践</h2>
-          </header>
+          <div className="detail-switch__panels">
+            <section className="detail-tabpanel detail-tabpanel--practices practice-section" aria-label="相关实践">
+              <header className="section-header">
+                <h2>相关实践</h2>
+              </header>
 
-          {relatedPractices.length > 0 ? (
-            <div className="practice-grid">
-              {relatedPractices.map((item, index) => {
-                const itemAuthorName = (item.author_name || "").trim() || "匿名作者";
-                const itemChannelName = (item.channel || "").trim() || "-";
-                const itemSourceText =
-                  itemChannelName && itemAuthorName !== "匿名作者"
-                    ? `${itemChannelName}·${itemAuthorName}`
-                    : itemChannelName || itemAuthorName;
-                const itemSummary = (item.summary || "").replace(/\s+/g, " ").trim() || "暂无摘要";
-                const accent = PRACTICE_ACCENTS[index % PRACTICE_ACCENTS.length];
+              {relatedPractices.length > 0 ? (
+                <div className="practice-grid">
+                  {relatedPractices.map((item, index) => {
+                    const itemAuthorName = (item.author_name || "").trim() || "匿名作者";
+                    const itemChannelName = (item.channel || "").trim() || "-";
+                    const itemSourceText =
+                      itemChannelName && itemAuthorName !== "匿名作者"
+                        ? `${itemChannelName}·${itemAuthorName}`
+                        : itemChannelName || itemAuthorName;
+                    const itemSummary = (item.summary || "").replace(/\s+/g, " ").trim() || "暂无摘要";
+                    const accent = PRACTICE_ACCENTS[index % PRACTICE_ACCENTS.length];
 
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/practice/${item.id}`}
-                    className="practice-card"
-                    aria-label={`查看实践：${item.title}`}
-                    style={{ "--accent": accent } as CSSProperties}
-                  >
-                    <div className="practice-card__top">
-                      <span className="practice-card__channel">{itemChannelName}</span>
-                      <span className="stat stat--empty" aria-label={`更新时间 ${formatDate(item.updated_at)}`}>
-                        <CalendarDays className="icon" aria-hidden="true" />
-                        {formatDate(item.updated_at)}
+                    return (
+                      <Link
+                        key={item.id}
+                        href={`/practice/${item.id}`}
+                        className="practice-card"
+                        aria-label={`查看实践：${item.title}`}
+                        style={{ "--accent": accent } as CSSProperties}
+                      >
+                        <div className="practice-card__top">
+                          <span className="practice-card__channel">{itemChannelName}</span>
+                          <span className="stat stat--empty" aria-label={`更新时间 ${formatDate(item.updated_at)}`}>
+                            <CalendarDays className="icon" aria-hidden="true" />
+                            {formatDate(item.updated_at)}
+                          </span>
+                        </div>
+
+                        <h3>{item.title}</h3>
+                        <p>{itemSummary}</p>
+
+                        <div className="practice-card__bottom">
+                          <span className="meta" aria-label={`阅读量 ${formatCompactNumber(item.click_count)}`}>
+                            <Eye className="icon" aria-hidden="true" />
+                            {formatCompactNumber(item.click_count)}
+                          </span>
+                          <span className="meta" aria-label={`来源 ${itemSourceText}`} title={itemSourceText}>
+                            <User className="icon" aria-hidden="true" />
+                            {itemSourceText}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="empty-state">当前主关联 Skill 下暂无其他已上架实践。</div>
+              )}
+            </section>
+
+            <section className="detail-card detail-tabpanel detail-tabpanel--skillmd" aria-label="关联 Skill">
+              <header className="section-header">
+                <h2>关联 Skill</h2>
+              </header>
+
+              {relatedSkills.length > 0 ? (
+                <div className="detail-related__grid">
+                  {relatedSkills.map((skill) => (
+                    <Link
+                      key={skill.id}
+                      href={`/skill/${skill.id}`}
+                      className="detail-related__card"
+                      aria-label={`查看 Skill：${skill.name}`}
+                    >
+                      <span className="detail-related__name">{skill.name}</span>
+                      <span className="detail-related__desc">
+                        {skill.description
+                          ? skill.description.slice(0, 80) + (skill.description.length > 80 ? "..." : "")
+                          : skill.tag || "暂无描述"}
                       </span>
-                    </div>
-
-                    <h3>{item.title}</h3>
-                    <p>{itemSummary}</p>
-
-                    <div className="practice-card__bottom">
-                      <span className="meta" aria-label={`阅读量 ${formatCompactNumber(item.click_count)}`}>
-                        <Eye className="icon" aria-hidden="true" />
-                        {formatCompactNumber(item.click_count)}
-                      </span>
-                      <span className="meta" aria-label={`来源 ${itemSourceText}`} title={itemSourceText}>
-                        <User className="icon" aria-hidden="true" />
-                        {itemSourceText}
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="callout">当前主关联 Skill 下暂无其他已上架实践。</p>
-          )}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">当前实践暂未关联已上架 Skill。</div>
+              )}
+            </section>
+          </div>
         </section>
       </main>
     </>

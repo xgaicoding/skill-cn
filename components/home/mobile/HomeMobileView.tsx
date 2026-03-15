@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Autoplay, Pagination as SwiperPagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperInstance } from "swiper";
@@ -280,12 +281,12 @@ function PracticeSheet({
             className="sheet-btn sheet-btn--primary"
             type="button"
             onClick={() => onOpenOriginal(practice)}
-            aria-label="跳转原文"
+            aria-label="查看实践详情"
           >
             <span className="sheet-btn__icon" aria-hidden="true">
               <ExternalLink className="icon" />
             </span>
-            跳转原文
+            查看详情
           </button>
           <button className="sheet-btn" type="button" onClick={() => onFilterSkills(practice)} aria-label="筛选相关 Skill">
             <span className="sheet-btn__icon" aria-hidden="true">
@@ -469,6 +470,7 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
     onRetry,
     onFilterSkillsByIds,
   } = props;
+  const router = useRouter();
 
   const current = mode === "skills" ? skills : practices;
 
@@ -553,11 +555,12 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
   };
 
   const handleOpenOriginal = (practice: PracticeWithSkills) => {
-    if (!practice.source_url) return;
-    // 关闭面板，避免“打开新页面后面板还停留在当前页面”的割裂感。
+    // 防御性校验：practice id 非法时不跳转，避免进入无效详情页。
+    if (!Number.isFinite(practice.id) || practice.id <= 0) return;
+    // 关闭面板，避免“进入详情后面板仍停留在当前页面”的割裂感。
     closeSheet();
     trackClick(practice.id);
-    window.open(practice.source_url, "_blank", "noopener,noreferrer");
+    router.push(`/practice/${practice.id}`);
   };
 
   const handleFilterSkills = (practice: PracticeWithSkills) => {
@@ -699,14 +702,13 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
 
                 return (
                   <SwiperSlide key={`practice-${p.id}-${index}`}>
-                    <a
+                    <Link
                       className="m-hero-card m-hero-card--practice"
-                      href={p.source_url || "#"}
-                      target={p.source_url ? "_blank" : undefined}
-                      rel={p.source_url ? "noreferrer noopener" : undefined}
-                      aria-label={`打开推荐实践：${title}`}
+                      href={`/practice/${p.id}`}
+                      aria-label={`查看推荐实践详情：${title}`}
                       onClick={(event) => {
-                        if (!p.source_url) {
+                        // 防御性校验：practice id 非法时阻止跳转，避免进入无效路由。
+                        if (!Number.isFinite(p.id) || p.id <= 0) {
                           event.preventDefault();
                           return;
                         }
@@ -719,7 +721,7 @@ export default function HomeMobileView(props: HomeMobileViewProps) {
                         <span title={sourceText}>{sourceText}</span>
                         <span>{formatDate(p.updated_at)}</span>
                       </div>
-                    </a>
+                    </Link>
                   </SwiperSlide>
                 );
               })

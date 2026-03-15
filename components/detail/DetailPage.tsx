@@ -715,8 +715,8 @@ export default function DetailPage({
 
   /**
    * 实践卡片点击统计：
-   * - 跳转由 `<a target="_blank">` 的默认行为完成，避免 JS 打开窗口带来的兼容性/拦截问题。
-   * - 统计请求不 `await`：避免阻塞浏览器打开新窗口/新标签页（体感会更"跟手"）。
+   * - 跳转由 Next.js `Link` 内链完成，统计请求不阻塞路由切换。
+   * - 统计请求不 `await`：避免阻塞页面跳转（体感会更"跟手"）。
    */
   const handlePracticeClick = (practice: Practice) => {
     fetch(`/api/practices/${practice.id}/click`, { method: "POST" }).catch(() => {
@@ -1001,19 +1001,18 @@ export default function DetailPage({
                 const sourceText = author || "-";
 
                 return (
-                  <a
+                  <Link
                     key={practice.id}
                     className="m-card m-card--practice"
-                    href={practice.source_url || "#"}
-                    target={practice.source_url ? "_blank" : undefined}
-                    rel={practice.source_url ? "noreferrer noopener" : undefined}
-                    aria-label={`打开原文：${pTitle}`}
-                    aria-disabled={!practice.source_url}
+                    href={`/practice/${practice.id}`}
+                    aria-label={`查看实践详情：${pTitle}`}
                     onClick={(event) => {
-                      if (!practice.source_url) {
+                      // 防御性校验：若 id 非法则阻止跳转，避免进入无效路由。
+                      if (!Number.isFinite(practice.id) || practice.id <= 0) {
                         event.preventDefault();
                         return;
                       }
+                      // 保留原有点击统计，不阻塞页面内链跳转。
                       handlePracticeClick(practice);
                     }}
                   >
@@ -1030,7 +1029,7 @@ export default function DetailPage({
                         {formatCompactNumber(practice.click_count)}
                       </span>
                     </div>
-                  </a>
+                  </Link>
                 );
               })
             )}
@@ -1371,14 +1370,12 @@ export default function DetailPage({
                         const sourceText =
                           channelName && authorName ? `${channelName}·${authorName}` : channelName || authorName || "-";
                         return (
-                          <a
+                          <Link
                             key={practice.id}
                             className="practice-card"
-                            href={practice.source_url || "#"}
-                            target="_blank"
-                            rel="noreferrer"
+                            href={`/practice/${practice.id}`}
                             onClick={() => handlePracticeClick(practice)}
-                            aria-label={`打开实践：${practice.title}（新窗口）`}
+                            aria-label={`查看实践详情：${practice.title}`}
                             style={{ "--accent": accent } as CSSProperties}
                           >
                             <div className="practice-card__top">
@@ -1401,7 +1398,7 @@ export default function DetailPage({
                                 {sourceText}
                               </span>
                             </div>
-                          </a>
+                          </Link>
                         );
                       })}
                     </div>
