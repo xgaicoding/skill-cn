@@ -445,7 +445,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                   aria-label="Read Original（新窗口）"
                 >
                   <ExternalLink className="icon" aria-hidden="true" />
-                  <span className="btn__label">Read Original</span>
+                  <span className="btn__label">阅读原文</span>
                 </a>
               </div>
             </div>
