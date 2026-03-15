@@ -7906,3 +7906,30 @@ body.is-detail::after {
     padding: 16px;
   }
 }
+
+/* Practice detail: info card container wrapping subtitle + stats + facts */
+.practice-hero__info-card {
+  margin-top: 16px;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+
+.practice-hero__info-card .detail-hero__subtitle {
+  margin-top: 0;
+}
+
+.practice-hero__info-card .detail-hero__stats {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(124, 94, 77, 0.1);
+}
+
+.practice-hero__info-card .detail-hero__facts {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(124, 94, 77, 0.1);
+}

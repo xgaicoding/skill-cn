@@ -367,6 +367,7 @@ export default async function Page({ params }: { params: { id: string } }) {
               ) : null}
             </div>
 
+            <div className="practice-hero__info-card">
             <p className="detail-hero__subtitle">{summaryText}</p>
 
             <div className="detail-hero__stats" aria-label="实践元信息">
@@ -414,6 +415,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                   暂无主关联 Skill
                 </span>
               )}
+            </div>
             </div>
           </div>
 
