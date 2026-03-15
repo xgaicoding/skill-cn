@@ -9,13 +9,36 @@
 [![GitHub stars](https://img.shields.io/github/stars/xgaicoding/skill-cn?style=social)](https://github.com/xgaicoding/skill-cn)
 [![GitHub license](https://img.shields.io/github/license/xgaicoding/skill-cn)](https://github.com/xgaicoding/skill-cn/blob/master/LICENSE)
 
-[🌐 在线体验](https://skill-cn.com) | [📖 官方文档](https://my.feishu.cn/wiki/XKnEwisJbi8TLEkdW6wckqkQnoe?fromScene=spaceOverview) | [💬 问题反馈](https://github.com/xgaicoding/skill-cn/issues)
+[🌐 在线体验](https://www.skill-cn.com) | [📖 官方文档](https://my.feishu.cn/wiki/XKnEwisJbi8TLEkdW6wckqkQnoe?fromScene=spaceOverview) | [💬 问题反馈](https://github.com/xgaicoding/skill-cn/issues)
 
 </div>
 
 ## 🎯 项目简介
 
-Skill Hub 中国是一个专注于 Agent Skill 落地实践的开源项目
+[Skill Hub 中国](https://www.skill-cn.com)是一个专注于 Agent Skill 落地实践的开源平台，帮助国内开发者快速找到能用、好用、可复用的 AI 工具实践方案。
+
+### ✨ 收录热门 Skill
+
+| Skill | 场景 | 链接 |
+|-------|------|------|
+| [AI 做 PPT](https://www.skill-cn.com/skill/9) | 一键创建专业演示文稿 | pptx |
+| [AI UI 设计](https://www.skill-cn.com/skill/1) | 让 AI 写出专业级前端界面 | ui-ux-pro-max |
+| [AI 自动写公众号](https://www.skill-cn.com/skill/23) | 从素材到发布全流程自动化 | baoyu-skills |
+| [AI 浏览器自动化](https://www.skill-cn.com/skill/12) | 网页测试与数据采集 | agent-browser |
+| [A 股技术分析](https://www.skill-cn.com/skill/50) | 多维度共振验证信号 | stock-analysis |
+| [AI 处理 PDF](https://www.skill-cn.com/skill/38) | 提取文本、合并拆分 | pdf |
+| [AI 处理 Excel](https://www.skill-cn.com/skill/39) | 公式、图表、数据分析 | xlsx |
+| [Markdown 转公众号](https://www.skill-cn.com/skill/18) | AI 全流程自动化发布 | md2wechat |
+| [Vue 最佳实践](https://www.skill-cn.com/skill/34) | 组件设计与性能优化 | vue-best-practices |
+| [React 最佳实践](https://www.skill-cn.com/skill/35) | 组件设计与性能优化 | react-best-practices |
+
+👉 [查看全部 49 个 Skill →](https://www.skill-cn.com)
+
+### 📝 实践案例
+
+平台收录了 **232+ 篇真实实践案例**，涵盖 AI 编程、设计、自动化、内容创作等领域。每篇案例包含具体的使用场景、操作步骤和踩坑记录。
+
+👉 [浏览实践案例 →](https://www.skill-cn.com)
 
 
 ## 🚀 快速开始
