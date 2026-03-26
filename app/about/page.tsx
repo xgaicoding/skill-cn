@@ -82,12 +82,13 @@ export default function AboutPage() {
           </div>
 
           <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-            <div className="relative w-full aspect-video rounded-xl overflow-hidden mb-6">
+            <div className="rounded-xl overflow-hidden mb-6">
               <Image
                 src="/images/team-photo.jpg"
                 alt="Skill Hub 中国团队"
-                fill
-                className="object-cover"
+                width={1280}
+                height={960}
+                className="w-full h-auto"
                 priority
               />
             </div>
