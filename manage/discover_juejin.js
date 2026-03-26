@@ -15,13 +15,11 @@
 
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
 const CANDIDATES_FILE = path.join(__dirname, ".discover_candidates.json");
 const ANALYZED_FILE = path.join(__dirname, ".discover_analyzed.json");
 const RESULT_FILE = path.join(__dirname, ".discover_result.txt");
-const ANALYZE_SCRIPT = path.join(__dirname, "analyze_one.js");
 
 // ============ 环境变量 ============
 function loadEnv() {
@@ -45,6 +43,7 @@ loadEnv();
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY;
 
 // ============ 工具函数 ============
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -173,69 +172,62 @@ async function searchJuejin(keyword, limit = 10, retries = 2) {
 // ============ 关键词生成 ============
 
 /**
- * 中文需求词映射（来自 lib/seo-keywords.ts）
- * 用中文需求词搜掘金，比英文 skill name 效果好得多
+ * 精准 Skill 搜索策略
+ *
+ * 目标：搜出"某个具体 skill 的实践文章"
+ * 核心：skill 名本身就是最精准的关键词
+ *
+ * 1. skill 原名直接搜（写实践的人一定会提到 skill 名）
+ * 2. skill 名 + "实战"（扩展覆盖面）
+ * 3. 高频 skill 补中文别名（部分用户用中文描述 skill）
+ * 4. 少量通用热词（覆盖跨 skill 的实践文章）
  */
-const DEMAND_KEYWORDS = {
-  1: "AI UI 设计",
-  8: "创建 Agent Skill",
-  9: "AI 做 PPT",
-  10: "AI 前端开发",
-  11: "Supabase 数据库优化",
-  12: "AI 浏览器自动化",
-  13: "AI 销售线索",
-  14: "域名生成器",
-  15: "AI 头脑风暴",
-  16: "React 做视频",
-  17: "NotebookLM API",
-  18: "Markdown 转公众号",
-  19: "AI 画流程图",
-  20: "Three.js 3D 开发",
-  21: "AI 提示词生成",
-  22: "Obsidian 知识管理",
-  23: "AI 自动写公众号",
-  24: "视频下载工具",
-  25: "AI 写推特",
-  26: "AI 视频包装",
-  27: "AI 生成 PPT",
-  28: "开发效率工具",
-  29: "Markdown 转 PPT",
-  30: "Skill 趋势追踪",
-  31: "AI 学习记忆",
-  32: "AI 文本去痕迹",
-  33: "Milvus 向量数据库",
-  34: "Vue 最佳实践",
-  35: "React 最佳实践",
-  36: "查找 Agent Skill",
-  37: "Web UI 审查",
-  38: "AI 处理 PDF",
-  39: "AI 处理 Excel",
-  40: "SaaS 营销策略",
-  41: "创建 MCP Server",
-  42: "YouTube 订阅更新",
-  43: "YouTube 字幕提取",
-  44: "本地知识库 RAG",
-  45: "AI 营销工具",
-  46: "AI Agent 记忆",
-  47: "AI 编程工作流",
-  48: "WordPress AI 开发",
-  49: "聊天记录分析",
-  50: "A股技术分析",
-  51: "AI 操控浏览器",
-  52: "AI 文字转语音",
-  53: "SEO 审查工具",
-  54: "GitHub Pages 预览",
-  56: "AI 社交通信",
+
+const CN_ALIASES = {
+  "browser-use": ["browser-use 浏览器"],
+  "frontend-design": ["frontend-design 前端"],
+  "ui-ux-pro-max": ["ui-ux-pro-max 设计"],
+  "skill-creator": ["skill-creator 创建skill"],
+  "stock-analysis": ["stock-analysis 股票"],
+  "pptx": ["pptx skill PPT"],
+  "md2wechat": ["md2wechat 公众号"],
+  "excalidraw-diagram": ["excalidraw-diagram 画图"],
+  "obsidian-skills": ["obsidian-skills 笔记"],
+  "yt-dlp-downloader": ["yt-dlp-downloader 下载"],
+  "mcp-server-creator": ["mcp-server-creator MCP"],
 };
 
 function generateSearchKeywords(skills) {
   const keywords = new Set();
+  const SKIP = new Set(["pdf", "xlsx", "ppt", "find", "trending"]);
+
   for (const skill of skills) {
-    const demand = DEMAND_KEYWORDS[skill.id];
-    if (demand) {
-      keywords.add(demand);
+    const rawName = skill.name;
+    if (SKIP.has(rawName.toLowerCase())) continue;
+
+    const readable = rawName.replace(/-/g, " ");
+    if (readable.length < 2) continue;
+
+    // 1. skill 原名
+    keywords.add(readable);
+    // 2. skill 名 + 实战
+    keywords.add(`${readable} 实战`);
+
+    // 3. 中文别名（仅高频 skill）
+    const aliases = CN_ALIASES[rawName];
+    if (aliases) {
+      for (const a of aliases) keywords.add(a);
     }
   }
+
+  // 4. 通用热词
+  const HOT = [
+    "Agent Skill 实战", "Claude Code Skill 实践",
+    "Cursor Skill 实战", "MCP Skill 实战",
+    "Vibe Coding Skill", "AI Agent Skill 推荐",
+  ];
+  for (const h of HOT) keywords.add(h);
+
   return [...keywords];
 }
 
@@ -312,6 +304,100 @@ async function runSearch({ customKeyword, perKeywordLimit }) {
   return bundle;
 }
 
+// ============ 抓取掘金文章正文 ============
+async function fetchArticleContent(url, retries = 1) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    let page = null;
+    try {
+      const browser = await getBrowser();
+      page = await browser.newPage();
+      await page.setUserAgent(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      );
+      await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+      await sleep(1500);
+      const content = await page.evaluate(() => {
+        const el = document.querySelector("article.article-content") || document.querySelector(".article-viewer");
+        return el ? el.innerText.trim() : (document.body.innerText || "").trim();
+      });
+      await page.close();
+      return content.slice(0, 3000);
+    } catch (err) {
+      if (page) try { await page.close(); } catch {}
+      if (attempt < retries) {
+        await closeBrowser();
+        await sleep(1000);
+        continue;
+      }
+      return "";
+    }
+  }
+  return "";
+}
+
+// ============ AI 判断 ============
+async function analyzeContent(content, title, skillNames) {
+  const skillList = skillNames.join(", ");
+  const textForAI = content.slice(0, 3000);
+
+  if (textForAI.length < 200) return { is_practice: false, reason: "内容过短" };
+
+  const prompt = `你是 AI 实践文章评审专家。请判断以下文章是否为"实践文章"。
+
+**实践文章的定义**：用具体的 AI Skill/工具，在真实场景中做出了具体产出。
+核心公式：Skill × 场景 = 实践
+
+**重要约束：只识别以下 Skill 列表中的工具，不在列表中的工具一律忽略**：
+${skillList}
+
+**关键区分：Agent Skill 实践 vs 技术本身的应用**
+- Agent Skill 是指在 AI Agent（如 Claude Code、Cursor 等）中以"Skill/插件/技能包"形式使用的工具
+- 如果文章只是在用某个技术本身（如直接用 RAG 框架搭系统），这不算 Agent Skill 实践
+- 只有当文章明确是在 AI Agent 环境中调用/使用了上述 Skill，才算实践文章
+
+**好文章（收录）**：在 AI Agent 中使用上述 Skill 做了项目/解决了问题，有操作步骤、代码、踩坑记录
+**差文章（不收录）**：单纯介绍/推荐工具、工具对比评测、纯概念科普、通用 AI 编程教程
+
+**排除以下通用 AI 工具，它们不算 Skill**：
+Claude Code, Cursor, Windsurf, Copilot, ChatGPT, DeepSeek, Gemini, GPT-4, Claude, Trae, Augment Code, Cline, Roo Code, Aider
+
+文章标题：${title}
+文章正文（前3000字）：
+${textForAI}
+
+请严格按以下 JSON 格式输出：
+{
+  "is_practice": true/false,
+  "confidence": 0.0-1.0,
+  "skills": ["只填上述列表中匹配到的skill名称"],
+  "scene": "一句话描述使用场景",
+  "reason": "判断理由（一句话）"
+}`;
+
+  const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${DEEPSEEK_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "deepseek-chat",
+      messages: [
+        { role: "system", content: "你是专业的AI实践文章评审专家，只输出JSON。" },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.1,
+      max_tokens: 300,
+    }),
+  });
+
+  if (!res.ok) throw new Error(`DeepSeek API error: ${await res.text()}`);
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content || "";
+  const match = text.match(/\{[\s\S]*\}/);
+  return match ? JSON.parse(match[0]) : { is_practice: false, reason: "AI 返回格式错误" };
+}
+
 // ============ 阶段二：分析 ============
 async function runAnalyze({ bundle, doNotify }) {
   // 读候选
@@ -331,7 +417,7 @@ async function runAnalyze({ bundle, doNotify }) {
 
   const pending = candidates.filter(a => !doneKeys.has(a.url));
 
-  console.log("\n🤖 分析阶段（子进程逐篇处理）...");
+  console.log("\n🤖 分析阶段（抓取正文 + DeepSeek 分析）...");
   console.log(`   候选: ${candidates.length} | 已分析: ${candidates.length - pending.length} | 待分析: ${pending.length}`);
 
   if (pending.length === 0) {
@@ -339,9 +425,6 @@ async function runAnalyze({ bundle, doNotify }) {
     printSummary(analyzed.results, candidates.length, doNotify);
     return;
   }
-
-  const skillNamesJsonFile = path.join(__dirname, ".skill_names.json");
-  fs.writeFileSync(skillNamesJsonFile, JSON.stringify(skillNames), "utf8");
 
   for (let i = 0; i < pending.length; i++) {
     const article = pending[i];
@@ -360,49 +443,54 @@ async function runAnalyze({ bundle, doNotify }) {
 
     process.stdout.write(`${progress} ${titleShort}... `);
 
-    // 子进程分析
-    let result;
+    // 抓取文章正文
+    let content;
     try {
-      const stdout = execSync(
-        `node --max-old-space-size=256 "${ANALYZE_SCRIPT}" "${article.url}" "$(cat "${skillNamesJsonFile}")"`,
-        { cwd: ROOT_DIR, encoding: "utf8", timeout: 90000, stdio: ["pipe", "pipe", "pipe"] }
-      );
-      result = JSON.parse(stdout.trim());
+      content = await fetchArticleContent(article.url);
+      await closeBrowser();
+      maybeGC();
     } catch (err) {
-      console.log("⚠️ 子进程失败");
-      analyzed.results.push({ url: article.url, title: article.title, status: "failed", reason: "子进程失败" });
+      await closeBrowser();
+      console.log("⚠️ 抓取失败");
+      analyzed.results.push({ url: article.url, title: article.title, status: "failed", reason: "抓取失败" });
       writeJsonAtomic(ANALYZED_FILE, analyzed);
       await sleep(200);
       continue;
     }
 
-    if (result.error) {
-      console.log(`❌ ${result.error}`);
-      analyzed.results.push({ url: article.url, title: article.title, status: "failed", reason: result.error });
+    if (!content || content.length < 200) {
+      console.log("⏭️ 内容不足");
+      analyzed.results.push({ url: article.url, title: article.title, status: "skipped", reason: "内容不足" });
       writeJsonAtomic(ANALYZED_FILE, analyzed);
-      await sleep(200);
       continue;
     }
 
-    const j = result.judgment || {};
-    const pass = j.is_practice && j.confidence >= 0.6;
+    // DeepSeek 分析
+    try {
+      const j = await analyzeContent(content, article.title, skillNames);
+      const pass = j.is_practice && j.confidence >= 0.6;
 
-    if (pass) {
-      console.log(`✅ 通过 (${(j.confidence * 100).toFixed(0)}%) — ${j.scene || ""}`);
-      console.log(`   → ${article.url}`);
-      analyzed.results.push({
-        url: article.url, title: article.title, status: "passed",
-        judgment: j, content_preview: (result.content || "").slice(0, 500),
-      });
-    } else {
-      console.log(`❌ 非实践 — ${j.reason || ""}`);
-      analyzed.results.push({ url: article.url, title: article.title, status: "failed", reason: j.reason || "未通过" });
+      if (pass) {
+        console.log(`✅ 通过 (${(j.confidence * 100).toFixed(0)}%) — ${j.scene || ""}`);
+        console.log(`   → ${article.url}`);
+        analyzed.results.push({
+          url: article.url, title: article.title, status: "passed",
+          judgment: j, content_preview: content.slice(0, 500),
+        });
+      } else {
+        console.log(`❌ ${j.reason || "未通过"}`);
+        analyzed.results.push({ url: article.url, title: article.title, status: "failed", reason: j.reason || "未通过" });
+      }
+    } catch (err) {
+      console.log(`⚠️ 分析失败: ${err.message}`);
+      analyzed.results.push({ url: article.url, title: article.title, status: "failed", reason: err.message });
     }
 
     writeJsonAtomic(ANALYZED_FILE, analyzed);
     await sleep(300);
   }
 
+  await closeBrowser();
   printSummary(analyzed.results, candidates.length, doNotify);
 }
 
