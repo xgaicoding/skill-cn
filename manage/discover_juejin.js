@@ -171,17 +171,69 @@ async function searchJuejin(keyword, limit = 10, retries = 2) {
 }
 
 // ============ 关键词生成 ============
+
+/**
+ * 中文需求词映射（来自 lib/seo-keywords.ts）
+ * 用中文需求词搜掘金，比英文 skill name 效果好得多
+ */
+const DEMAND_KEYWORDS = {
+  1: "AI UI 设计",
+  8: "创建 Agent Skill",
+  9: "AI 做 PPT",
+  10: "AI 前端开发",
+  11: "Supabase 数据库优化",
+  12: "AI 浏览器自动化",
+  13: "AI 销售线索",
+  14: "域名生成器",
+  15: "AI 头脑风暴",
+  16: "React 做视频",
+  17: "NotebookLM API",
+  18: "Markdown 转公众号",
+  19: "AI 画流程图",
+  20: "Three.js 3D 开发",
+  21: "AI 提示词生成",
+  22: "Obsidian 知识管理",
+  23: "AI 自动写公众号",
+  24: "视频下载工具",
+  25: "AI 写推特",
+  26: "AI 视频包装",
+  27: "AI 生成 PPT",
+  28: "开发效率工具",
+  29: "Markdown 转 PPT",
+  30: "Skill 趋势追踪",
+  31: "AI 学习记忆",
+  32: "AI 文本去痕迹",
+  33: "Milvus 向量数据库",
+  34: "Vue 最佳实践",
+  35: "React 最佳实践",
+  36: "查找 Agent Skill",
+  37: "Web UI 审查",
+  38: "AI 处理 PDF",
+  39: "AI 处理 Excel",
+  40: "SaaS 营销策略",
+  41: "创建 MCP Server",
+  42: "YouTube 订阅更新",
+  43: "YouTube 字幕提取",
+  44: "本地知识库 RAG",
+  45: "AI 营销工具",
+  46: "AI Agent 记忆",
+  47: "AI 编程工作流",
+  48: "WordPress AI 开发",
+  49: "聊天记录分析",
+  50: "A股技术分析",
+  51: "AI 操控浏览器",
+  52: "AI 文字转语音",
+  53: "SEO 审查工具",
+  54: "GitHub Pages 预览",
+  56: "AI 社交通信",
+};
+
 function generateSearchKeywords(skills) {
   const keywords = new Set();
-  const SKIP = ["pdf", "xlsx", "ppt", "find", "trending"];
   for (const skill of skills) {
-    const name = skill.name
-      .replace(/-best-practices$/i, "")
-      .replace(/-skill$/i, "")
-      .replace(/-skills$/i, "")
-      .replace(/-pro$/i, "");
-    if (name.length >= 3 && !SKIP.includes(name.toLowerCase())) {
-      keywords.add(name.replace(/-/g, " ") + " skill");
+    const demand = DEMAND_KEYWORDS[skill.id];
+    if (demand) {
+      keywords.add(demand);
     }
   }
   return [...keywords];
