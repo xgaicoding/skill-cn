@@ -10,7 +10,7 @@ export default function EggPage() {
         color: "#666",
       }}
     >
-      🥚 这是个彩蛋
+      🥚 欢迎来到红烁AI课堂！
     </div>
   );
 }
