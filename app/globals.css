@@ -398,6 +398,12 @@ button:disabled {
   padding: 0 2px;
 }
 
+.affiliate-banner--embedded {
+  width: 100%;
+  margin: 0 0 28px;
+  padding: 0;
+}
+
 .affiliate-banner__inner {
   position: relative;
   overflow: hidden;
