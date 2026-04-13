@@ -18,6 +18,7 @@ import PracticeFeedCardSkeleton from "@/components/home/PracticeFeedCardSkeleton
 import { Clock, Filter, FilterX, Flame, Plus, RefreshCcw, SearchX, Sparkles, TriangleAlert, X } from "lucide-react";
 import HomeMobileView from "@/components/home/mobile/HomeMobileView";
 import { trackEvent } from "@/lib/analytics";
+import AffiliatePromoBanner from "@/components/AffiliatePromoBanner";
 
 export type HomeInitialState = {
   q?: string;
@@ -853,6 +854,12 @@ export default function HomePage({
       <ModeDock mode={mode} onChange={handleModeChange} />
 
       <main className="page">
+        <AffiliatePromoBanner
+          className="affiliate-banner--midpage"
+          placement="home_mid_banner"
+          variant="inline"
+        />
+
         <section className="toolbar" id="skill-list" aria-label="筛选与排序">
           <div className="toolbar__left" aria-label="分类与关联筛选">
             <nav className="segmented" aria-label="标签筛选（单选）">

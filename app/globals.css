@@ -398,12 +398,6 @@ button:disabled {
   padding: 0 2px;
 }
 
-.affiliate-banner--embedded {
-  width: 100%;
-  margin: 0 0 28px;
-  padding: 0;
-}
-
 .affiliate-banner__inner {
   position: relative;
   overflow: hidden;
@@ -510,6 +504,44 @@ button:disabled {
 
 .affiliate-banner__cta:active {
   transform: scale(0.985);
+}
+
+.affiliate-banner--inline {
+  margin-top: 0;
+}
+
+.affiliate-banner--inline .affiliate-banner__inner {
+  padding: 14px 18px;
+  border-radius: 20px;
+  background:
+    linear-gradient(90deg, rgba(255, 107, 0, 0.92), rgba(255, 83, 83, 0.9)),
+    radial-gradient(circle at top right, rgba(255, 204, 0, 0.26), transparent 36%);
+}
+
+.affiliate-banner--inline .affiliate-banner__content {
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.affiliate-banner--inline .affiliate-banner__title {
+  font-size: clamp(18px, 1.6vw, 22px);
+}
+
+.affiliate-banner--inline .affiliate-banner__desc {
+  max-width: 900px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.affiliate-banner--inline .affiliate-banner__cta {
+  min-height: 46px;
+  padding: 0 18px;
+}
+
+.affiliate-banner--midpage {
+  width: 100%;
+  margin: 20px 0 14px;
+  padding: 0;
 }
 
 .page {

@@ -5,7 +5,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatNumberWithCommas } from "@/lib/format";
 import type { BoardEntry, BoardTabKey, HomeMetrics } from "@/lib/types";
 import { trackEvent } from "@/lib/analytics";
-import AffiliatePromoBanner from "@/components/AffiliatePromoBanner";
 
 const ITEMS_PER_PAGE = 3;
 
@@ -464,7 +463,6 @@ function HomeRetentionBanner({
   return (
     <section className="pc-retention-banner" aria-label="首页首屏更新看板（PC）">
       <div className="pc-retention-banner__inner">
-        <AffiliatePromoBanner className="affiliate-banner--embedded" />
         <div className="pc-retention-banner__layout">
           <section className="pc-retention-left" aria-label="品牌与关键数据">
             <div className="hero-copy hero-copy--minimal pc-retention-copy">
