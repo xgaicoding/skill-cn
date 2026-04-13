@@ -478,6 +478,27 @@ button:disabled {
   color: rgba(255, 247, 241, 0.88);
 }
 
+.affiliate-banner__highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.affiliate-banner__highlight {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 248, 242, 0.96);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
 .affiliate-banner__cta {
   display: inline-flex;
   align-items: center;
@@ -531,6 +552,16 @@ button:disabled {
   max-width: 900px;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.affiliate-banner--inline .affiliate-banner__highlights {
+  gap: 6px;
+}
+
+.affiliate-banner--inline .affiliate-banner__highlight {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 11px;
 }
 
 .affiliate-banner--inline .affiliate-banner__cta {

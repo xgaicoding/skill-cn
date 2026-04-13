@@ -212,6 +212,16 @@
     line-height: 1.55;
   }
 
+  .affiliate-banner__highlights {
+    gap: 6px;
+  }
+
+  .affiliate-banner__highlight {
+    min-height: 26px;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+
   .affiliate-banner__cta {
     width: 100%;
     min-height: 48px;

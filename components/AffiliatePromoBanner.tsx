@@ -4,12 +4,8 @@ import { ArrowRight, BadgePercent, Sparkles } from "lucide-react";
 import { AFFILIATE_PROMO_CAMPAIGN, AFFILIATE_PROMO_LINK } from "@/lib/constants";
 import { trackEvent, trackOutboundLink } from "@/lib/analytics";
 
-/**
- * 全站中转站推广横幅：
- * - 挂在 Header 下方，保证首页与详情页首屏都能看到
- * - 点击时同时上报 GA4 自定义活动事件和通用外链事件
- * - 文案强调“限时 5 折”和“所有模型”，降低理解成本
- */
+const PROMO_HIGHLIGHTS = ["Claude / GPT / Gemini", "统一入口更省心", "新用户限时 5 折"];
+
 export default function AffiliatePromoBanner({
   className = "",
   placement = "global_top_banner",
@@ -20,7 +16,6 @@ export default function AffiliatePromoBanner({
   variant?: "hero" | "inline";
 }) {
   const handleClick = () => {
-    // 专用活动事件：用于后续按广告位 / campaign 单独分析转化入口。
     trackEvent("affiliate_promo_click", {
       placement,
       campaign: AFFILIATE_PROMO_CAMPAIGN,
@@ -28,7 +23,6 @@ export default function AffiliatePromoBanner({
       discount: "50_off",
     });
 
-    // 通用外链事件：保留现有站点外链统计口径。
     trackOutboundLink(AFFILIATE_PROMO_LINK, placement);
   };
 
@@ -42,7 +36,7 @@ export default function AffiliatePromoBanner({
       <div className="affiliate-banner__inner">
         <div className="affiliate-banner__eyebrow">
           <BadgePercent className="icon affiliate-banner__eyebrow-icon" aria-hidden="true" />
-          <span>新用户专享 · 全模型 5 折</span>
+          <span>专属注册链接 · 新用户限时 5 折</span>
         </div>
 
         <div className="affiliate-banner__content">
@@ -50,19 +44,27 @@ export default function AffiliatePromoBanner({
             <p className="affiliate-banner__title">
               {isInline ? (
                 <>
-                  现在注册，立享全模型 <strong>5 折</strong> 特惠
+                  Claude / GPT / Gemini 一站式接入，<strong>现在注册就能锁定 5 折</strong>
                 </>
               ) : (
                 <>
-                  通过专属链接注册，所有模型限时享 <strong>5 折</strong>
+                  常用大模型一站式接入，<strong>新用户全模型限时 5 折</strong>
                 </>
               )}
             </p>
             <p className="affiliate-banner__desc">
               {isInline
-                ? "走专属注册链接，新用户限时锁定 5 折权益。常用模型都能直接省，越早注册越划算。"
-                : "点击广告跳转中转站注册页，使用该特惠链接的新用户可享受全模型 5 折优惠。"}
+                ? "不只是便宜一点，而是常用模型都能直接省。走专属链接注册，先把 5 折权益锁住，再开始接入、写代码、跑 Agent，会更划算。"
+                : "通过专属链接注册，Claude、GPT、Gemini 等常用模型都能直接用。先锁定 5 折权益，再开始调用和消耗，更省钱也更省心。"}
             </p>
+
+            <div className="affiliate-banner__highlights" aria-label="活动卖点">
+              {PROMO_HIGHLIGHTS.map((item) => (
+                <span key={item} className="affiliate-banner__highlight">
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
 
           <a
@@ -73,7 +75,7 @@ export default function AffiliatePromoBanner({
             onClick={handleClick}
           >
             <Sparkles className="icon" aria-hidden="true" />
-            <span>{isInline ? "立即锁定优惠" : "立即领取 5 折"}</span>
+            <span>{isInline ? "立即注册领 5 折" : "立即锁定 5 折"}</span>
             <ArrowRight className="icon" aria-hidden="true" />
           </a>
         </div>
