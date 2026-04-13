@@ -36,7 +36,7 @@ export default function AffiliatePromoBanner({
       <div className="affiliate-banner__inner">
         <div className="affiliate-banner__eyebrow">
           <BadgePercent className="icon affiliate-banner__eyebrow-icon" aria-hidden="true" />
-          <span>专属注册链接 · 新用户限时 5 折</span>
+          <span>AI 编程用户专属 · 新用户限时 5 折</span>
         </div>
 
         <div className="affiliate-banner__content">
@@ -44,18 +44,18 @@ export default function AffiliatePromoBanner({
             <p className="affiliate-banner__title">
               {isInline ? (
                 <>
-                  Claude / GPT / Gemini 一站式接入，<strong>现在注册就能锁定 5 折</strong>
+                  Claude / GPT / Gemini 一站式接入，<strong>注册即可锁定 5 折</strong>
                 </>
               ) : (
                 <>
-                  常用大模型一站式接入，<strong>新用户全模型限时 5 折</strong>
+                  Claude / GPT / Gemini 一站式接入，<strong>注册即可锁定 5 折</strong>
                 </>
               )}
             </p>
             <p className="affiliate-banner__desc">
               {isInline
-                ? "不只是便宜一点，而是常用模型都能直接省。走专属链接注册，先把 5 折权益锁住，再开始接入、写代码、跑 Agent，会更划算。"
-                : "通过专属链接注册，Claude、GPT、Gemini 等常用模型都能直接用。先锁定 5 折权益，再开始调用和消耗，更省钱也更省心。"}
+                ? "写代码、跑 Agent、做自动化时，不想来回切渠道，就用统一入口。通过专属链接注册，新用户限时享全模型 5 折。"
+                : "写代码、跑 Agent、做自动化时，不想来回切渠道，就用统一入口。通过专属链接注册，新用户限时享全模型 5 折。"}
             </p>
 
             <div className="affiliate-banner__highlights" aria-label="活动卖点">
@@ -75,7 +75,7 @@ export default function AffiliatePromoBanner({
             onClick={handleClick}
           >
             <Sparkles className="icon" aria-hidden="true" />
-            <span>{isInline ? "立即注册领 5 折" : "立即锁定 5 折"}</span>
+            <span>立即注册领 5 折</span>
             <ArrowRight className="icon" aria-hidden="true" />
           </a>
         </div>
