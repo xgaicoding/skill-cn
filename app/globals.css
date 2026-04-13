@@ -392,6 +392,120 @@ button:disabled {
   z-index: 1;
 }
 
+.affiliate-banner {
+  width: min(calc(100% - 32px), var(--content-width));
+  margin: 18px auto 0;
+  padding: 0 2px;
+}
+
+.affiliate-banner__inner {
+  position: relative;
+  overflow: hidden;
+  padding: 18px 22px;
+  border: 1px solid rgba(255, 107, 0, 0.22);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 204, 0, 0.34), transparent 32%),
+    linear-gradient(135deg, rgba(255, 107, 0, 0.96), rgba(255, 51, 102, 0.92));
+  box-shadow:
+    0 28px 44px -30px rgba(230, 82, 0, 0.68),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  color: #fff7f1;
+  transform: translateZ(0);
+}
+
+.affiliate-banner__inner::before {
+  content: "";
+  position: absolute;
+  inset: auto -8% -42% auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+  pointer-events: none;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+}
+
+.affiliate-banner__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.affiliate-banner__eyebrow-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.affiliate-banner__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.affiliate-banner__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.affiliate-banner__title {
+  font-family: var(--font-heading);
+  font-size: clamp(20px, 2.1vw, 28px);
+  font-weight: 800;
+  line-height: 1.12;
+}
+
+.affiliate-banner__title strong {
+  color: #fff2a8;
+}
+
+.affiliate-banner__desc {
+  max-width: 760px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 247, 241, 0.88);
+}
+
+.affiliate-banner__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
+  min-height: 52px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--primary-strong);
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  box-shadow: 0 18px 32px -22px rgba(40, 12, 0, 0.45);
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.affiliate-banner__cta:hover {
+  transform: translate3d(0, -1px, 0);
+  box-shadow: 0 22px 36px -22px rgba(40, 12, 0, 0.52);
+}
+
+.affiliate-banner__cta:active {
+  transform: scale(0.985);
+}
+
 .page {
   width: min(100%, var(--content-width));
   margin: 0 auto;

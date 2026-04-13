@@ -38,6 +38,13 @@ export const COMMUNITY_QR_BACKUP_URL =
 export const OFFICIAL_DOCS_LINK =
   "https://my.feishu.cn/wiki/XKnEwisJbi8TLEkdW6wckqkQnoe?fromScene=spaceOverview";
 
+// 中转站推广活动：
+// - 固定使用联盟注册链接，避免组件层散落硬编码
+// - campaign 命名用于埋点上报维度统一
+export const AFFILIATE_PROMO_LINK =
+  "https://ai.kailingteck.com/register?aff=jKLu";
+export const AFFILIATE_PROMO_CAMPAIGN = "kailing_half_price_launch";
+
 // Footer 友情链接：
 // - 用数组统一维护，避免在组件里散落硬编码
 // - 便于后续扩展更多友链（直接追加即可）

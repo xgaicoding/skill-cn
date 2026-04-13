@@ -178,6 +178,46 @@
   }
 
   /* ---------------------------------------------------------------------- */
+  /* Affiliate Banner                                                        */
+  /* ---------------------------------------------------------------------- */
+
+  .affiliate-banner {
+    width: 100%;
+    margin: 10px 0 0;
+    padding: 0 var(--mobile-gutter);
+  }
+
+  .affiliate-banner__inner {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .affiliate-banner__eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+
+  .affiliate-banner__content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .affiliate-banner__title {
+    font-size: 20px;
+  }
+
+  .affiliate-banner__desc {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .affiliate-banner__cta {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  /* ---------------------------------------------------------------------- */
   /* Footer                                                                  */
   /* ---------------------------------------------------------------------- */
 

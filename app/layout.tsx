@@ -5,6 +5,7 @@ import "./globals.css";
 import "./mobile.css";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
+import AffiliatePromoBanner from "@/components/AffiliatePromoBanner";
 import { getSiteUrl } from "@/lib/site";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -152,6 +153,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Suspense fallback={null}>
             <AppHeader />
           </Suspense>
+          <AffiliatePromoBanner />
           {children}
           <AppFooter />
           {/*
