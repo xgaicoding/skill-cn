@@ -51,7 +51,7 @@ export const AFFILIATE_PROMO_CAMPAIGN = "kailing_half_price_launch";
 // - 友链参数 `from=skillhub` 用于来源统计，不影响正常访问
 export const FRIEND_LINKS = [
   {
-    label: "开灵 AI 中转站",
+    label: "红烁AI中转站",
     href: AFFILIATE_PROMO_LINK,
   },
   {
