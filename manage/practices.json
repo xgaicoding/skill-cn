@@ -1,0 +1,21 @@
+{
+  "options": {
+    "skip_duplicates": true,
+    "chunk_size": 25
+  },
+  "practices": [
+    {
+      "skill_ids": [35],
+      "primary_skill_id": 35,
+      "title": "Vercel React Best Practices：用高优先级规则治理 React/Next.js 性能债",
+      "summary": "Vercel 官方介绍 react-best-practices Skill 的设计背景：把真实生产项目中常见的请求瀑布、客户端包体膨胀、重复渲染等问题整理成 40+ 条可被 AI Agent 执行的优化规则，适合用于 React/Next.js 代码审查与性能重构。",
+      "channel": "Vercel Blog",
+      "updated_at": "2026-01-14",
+      "source_url": "https://vercel.com/blog/introducing-react-best-practices",
+      "author_name": "Shu Ding / Andrew Qu",
+      "is_listed": false,
+      "is_featured": false,
+      "click_count": 0
+    }
+  ]
+}
