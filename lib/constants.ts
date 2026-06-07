@@ -42,7 +42,7 @@ export const OFFICIAL_DOCS_LINK =
 // - 固定使用联盟注册链接，避免组件层散落硬编码
 // - campaign 命名用于埋点上报维度统一
 export const AFFILIATE_PROMO_LINK =
-  "https://ai.kailingteck.com/register?aff=jKLu";
+  "https://www.haoshuangapi.com/register?aff=jKLu";
 export const AFFILIATE_PROMO_CAMPAIGN = "kailing_half_price_launch";
 
 // Footer 友情链接：
