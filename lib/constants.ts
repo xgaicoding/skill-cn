@@ -51,8 +51,12 @@ export const AFFILIATE_PROMO_CAMPAIGN = "kailing_half_price_launch";
 // - 友链参数 `from=skillhub` 用于来源统计，不影响正常访问
 export const FRIEND_LINKS = [
   {
-    label: "红烁AI中转站",
+    label: "好爽 AI 中转站",
     href: AFFILIATE_PROMO_LINK,
+  },
+  {
+    label: "红烁AI官网（骁哥创办）",
+    href: "https://www.hongshuoai.com/",
   },
   {
     label: "OpenClaw 101",
