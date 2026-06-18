@@ -45,6 +45,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
       lastModified: homepageLastModified,
     },
+    {
+      url: new URL("/seo/openclaw-wsl2-codex-tool-calls", siteUrl).toString(),
+      changeFrequency: "monthly",
+      priority: 0.6,
+      lastModified: new Date("2026-06-18"),
+    },
   ];
 
   // 任一查询失败时不抛错：仍返回可用条目，保证 sitemap 始终可访问。
