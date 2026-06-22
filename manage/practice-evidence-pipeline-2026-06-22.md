@@ -52,6 +52,16 @@
 4. 对 awesome 目录只做二级跳转，不再把目录本身当候选；query 必须带 `demo/output/case study/before after/screenshot/log`。
 5. 若 16:00 前仍无合格新增，继续扩大到中文平台：掘金、知乎、B 站，关键词限定 `Claude Code Skill 真实项目`、`OpenClaw Skill 工作流 复盘`、`SKILL.md 项目实战 输出`。
 
+## 14:50 复核更新
+
+结论：前三个 Watch 候选暂不转 practice。三者均有继续跟踪价值，但还没有达到公开入库的实践证据强度。
+
+| 候选 | 新增证据 | 复核结论 | 下一步 |
+|---|---|---|---|
+| `ComfyUI_Skills_OpenClaw` | GitHub README 明确 workflow 需要 ComfyUI API format、`Save Image` output node、`schema.json` 参数映射，并提供 CLI-first changelog；SkillsLLM / MCP App Store 也确认它是可用于导入、执行、取回输出的 ComfyUI workflow skill。 | 仍不入库。证据能证明 skill 能力和安全扫描，不能证明某个用户用它完成了具体图像生成任务；缺 prompt、workflow 输入、生成图输出、运行日志或复盘。 | 继续搜 `"ComfyUI_Skills_OpenClaw" "generated" "prompt" "history"`、`"comfyui-skill history list" "output"`、`"HuangYuChuh" "ComfyUI" "generated image"`。 |
+| `clawsec` | OpenClaw clawhub issue #1824 记录了命名冲突、MITM/本地 CA 等高风险行为，且 scan/moderation 状态含 suspicious。 | 降级为安全风险观察项，不入 practice。当前最强证据是供应链/命名保护问题，不是一次安全扫描或整改实践。 | 继续搜 Prompt Security 官方 ClawSec suite 的真实扫描报告：`"Prompt Security" "ClawSec" "scan report" "agent"`、`"clawsec" "security report" "OpenClaw"`。 |
+| `planning-with-files` | OpenReview survey 把 Planning-with-Files 归类为 long-horizon context 技术，说明 task state、spec、intermediate results 写入文件系统以绕过上下文窗口限制。 | 仍不入库。证据是论文/综述级引用，只证明模式存在；缺第三方项目的 `.plans/` 文件、前后对比、完成结果或复盘。 | 继续搜 `"planning-with-files" ".plans" "completed"`、`"planning-with-files" "task_plan.md" "progress.md"`、`"OthmanAdi/planning-with-files" "used" "project"`。 |
+
 ## 本轮检索入口
 
 ```text
