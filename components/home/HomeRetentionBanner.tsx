@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatNumberWithCommas } from "@/lib/format";
 import type { BoardEntry, BoardTabKey, HomeMetrics } from "@/lib/types";
 import { trackEvent } from "@/lib/analytics";
@@ -69,6 +69,8 @@ const TAB_CONFIG: Array<{ key: BoardTabKey; label: string; analyticsTab: "weekly
   { key: "weekly", label: "每周精选", analyticsTab: "weekly_featured" },
   { key: "hot", label: "热门榜单", analyticsTab: "hot" },
 ];
+
+const SEO_GUIDE_LINK = "/seo/openclaw-wsl2-codex-tool-calls";
 
 type KpiMetricKey = (typeof KPI_CONFIG)[number]["key"];
 type KpiMetricMap = Record<KpiMetricKey, number | null>;
@@ -458,6 +460,13 @@ function HomeRetentionBanner({
     });
   };
 
+  const onSeoGuideClick = () => {
+    trackEvent("home_seo_guide_click", {
+      guide: "openclaw_wsl2_codex_tool_calls",
+      placement: "home_retention_board",
+    });
+  };
+
   const activeSlide = activePages[activePageIndex] || [];
 
   return (
@@ -580,6 +589,14 @@ function HomeRetentionBanner({
                   </button>
                 </div>
               </div>
+
+              <a className="pc-retention-seo-link" href={SEO_GUIDE_LINK} onClick={onSeoGuideClick}>
+                <span className="pc-retention-seo-link__content">
+                  <span className="pc-retention-seo-link__eyebrow">OpenClaw / Codex 专题</span>
+                  <span className="pc-retention-seo-link__title">WSL2 tool calls 排查指南</span>
+                </span>
+                <ArrowRight className="icon" aria-hidden="true" />
+              </a>
 
               <div className="pc-retention-board__viewport">
                 {isActiveTabLoading && activeSlide.length === 0 ? (

@@ -69,6 +69,29 @@ const howToSteps = [
   "把错误归类为 missing tool、permission denied、command failure、timeout 或 resource exhaustion。",
 ] as const;
 
+const relatedPracticeLinks = [
+  {
+    href: "/practice/193",
+    title: "Codex Skills 初体验，第一个技能创建和使用",
+    description: "从 Codex 使用 Skill 的真实流程切入，适合作为理解 Agent Skills directory 的下一步。",
+  },
+  {
+    href: "/practice/194",
+    title: "OpenClaw 打工人高效工作流",
+    description: "把 OpenClaw 放进日常任务流，帮助判断 tool calls 问题是否来自会话编排或工具暴露。",
+  },
+  {
+    href: "/practice/168",
+    title: "Claude Code Skills：从手写到工具化",
+    description: "对照 AGENTS.md、SKILL.md 与可复用工作流，理解为什么单纯堆 prompt 不够稳定。",
+  },
+  {
+    href: "/practice/125",
+    title: "agent-browser vs browser-use 深度测评",
+    description: "浏览器自动化工具的高点击实践页，可承接 tool call 成功后如何选择具体 Skill。",
+  },
+] as const;
+
 function toJsonLd(value: Record<string, unknown>): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
@@ -290,6 +313,26 @@ export default function Page() {
                 <li key={step}>{step}</li>
               ))}
             </ol>
+          </section>
+
+          <section className="seo-section" aria-labelledby="related-practice-title">
+            <h2 id="related-practice-title">相关实践入口</h2>
+            <p>
+              排查完成后，下一步是把可用 tool calls 接到具体任务。下面这些实践页能帮助你从 Codex、
+              OpenClaw 和 Agent Skills 的概念，落到真实工作流。
+            </p>
+            <div className="seo-related-grid">
+              {relatedPracticeLinks.map((item) => (
+                <Link className="seo-related-card" href={item.href} key={item.href}>
+                  <span className="seo-related-card__title">{item.title}</span>
+                  <span className="seo-related-card__desc">{item.description}</span>
+                  <span className="seo-related-card__action">
+                    查看实践
+                    <ArrowRight className="icon" aria-hidden="true" />
+                  </span>
+                </Link>
+              ))}
+            </div>
           </section>
 
           <section className="seo-section" aria-labelledby="evidence-title">
