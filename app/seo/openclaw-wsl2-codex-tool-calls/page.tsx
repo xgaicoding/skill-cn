@@ -14,6 +14,7 @@ const headline = "OpenClaw WSL2 与 Codex Tool Calls 排查指南";
 const description =
   "面向 Windows/WSL2 开发者的 OpenClaw + Codex tool calls 实战排查指南：理解 Codex harness、AGENTS.md、Agent Skills、MCP/plugin 工具暴露与常见故障。";
 const publishedDate = "2026-06-18";
+const modifiedDate = "2026-06-27";
 
 const officialLinks = [
   ["OpenAI Codex CLI", "https://developers.openai.com/codex/cli"],
@@ -125,7 +126,7 @@ export function generateMetadata(): Metadata {
       type: "article",
       siteName: "Skill Hub 中国",
       publishedTime: publishedDate,
-      modifiedTime: publishedDate,
+      modifiedTime: modifiedDate,
       images: [{ url: "/og-cover.png", alt: "Skill Hub 中国" }],
     },
     twitter: {
@@ -148,7 +149,7 @@ export default function Page() {
     author: { "@type": "Organization", name: "Skill Hub 中国" },
     publisher: { "@type": "Organization", name: "Skill Hub 中国" },
     datePublished: publishedDate,
-    dateModified: publishedDate,
+    dateModified: modifiedDate,
     mainEntityOfPage: absoluteUrl,
   };
   const faqJsonLd = {
@@ -281,6 +282,75 @@ export default function Page() {
                   <span>{item}</span>
                 </div>
               ))}
+            </div>
+          </section>
+
+          <section className="seo-section" aria-labelledby="mcp-tools-title">
+            <h2 id="mcp-tools-title">Codex MCP tools not showing 时先查什么？</h2>
+            <p>
+              先把“工具没有暴露”和“工具调用失败”分开。打开当前会话的 tools list，确认你期待的是
+              Codex-native tool、OpenClaw dynamic tool，还是 MCP/plugin tool；如果列表里没有，就不要继续调
+              prompt，而是回到 harness、plugin 安装状态、MCP server 启动状态和本轮会话配置。
+            </p>
+            <div className="seo-checklist">
+              {[
+                "确认当前 session 是否真的是加载 MCP/plugin 的 OpenClaw Codex harness。",
+                "确认 MCP/plugin server 是否在同一个运行环境里启动，而不是启动在 Windows 侧、调用发生在 WSL2 侧。",
+                "确认工具是否被本轮 sandbox、approval 或 connector 权限隐藏。",
+              ].map((item) => (
+                <div className="seo-check" key={item}>
+                  <CheckCircle2 className="icon" aria-hidden="true" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="seo-section" aria-labelledby="mixed-path-title">
+            <h2 id="mixed-path-title">Windows 和 WSL2 路径混用怎么定位？</h2>
+            <p>
+              路径混用通常表现为本地能打开文件，agent 却读不到；或者命令能运行，凭证、配置、缓存位置却不对。
+              排查时先打印当前工作目录，再分别验证仓库路径、配置文件路径、包管理器路径和凭证路径，避免把
+              `/mnt/c/...`、`C:\...` 和 Linux home 目录混成一个环境。
+            </p>
+            <div className="seo-card">
+              <h3>最小验证</h3>
+              <p>
+                用同一个 session 完成 `pwd`、只读文件检查、包管理器版本检查和一次无副作用命令。如果其中任一步跨到另一个路径体系，
+                先修路径和环境变量，再继续排 tool calls。
+              </p>
+            </div>
+          </section>
+
+          <section className="seo-section" aria-labelledby="dynamic-vs-mcp-title">
+            <h2 id="dynamic-vs-mcp-title">OpenClaw dynamic tools 和 MCP tools 有什么区别？</h2>
+            <p>
+              OpenClaw dynamic tools 是当前 OpenClaw 会话按运行上下文暴露的能力，例如消息、会话、媒体、节点或平台编排工具；
+              MCP tools 通常来自独立 MCP server 或 plugin connector。两者都可能出现在 agent 的工具面里，但加载来源、鉴权、
+              生命周期和故障边界不同。
+            </p>
+            <div className="seo-table-wrap">
+              <table className="seo-table">
+                <thead>
+                  <tr>
+                    <th>类型</th>
+                    <th>先查什么</th>
+                    <th>常见故障</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>OpenClaw dynamic tools</td>
+                    <td>当前会话、账号、节点和权限上下文。</td>
+                    <td>工具未暴露、账号缺失、目标 channel 或 node 不可用。</td>
+                  </tr>
+                  <tr>
+                    <td>MCP/plugin tools</td>
+                    <td>server 是否启动、配置是否加载、运行环境是否一致。</td>
+                    <td>server 未加载、路径错位、凭证缺失、connector 未授权。</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </section>
 

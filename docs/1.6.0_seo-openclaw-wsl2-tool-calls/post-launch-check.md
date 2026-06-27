@@ -180,3 +180,42 @@ The launched route satisfies the P0 post-launch SEO checklist:
 - internal links: pass with non-blocking specificity opportunity
 - live `200`: pass
 - production build: pass
+
+## 11. 2026-06-27 Long-tail Update
+
+Follow-up scope: close the 2026-06-26 P1 SEO action for stronger long-tail troubleshooting coverage.
+
+Content changes:
+
+- Added `Codex MCP tools not showing 时先查什么？`.
+- Added `Windows 和 WSL2 路径混用怎么定位？`.
+- Added `OpenClaw dynamic tools 和 MCP tools 有什么区别？`.
+- Updated page-level `dateModified` / Open Graph `modifiedTime` to `2026-06-27`.
+
+Build validation:
+
+```bash
+npm run build
+```
+
+Result:
+
+- Status: passed on `2026-06-27`.
+- Build output includes `/seo/openclaw-wsl2-codex-tool-calls`.
+- Non-blocking warnings remain the known Next.js lockfile SWC patch warning and existing `metadata.themeColor` migration warnings.
+
+Google Search Console actions:
+
+- URL Inspection API executed for `https://www.skill-cn.com/seo/openclaw-wsl2-codex-tool-calls`.
+- Inspection verdict: `PASS`.
+- Coverage state: `Submitted and indexed`.
+- Robots state: `ALLOWED`.
+- Indexing state: `INDEXING_ALLOWED`.
+- Page fetch state: `SUCCESSFUL`.
+- Last crawl time: `2026-06-25T17:17:25Z`.
+- User canonical and Google canonical both resolve to `https://www.skill-cn.com/seo/openclaw-wsl2-codex-tool-calls`.
+- Sitemap detected by inspection: `https://www.skill-cn.com/sitemap.xml`.
+- Sitemap re-submitted through Search Console API at `2026-06-27T02:03:21.786Z`.
+- Sitemap status after submission: `isPending=true`, warnings `0`, errors `0`, submitted URLs `303`.
+
+Verdict: the 6/27 long-tail SEO follow-up is complete. The page now covers the three target question intents and has a fresh build plus GSC inspection / sitemap submission evidence.
