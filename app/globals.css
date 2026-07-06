@@ -8470,3 +8470,50 @@ body.is-detail::after {
   padding-top: 14px;
   border-top: 1px solid rgba(124, 94, 77, 0.1);
 }
+
+/* Root not-found page: keep the real 404 useful without reusing Next's default copy. */
+.not-found-page {
+  min-height: 56vh;
+  display: grid;
+  place-items: center;
+  padding: 72px 20px;
+}
+
+.not-found-page__content {
+  width: min(100%, 520px);
+  text-align: center;
+}
+
+.not-found-page__eyebrow {
+  margin: 0 0 12px;
+  color: var(--brand, #ff6b00);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.not-found-page h1 {
+  margin: 0;
+  color: var(--text, #1a1510);
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.not-found-page p {
+  margin: 16px 0 0;
+  color: var(--muted, #7c5e4d);
+  line-height: 1.7;
+}
+
+.not-found-page__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 24px;
+  padding: 0 18px;
+  border-radius: 8px;
+  background: var(--brand, #ff6b00);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
