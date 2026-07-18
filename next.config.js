@@ -12,6 +12,20 @@ const nextConfig = {
       { protocol: 'https', hostname: 'github.com' },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/skills',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/practices',
+        destination: '/?mode=practices',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
