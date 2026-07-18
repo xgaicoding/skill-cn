@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import "./globals.css";
 // 移动端差异覆盖样式必须在 globals.css 之后引入，保证同等选择器下后者能覆盖前者。
@@ -91,11 +91,9 @@ export const metadata: Metadata = {
     shortcut: ["/favicon.ico"],
   },
   /*
-   * PWA 清单与主题色用于浏览器 UI 与系统安装体验，
-   * 保持与站点品牌色一致。
+   * PWA 清单用于系统安装体验。
    */
   manifest: "/site.webmanifest",
-  themeColor: "#FF6B00",
   robots: {
     index: true,
     follow: true,
@@ -127,6 +125,13 @@ export const metadata: Metadata = {
     description: "聚合真实 Skill 实战案例，帮助你更快找到能用、好用、可复用的方案。",
     images: ["/og-cover.png"],
   },
+};
+
+/*
+ * 主题色用于浏览器 UI，Next.js 14 要求放在 viewport export。
+ */
+export const viewport: Viewport = {
+  themeColor: "#FF6B00",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
