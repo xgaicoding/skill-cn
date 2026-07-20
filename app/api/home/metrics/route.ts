@@ -73,6 +73,7 @@ export async function GET() {
   const metrics: HomeMetrics = {
     practice_total: null,
     practice_weekly_new: null,
+    practice_imported_7d: null,
     skill_featured_total: null,
     download_total: null,
     metrics_updated_at: new Date(now).toISOString(),
@@ -85,13 +86,18 @@ export async function GET() {
    * - skill_featured_total 当前先使用“已上架 Skill 总量”作为稳定口径。
    * - 原因：skills 表暂无显式 is_featured 字段，后续若补充字段可平滑切换。
    */
-  const [practiceTotalRes, weeklyNewRes, listedSkillTotalRes, downloadTotalRes] = await Promise.allSettled([
+  const [practiceTotalRes, weeklyNewRes, imported7dRes, listedSkillTotalRes, downloadTotalRes] = await Promise.allSettled([
     supabase.from("practices").select("id", { count: "exact", head: true }).eq("is_listed", true),
     supabase
       .from("practices")
       .select("id", { count: "exact", head: true })
       .eq("is_listed", true)
       .gte("updated_at", sevenDaysAgoIso),
+    supabase
+      .from("practices")
+      .select("id", { count: "exact", head: true })
+      .eq("is_listed", true)
+      .gte("created_at", sevenDaysAgoIso),
     supabase.from("skills").select("id", { count: "exact", head: true }).eq("is_listed", true),
     sumListedSkillDownloads(supabase),
   ]);
@@ -114,6 +120,16 @@ export async function GET() {
     }
   } else {
     errors.push(String(weeklyNewRes.reason));
+  }
+
+  if (imported7dRes.status === "fulfilled") {
+    if (imported7dRes.value.error) {
+      errors.push(imported7dRes.value.error.message);
+    } else {
+      metrics.practice_imported_7d = imported7dRes.value.count ?? 0;
+    }
+  } else {
+    errors.push(String(imported7dRes.reason));
   }
 
   if (listedSkillTotalRes.status === "fulfilled") {
