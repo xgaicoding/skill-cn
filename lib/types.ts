@@ -83,8 +83,10 @@ export type PracticeWithSkills = Practice & {
 export type HomeMetrics = {
   // 案例数量：站点已收录实践总数
   practice_total: number | null;
-  // 本周上新：近 7 天新增或更新实践数
+  // 本周上新：近 7 天来源日期或业务更新时间覆盖到的实践数
   practice_weekly_new: number | null;
+  // 近 7 天入库：按数据库 created_at 统计的新增收录数
+  practice_imported_7d: number | null;
   // 精选 Skill：由精选实践反推的关联 Skill 去重数量（无数据时可回退为 skill 总量）
   skill_featured_total: number | null;
   // 下载总量：全站累计下载/安装次数

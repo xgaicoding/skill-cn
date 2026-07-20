@@ -181,18 +181,24 @@ export async function fetchHomeMetricsSnapshot(): Promise<HomeMetrics> {
   const metrics: HomeMetrics = {
     practice_total: null,
     practice_weekly_new: null,
+    practice_imported_7d: null,
     skill_featured_total: null,
     download_total: null,
     metrics_updated_at: new Date(now).toISOString(),
   };
 
-  const [practiceTotalRes, weeklyNewRes, listedSkillTotalRes, downloadTotalRes] = await Promise.allSettled([
+  const [practiceTotalRes, weeklyNewRes, imported7dRes, listedSkillTotalRes, downloadTotalRes] = await Promise.allSettled([
     supabase.from("practices").select("id", { count: "exact", head: true }).eq("is_listed", true),
     supabase
       .from("practices")
       .select("id", { count: "exact", head: true })
       .eq("is_listed", true)
       .gte("updated_at", sevenDaysAgoIso),
+    supabase
+      .from("practices")
+      .select("id", { count: "exact", head: true })
+      .eq("is_listed", true)
+      .gte("created_at", sevenDaysAgoIso),
     supabase.from("skills").select("id", { count: "exact", head: true }).eq("is_listed", true),
     sumListedSkillDownloads(supabase),
   ]);
@@ -203,6 +209,10 @@ export async function fetchHomeMetricsSnapshot(): Promise<HomeMetrics> {
 
   if (weeklyNewRes.status === "fulfilled" && !weeklyNewRes.value.error) {
     metrics.practice_weekly_new = weeklyNewRes.value.count ?? 0;
+  }
+
+  if (imported7dRes.status === "fulfilled" && !imported7dRes.value.error) {
+    metrics.practice_imported_7d = imported7dRes.value.count ?? 0;
   }
 
   if (listedSkillTotalRes.status === "fulfilled" && !listedSkillTotalRes.value.error) {
