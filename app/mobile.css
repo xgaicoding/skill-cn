@@ -1147,6 +1147,13 @@
     line-height: 1.6;
   }
 
+  .m-detail-card__practice-summary {
+    margin: 8px 0 0;
+    color: rgba(124, 94, 77, 0.82);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
   .m-detail-card__actions {
     margin-top: 12px;
     display: grid;

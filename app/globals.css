@@ -5961,6 +5961,15 @@ button[data-loading="true"] .btn__loading {
   max-width: 78ch;
 }
 
+.detail-hero__practice-summary {
+  margin: 8px 0 0;
+  color: rgba(88, 68, 52, 0.78);
+  line-height: 1.7;
+  font-size: 14px;
+  font-weight: 600;
+  max-width: 82ch;
+}
+
 .detail-hero__stats {
   margin-top: 16px;
   display: flex;

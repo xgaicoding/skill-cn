@@ -225,6 +225,8 @@ const PRACTICE_ACCENTS = [
 type FaqItem = { question: string; answer: string };
 /** pSEO Tier 1: 相关 Skill 类型 */
 type RelatedSkill = { id: number; name: string; tag: string; heat_score: number; description: string };
+/** 详情页首屏可见的实践标题摘要 */
+type PracticeHighlight = { id: number; title: string };
 
 export default function DetailPage({
   id,
@@ -232,6 +234,7 @@ export default function DetailPage({
   initialSkill,
   faqItems = [],
   relatedSkills = [],
+  practiceHighlights = [],
 }: {
   id: string;
   /**
@@ -250,6 +253,8 @@ export default function DetailPage({
   faqItems?: FaqItem[];
   /** pSEO Tier 1: 相关 Skill 推荐（同 tag，服务端查询） */
   relatedSkills?: RelatedSkill[];
+  /** 服务端直出的关联实践标题，用于补充首屏真实内容 */
+  practiceHighlights?: PracticeHighlight[];
 }) {
   const skillId = Number(id);
 
@@ -302,6 +307,20 @@ export default function DetailPage({
   const [toastMessage, setToastMessage] = useState<string>("");
   const [toastVisible, setToastVisible] = useState(false);
   const toastTimerRef = useRef<number | null>(null);
+
+  const visiblePracticeSummary = useMemo(() => {
+    const count = skill?.practice_count || 0;
+    const titles = practiceHighlights
+      .map((item) => (item.title || "").trim())
+      .filter(Boolean)
+      .slice(0, 3);
+
+    if (count <= 0 || titles.length === 0) {
+      return "";
+    }
+
+    return `已收录 ${count} 篇关联实践，包括：${titles.join("、")}。`;
+  }, [practiceHighlights, skill?.practice_count]);
 
   /**
    * 当路由切换带来新的初始数据时，立即同步到本地状态：
@@ -950,6 +969,7 @@ export default function DetailPage({
                 ) : null}
               </div>
               <p className="m-detail-card__desc">{desc}</p>
+              {visiblePracticeSummary ? <p className="m-detail-card__practice-summary">{visiblePracticeSummary}</p> : null}
 
               {/* PC 专属能力：移动端降级为 toast 提示 */}
               <div className="m-detail-card__actions" aria-label="操作区">
@@ -1113,6 +1133,7 @@ export default function DetailPage({
               </span>
             </div>
             <p className="detail-hero__subtitle">{skill?.description || ""}</p>
+            {visiblePracticeSummary ? <p className="detail-hero__practice-summary">{visiblePracticeSummary}</p> : null}
 
             <div className="detail-hero__stats" aria-label="热度与仓库指标">
               <span className="stat stat--heat" aria-label={`热度 ${formatHeat(skill?.heat_score)}`}>

@@ -15,6 +15,11 @@ import type { Skill } from "@/lib/types";
 import { getSiteUrl } from "@/lib/site";
 import { getSkillSeo } from "@/lib/seo-keywords";
 
+type PracticeHighlight = {
+  id: number;
+  title: string;
+};
+
 /**
  * 详情页 SEO 描述生成：
  * - 优先使用数据库 description（控制长度）
@@ -188,6 +193,22 @@ export default async function Page({ params }: { params: { id: string } }) {
     heat_score: number;
     description: string;
   }>;
+
+  /**
+   * 详情页首屏真实摘要：
+   * - 取最近 3 条已上架关联实践，服务端直出给页面
+   * - 避免爬虫只看到实践计数，却看不到任何真实案例标题
+   */
+  const { data: practiceHighlightsRaw } = await supabase
+    .from("practices")
+    .select("id, title")
+    .eq("is_listed", true)
+    .overlaps("skill_ids", [skillId])
+    .order("updated_at", { ascending: false })
+    .order("click_count", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(3);
+  const practiceHighlights = (practiceHighlightsRaw || []) as PracticeHighlight[];
 
   /**
    * pSEO Tier 1：FAQ 区块（自动生成，SSR 直出）
@@ -463,6 +484,7 @@ export default async function Page({ params }: { params: { id: string } }) {
         initialSkill={skill}
         faqItems={faqItems}
         relatedSkills={relatedSkills}
+        practiceHighlights={practiceHighlights}
       />
     </>
   );
