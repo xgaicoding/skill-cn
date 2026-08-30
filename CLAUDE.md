@@ -17,8 +17,8 @@ npm run lint       # ESLint 检查
 数据导入（需要 .env 中的 SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY）：
 ```bash
 node manage/import_skills.js              # 导入 manage/skills.json
-node manage/import_practices.js           # 导入 manage/practices.json
-node manage/import_skills.js --dry-run    # 仅校验不写入
+node manage/import_practices.js manage/practices.json
+node manage/import_practices.js manage/practices.json --dry-run --skip-duplicates
 ```
 
 ## 架构概览
